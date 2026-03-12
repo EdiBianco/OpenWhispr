@@ -6,13 +6,7 @@
 
 Push-to-talk dictation for Android.
 
-Phone Whisper lets you speak into most apps without switching keyboards. Tap the floating button, speak, tap again, and your text is inserted into the currently focused text field when the app exposes a standard Android input field.
-
-If you try it and it genuinely saves you time, you can sponsor my work here:
-
-- https://github.com/sponsors/kafkasl
-
-I'm building this as a small open-source project in public, and sponsorship helps me keep improving it.
+Phone Whisper lets you speak into most apps without switching keyboards. Tap the floating button, speak, tap again, and your text is inserted into the currently focused text field when the app exposes a standard Android input field.\
 
 It supports:
 
@@ -20,7 +14,8 @@ It supports:
 - **Cloud transcription** with OpenAI Whisper
 - **Optional cleanup** with OpenAI to fix punctuation and grammar
 
-This is an early but usable MVP. I'm releasing it early to see if people actually want cross-app dictation on Android without replacing the keyboard.
+If you try it and it genuinely saves you time, consider [sponsoring](https://github.com/sponsors/kafkasl)
+
 
 ## Why I built this
 
@@ -153,7 +148,6 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 - Some apps use custom input surfaces instead of standard Android text fields
 - Local models are large
 - Cloud mode requires your own OpenAI API key
-- This is still an MVP
 
 ## Support the project
 
