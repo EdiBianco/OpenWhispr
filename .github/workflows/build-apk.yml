@@ -29,10 +29,16 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Rename APK with commit SHA
+      - name: Read app version
+        id: version
+        run: |
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Rename APK with version
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/*.apk "dist/phone-whisper-debug-${GITHUB_SHA::7}.apk"
+          cp app/build/outputs/apk/debug/*.apk "dist/phone-whisper-v${{ steps.version.outputs.version }}-debug.apk"
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
@@ -43,12 +49,12 @@ jobs:
       - name: Publish APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: dictate
-          name: Phone Whisper (Groq) — debug build
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Phone Whisper (Groq) v${{ steps.version.outputs.version }}
           body: |
-            Automated debug build from commit ${{ github.sha }}.
+            Debug build from commit ${{ github.sha }}.
             Uses Groq for transcription (whisper-large-v3) and cleanup (llama-3.3-70b-versatile).
-          prerelease: true
+          prerelease: false
           files: dist/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

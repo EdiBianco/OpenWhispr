@@ -23,7 +23,7 @@ If you try it and it genuinely saves you time, consider [sponsoring](https://git
 - **Transcription**: `whisper-1` (OpenAI) → `whisper-large-v3` (Groq), via `https://api.groq.com/openai/v1/audio/transcriptions`
 - **Cleanup**: `gpt-4o-mini` (OpenAI) → `llama-3.3-70b-versatile` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
 - **API key**: the settings screen now asks for a Groq key (`gsk_...`) instead of an OpenAI key (`sk-...`)
-- **CI**: added a [GitHub Actions workflow](.github/workflows/build-apk.yml) that builds the debug APK on every push to `main` and publishes it to the [`dictate` release](https://github.com/EdiBianco/phone-whisper/releases/tag/dictate)
+- **CI**: added a [GitHub Actions workflow](.github/workflows/build-apk.yml) that builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/phone-whisper/releases)
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
@@ -39,7 +39,7 @@ Local on-device transcription is untouched — it never called OpenAI in the fir
 
 ### Easiest: download the APK
 
-Grab the latest debug APK from the [`dictate` release](https://github.com/EdiBianco/phone-whisper/releases/tag/dictate) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) rebuilds and republishes the APK to that release automatically on every push to `main`, so the link always points to the current build.
+Grab the latest debug APK from the [Releases page](https://github.com/EdiBianco/phone-whisper/releases) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`.
 
 Open it on your phone, install it, then launch the app once to finish setup.
 
