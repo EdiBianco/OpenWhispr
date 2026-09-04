@@ -7,14 +7,33 @@ android {
     namespace = "com.kafkasl.phonewhisper"
     compileSdk = 34
 
+    signingConfigs {
+        getByName("debug") {
+            // Checked-in debug key so every build (local or CI) signs with the
+            // same certificate. Without this, each machine/CI run generates
+            // its own throwaway debug key, and Android refuses to install an
+            // "update" whose signature doesn't match what's already there.
+            storeFile = file("../keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.kafkasl.phonewhisper"
         minSdk = 30
         targetSdk = 34
-        versionCode = 3
-        versionName = "2.0.0"
+        versionCode = 4
+        versionName = "2.0.1"
 
         ndk { abiFilters += "arm64-v8a" }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     compileOptions {
