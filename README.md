@@ -2,9 +2,11 @@
   <img src="docs/logo.svg" width="128" height="128" alt="Phone Whisper Logo">
 </p>
 
-# Phone Whisper
+# Phone Whisper (Groq fork)
 
 Push-to-talk dictation for Android.
+
+This is a fork of [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper) with cloud transcription and cleanup switched from OpenAI to [Groq](https://groq.com): transcription uses `whisper-large-v3` and cleanup uses `llama-3.3-70b-versatile`, both via Groq's OpenAI-compatible API. Everything else (local on-device transcription, the overlay, accessibility insertion) works the same as upstream.
 
 Phone Whisper lets you speak into most apps without switching keyboards. Tap the floating button, speak, tap again, and your text is inserted into the currently focused text field when the app exposes a standard Android input field.\
 
@@ -14,8 +16,16 @@ It supports:
 - **Cloud transcription** with Groq Whisper
 - **Optional cleanup** with Groq to fix punctuation and grammar
 
-If you try it and it genuinely saves you time, consider [sponsoring](https://github.com/sponsors/kafkasl)
+If you try it and it genuinely saves you time, consider [sponsoring](https://github.com/sponsors/kafkasl) the original author.
 
+## What's changed in this fork
+
+- **Transcription**: `whisper-1` (OpenAI) → `whisper-large-v3` (Groq), via `https://api.groq.com/openai/v1/audio/transcriptions`
+- **Cleanup**: `gpt-4o-mini` (OpenAI) → `llama-3.3-70b-versatile` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
+- **API key**: the settings screen now asks for a Groq key (`gsk_...`) instead of an OpenAI key (`sk-...`)
+- **CI**: added a [GitHub Actions workflow](.github/workflows/build-apk.yml) that builds the debug APK on every push to `main` and publishes it to the [`dictate` release](https://github.com/EdiBianco/phone-whisper/releases/tag/dictate)
+
+Local on-device transcription is untouched — it never called OpenAI in the first place.
 
 ## Why I built this
 
@@ -29,7 +39,7 @@ If you try it and it genuinely saves you time, consider [sponsoring](https://git
 
 ### Easiest: download the APK
 
-Grab the latest APK from [GitHub Releases](https://github.com/kafkasl/phone-whisper/releases).
+Grab the latest debug APK from the [`dictate` release](https://github.com/EdiBianco/phone-whisper/releases/tag/dictate) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) rebuilds and republishes the APK to that release automatically on every push to `main`, so the link always points to the current build.
 
 Open it on your phone, install it, then launch the app once to finish setup.
 
@@ -38,7 +48,7 @@ Open it on your phone, install it, then launch the app once to finish setup.
 Requires JDK 17 and Android SDK.
 
 ```bash
-git clone https://github.com/kafkasl/phone-whisper.git && cd phone-whisper
+git clone https://github.com/EdiBianco/phone-whisper.git && cd phone-whisper
 make build
 ```
 
@@ -72,7 +82,7 @@ make adb-install
 3. Enable the **Accessibility Service**
 4. Choose your transcription mode:
    - **Local**: download a model in the app
-   - **Cloud**: paste your Groq API key
+   - **Cloud**: paste your [Groq API key](https://console.groq.com/keys)
 
 Once setup is done, the floating button is ready.
 
