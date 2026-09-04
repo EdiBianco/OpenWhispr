@@ -248,10 +248,20 @@ class WhisperAccessibilityService : AccessibilityService() {
     }
 
     private fun updateOverlayVisibility() {
-        val shouldShow = accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE
+        val shouldShow = masterEnabled() &&
+            (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
         if (shouldShow == overlayShown) return
         overlayShown = shouldShow
         if (shouldShow) animateOverlayIn() else animateOverlayOut()
+    }
+
+    private fun masterEnabled() = prefs().getBoolean("service_master_enabled", true)
+
+    /** Called from MainActivity when the "Background service" switch is
+     * toggled, so an already-idle overlay hides/shows immediately instead
+     * of waiting for the next focus event or poll tick. */
+    fun refreshMasterEnabled() {
+        handler.post { updateOverlayVisibility() }
     }
 
     private fun animateOverlayIn() {

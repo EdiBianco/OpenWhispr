@@ -24,6 +24,9 @@ If you try it and it genuinely saves you time, consider [sponsoring](https://git
 - **Cleanup**: `gpt-4o-mini` (OpenAI) → `llama-3.3-70b-versatile` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
 - **API key**: the settings screen now asks for a Groq key (`gsk_...`) instead of an OpenAI key (`sk-...`)
 - **CI**: added a [GitHub Actions workflow](.github/workflows/build-apk.yml) that builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/phone-whisper/releases)
+- **Overlay visibility**: the mic overlay now shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
+- **Background service switch**: a "Background service" toggle in the app lets you pause the overlay/dictation without disabling the Accessibility permission itself
+- **Battery optimization prompt**: the app detects if Android may kill the background service to save battery and offers a one-tap link to exempt it; the background service also runs in the foreground with a persistent low-priority notification so it survives being swiped away in Recents
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
@@ -83,8 +86,21 @@ make adb-install
 4. Choose your transcription mode:
    - **Local**: download a model in the app
    - **Cloud**: paste your [Groq API key](https://console.groq.com/keys)
+5. When prompted, allow Phone Whisper to run **unrestricted by battery optimization** — otherwise Android may shut the background service down and the overlay will disappear until you reopen the app
 
 Once setup is done, the floating button is ready.
+
+## Keeping the background service alive
+
+Android is aggressive about killing background services to save battery, and an Accessibility Service is no exception. Phone Whisper does a few things to stay running:
+
+- Runs as a **foreground service** with a persistent, silent, minimum-priority notification — the standard way to keep a background service alive when the app is swiped away in the recent-apps screen
+- Prompts you to **exempt the app from battery optimization** (`Settings → Battery optimization` in the app, or the OS dialog it opens) the first time it detects the Accessibility Service is on but the exemption isn't granted
+- Defensive error handling around accessibility events and local-model loading, so a single bad event or model can't crash the whole service process and force you to clear app storage and re-grant permissions
+
+A **"Background service"** switch in the app lets you pause dictation (hide the overlay, stop reacting to taps) without revoking the Accessibility permission — handy if you want to quiet it temporarily instead of walking through Android's accessibility settings.
+
+Some phone manufacturers (Samsung, Xiaomi, OnePlus, and others) layer their own battery/app-sleep managers on top of stock Android and may still kill the service even after you grant the exemption above. If the overlay keeps disappearing, check your phone's own battery/app management settings for an "autostart" or "keep in background" option for Phone Whisper.
 
 ## Why does it need Accessibility?
 

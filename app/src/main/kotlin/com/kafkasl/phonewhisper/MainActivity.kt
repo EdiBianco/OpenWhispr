@@ -6,7 +6,9 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.text.InputType
 import android.util.TypedValue
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var audioRowSub: TextView
     private lateinit var accRowSub: TextView
     private lateinit var keyRowSub: TextView
+    private lateinit var batteryRowSub: TextView
     private lateinit var promptRowSub: TextView
     private lateinit var promptRow: LinearLayout
     private lateinit var modelContainer: LinearLayout
@@ -35,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private val modelRows = mutableMapOf<String, ModelRowViews>()
     private val promptRows = mutableMapOf<String, PromptRowViews>()
+    private var batteryWarningShown = false
 
     private data class ModelRowViews(
         val radio: MaterialRadioButton,
@@ -93,6 +97,29 @@ class MainActivity : AppCompatActivity() {
         }
         accRowSub = accRow.findViewWithTag("subtitle")
         root.addView(accRow)
+
+        val serviceEnabled = prefs().getBoolean("service_master_enabled", true)
+        val serviceSwitch = MaterialSwitch(this).apply {
+            isChecked = serviceEnabled
+            isClickable = false
+        }
+        val serviceRow = settingsRow(
+            "Background service",
+            "Pause the mic overlay without disabling accessibility",
+            serviceSwitch
+        ) {
+            val newVal = !serviceSwitch.isChecked
+            prefs().edit().putBoolean("service_master_enabled", newVal).apply()
+            serviceSwitch.isChecked = newVal
+            WhisperAccessibilityService.instance?.refreshMasterEnabled()
+        }
+        root.addView(serviceRow)
+
+        val batteryRow = settingsRow("Battery optimization", "Checking...") {
+            requestBatteryExemption()
+        }
+        batteryRowSub = batteryRow.findViewWithTag("subtitle")
+        root.addView(batteryRow)
 
         // --- Engine Section ---
         
@@ -351,9 +378,67 @@ class MainActivity : AppCompatActivity() {
 
         statusSubtitle.text = if (ready) "Ready — tap the overlay dot to dictate" else "Setup required"
         statusSubtitle.setTextColor(if (ready) attrColor(com.google.android.material.R.attr.colorPrimary) else attrColor(android.R.attr.textColorSecondary))
-        
+
+        val unrestricted = isIgnoringBatteryOptimizations()
+        batteryRowSub.text = if (unrestricted)
+            "Unrestricted — won't be shut down to save battery"
+        else
+            "Tap to allow background activity (recommended)"
+
         refreshAllCards()
         refreshPromptRows()
+        maybeShowBatteryWarning(acc, unrestricted)
+    }
+
+    // --- Battery optimization ---
+
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        return pm.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    private fun requestBatteryExemption() {
+        if (isIgnoringBatteryOptimizations()) { toast("Already unrestricted"); return }
+        try {
+            startActivity(
+                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+            )
+        } catch (e: Exception) {
+            // Some OEMs block the direct per-app request intent -- fall back
+            // to the general battery-optimization list where the user can
+            // find Phone Whisper and exempt it manually.
+            try {
+                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            } catch (e2: Exception) {
+                toast("Couldn't open battery settings: ${e2.message}")
+            }
+        }
+    }
+
+    /** Nags the user, once per app-open, if the accessibility service is on
+     * but Android is still free to kill it to save battery -- this is the
+     * single biggest cause of the overlay silently disappearing until the
+     * user re-opens the app. */
+    private fun maybeShowBatteryWarning(accessibilityEnabled: Boolean, unrestricted: Boolean) {
+        if (!accessibilityEnabled || unrestricted || batteryWarningShown) return
+        batteryWarningShown = true
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Keep dictation running")
+            .setMessage(
+                "Android's battery saver can shut down Phone Whisper's background " +
+                "service to save power, which makes the mic overlay disappear until " +
+                "you reopen the app.\n\n" +
+                "Allow it to run unrestricted so it stays available.\n\n" +
+                "On some phones (Samsung, Xiaomi, OnePlus, and others) you may also " +
+                "need to allow \"autostart\" or remove Phone Whisper from any " +
+                "battery/app-sleep manager in your phone's own settings, separately " +
+                "from the Android dialog this opens."
+            )
+            .setPositiveButton("Disable restrictions") { _, _ -> requestBatteryExemption() }
+            .setNegativeButton("Later", null)
+            .show()
     }
 
     private fun promptApiKey() {

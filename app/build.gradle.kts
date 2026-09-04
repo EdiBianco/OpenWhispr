@@ -24,8 +24,8 @@ android {
         applicationId = "com.kafkasl.phonewhisper"
         minSdk = 30
         targetSdk = 34
-        versionCode = 9
-        versionName = "2.1.0"
+        versionCode = 10
+        versionName = "2.2.0"
 
         ndk { abiFilters += "arm64-v8a" }
     }
