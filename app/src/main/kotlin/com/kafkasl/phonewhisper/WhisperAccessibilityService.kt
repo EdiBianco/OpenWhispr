@@ -1,15 +1,19 @@
 package com.kafkasl.phonewhisper
 
 import android.accessibilityservice.AccessibilityService
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,14 +21,18 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import java.io.ByteArrayOutputStream
 import kotlin.concurrent.thread
 import kotlin.math.abs
@@ -45,6 +53,15 @@ class WhisperAccessibilityService : AccessibilityService() {
         private const val ALPHA_IDLE = 0.7f
         private const val ALPHA_ACTIVE = 1.0f
         private const val ALPHA_FADE_MS = 150L
+        private const val FADE_IN_MS = 160L
+        private const val FADE_OUT_MS = 140L
+
+        // How often we re-check the focused node as a failsafe, in case an
+        // app never fires a focus-related accessibility event at all.
+        private const val FOCUS_POLL_MS = 500L
+
+        private const val NOTIF_CHANNEL_ID = "phonewhisper_service"
+        private const val NOTIF_ID = 1
 
         private const val COLOR_IDLE = 0xDD1C1C1E.toInt()
         private const val COLOR_RECORDING = 0xDDEF4444.toInt()
@@ -57,6 +74,16 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     private var state = State.IDLE
     private var overlayView: FrameLayout? = null
+    private var overlayShown = false
+
+    // Two independent signals feed overlay visibility (OR'd together): an
+    // accessibility-tree focus check (event-driven AND polled as a failsafe,
+    // since some apps -- notably WhatsApp/Telegram -- don't reliably fire
+    // focus events for their custom message composers) and the system
+    // keyboard's own visibility (window-manager-level, doesn't depend on the
+    // foreground app cooperating with accessibility at all).
+    private var accessibilityFocusSignal = false
+    private var imeVisibleSignal = false
     private var button: ImageView? = null
     private var spinner: ProgressBar? = null
     private var feedbackView: TextView? = null
@@ -70,6 +97,12 @@ class WhisperAccessibilityService : AccessibilityService() {
             feedbackView?.visibility = View.GONE
         }?.start()
     }
+    private val focusPoller = object : Runnable {
+        override fun run() {
+            refreshAccessibilityFocusSignal()
+            handler.postDelayed(this, FOCUS_POLL_MS)
+        }
+    }
 
     // Local transcription engine (loaded lazily)
     private var localTranscriber: LocalTranscriber? = null
@@ -81,40 +114,198 @@ class WhisperAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         instance = this
         showOverlay()
+        startForegroundNotification()
+        updateOverlayVisibility()
+        handler.post(focusPoller)
         // Try to load local model in background
         thread { initLocalModel() }
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Never let a bad event (or a bug in our own handling of it) crash
+        // the whole app process -- an uncaught exception here previously
+        // could take the service down entirely, requiring the user to clear
+        // app storage and re-grant the accessibility permission.
+        try {
+            refreshAccessibilityFocusSignal()
+        } catch (e: Exception) {
+            Log.e(TAG, "onAccessibilityEvent handling failed", e)
+        }
+    }
+
     override fun onInterrupt() {}
 
     override fun onDestroy() {
         instance = null
+        handler.removeCallbacks(focusPoller)
+        try {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } catch (e: Exception) {
+            Log.e(TAG, "stopForeground failed", e)
+        }
         removeOverlay()
         super.onDestroy()
     }
 
-    private fun initLocalModel() {
-        val modelName = prefs().getString("model_name", "") ?: ""
-        if (modelName.isBlank()) {
-            // Auto-detect first available model
-            val models = LocalTranscriber.availableModels(this)
-            if (models.isNotEmpty()) {
-                Log.i(TAG, "Auto-detected model: ${models.first()}")
-                localTranscriber = LocalTranscriber.create(this, models.first())
+    private fun startForegroundNotification() {
+        // Promotes the service's process priority and gives it a persistent
+        // (silent, minimum-importance) notification. This is what keeps the
+        // background service running -- both against being swiped away in
+        // Recents and against routine memory-pressure kills. It's a
+        // best-effort measure: some OEM battery managers (MIUI, ColorOS,
+        // etc.) still require the user to manually whitelist the app.
+        try {
+            val nm = getSystemService(NotificationManager::class.java)
+            val channel = NotificationChannel(
+                NOTIF_CHANNEL_ID,
+                getString(R.string.notification_channel_name),
+                NotificationManager.IMPORTANCE_MIN
+            ).apply {
+                description = getString(R.string.notification_channel_description)
+                setShowBadge(false)
             }
-        } else {
-            localTranscriber = LocalTranscriber.create(this, modelName)
+            nm.createNotificationChannel(channel)
+
+            val notification = NotificationCompat.Builder(this, NOTIF_CHANNEL_ID)
+                .setContentTitle(getString(R.string.notification_content_title))
+                .setContentText(getString(R.string.notification_content_text))
+                .setSmallIcon(R.drawable.ic_mic)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setOngoing(true)
+                .setSilent(true)
+                .build()
+
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(NOTIF_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            } else {
+                startForeground(NOTIF_ID, notification)
+            }
+        } catch (e: Exception) {
+            // Foreground promotion is a resilience nice-to-have, not a
+            // functional requirement -- dictation still works without it.
+            Log.e(TAG, "Failed to start foreground notification", e)
         }
-        if (localTranscriber != null) {
-            Log.i(TAG, "Local transcription ready")
-        } else {
-            Log.i(TAG, "No local model found, will use API")
+    }
+
+    private fun initLocalModel() {
+        // A corrupted/incompatible model file or a native (sherpa-onnx)
+        // load failure here must not be allowed to crash the process --
+        // that takes the whole accessibility service down with it.
+        try {
+            val modelName = prefs().getString("model_name", "") ?: ""
+            if (modelName.isBlank()) {
+                // Auto-detect first available model
+                val models = LocalTranscriber.availableModels(this)
+                if (models.isNotEmpty()) {
+                    Log.i(TAG, "Auto-detected model: ${models.first()}")
+                    localTranscriber = LocalTranscriber.create(this, models.first())
+                }
+            } else {
+                localTranscriber = LocalTranscriber.create(this, modelName)
+            }
+            if (localTranscriber != null) {
+                Log.i(TAG, "Local transcription ready")
+            } else {
+                Log.i(TAG, "No local model found, will use API")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Local model init failed, falling back to API", e)
+            localTranscriber = null
         }
     }
 
     /** Reload local model (called from MainActivity when settings change) */
     fun reloadModel() { thread { initLocalModel() } }
+
+    // --- Overlay visibility (multi-signal, OR'd together) ---
+
+    private fun refreshAccessibilityFocusSignal() {
+        try {
+            val root = rootInActiveWindow
+            val focused = root?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+            accessibilityFocusSignal = focused != null && isEditableTextField(focused)
+            focused?.recycle()
+            root?.recycle()
+        } catch (e: Exception) {
+            Log.e(TAG, "refreshAccessibilityFocusSignal failed", e)
+        } finally {
+            updateOverlayVisibility()
+        }
+    }
+
+    private fun isEditableTextField(node: AccessibilityNodeInfo): Boolean {
+        val className = node.className?.toString().orEmpty()
+        return node.isEditable || className.contains("EditText")
+    }
+
+    /** Fed by the overlay view's WindowInsets listener -- catches apps whose
+     * custom composers (WhatsApp, Telegram, ...) never fire accessibility
+     * focus events at all, since this signal comes from the window manager
+     * rather than the foreground app's own accessibility tree. */
+    private fun onKeyboardVisibilityChanged(visible: Boolean) {
+        imeVisibleSignal = visible
+        updateOverlayVisibility()
+    }
+
+    private fun updateOverlayVisibility() {
+        val shouldShow = accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE
+        if (shouldShow == overlayShown) return
+        overlayShown = shouldShow
+        if (shouldShow) animateOverlayIn() else animateOverlayOut()
+    }
+
+    private fun animateOverlayIn() {
+        handler.post {
+            val view = overlayView ?: return@post
+            view.animate().cancel()
+            if (view.visibility != View.VISIBLE) {
+                view.visibility = View.VISIBLE
+                view.alpha = 0f
+            }
+            setTouchable(true)
+            val target = if (state == State.IDLE) ALPHA_IDLE else ALPHA_ACTIVE
+            view.animate()
+                .alpha(target)
+                .setDuration(FADE_IN_MS)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
+    }
+
+    private fun animateOverlayOut() {
+        handler.post {
+            val view = overlayView ?: return@post
+            view.animate().cancel()
+            view.animate()
+                .alpha(0f)
+                .setDuration(FADE_OUT_MS)
+                .setInterpolator(AccelerateInterpolator())
+                .withEndAction {
+                    view.visibility = View.INVISIBLE
+                    setTouchable(false)
+                }
+                .start()
+        }
+    }
+
+    private fun setTouchable(touchable: Boolean) {
+        try {
+            val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+            val lp = layoutParams ?: return
+            val view = overlayView ?: return
+            val hadFlag = lp.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE != 0
+            val wantFlag = !touchable
+            if (hadFlag == wantFlag) return
+            lp.flags = if (wantFlag) {
+                lp.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            } else {
+                lp.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+            }
+            wm.updateViewLayout(view, lp)
+        } catch (e: Exception) {
+            Log.e(TAG, "setTouchable failed", e)
+        }
+    }
 
     // --- Overlay ---
 
@@ -141,13 +332,22 @@ class WhisperAccessibilityService : AccessibilityService() {
         val overlay = FrameLayout(this).apply {
             addView(ring, FrameLayout.LayoutParams(ringSize, ringSize, Gravity.CENTER))
             addView(img, FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.CENTER))
-            alpha = ALPHA_IDLE
+            alpha = 0f
+            visibility = View.INVISIBLE
+            setOnApplyWindowInsetsListener { _, insets ->
+                try {
+                    onKeyboardVisibilityChanged(insets.isVisible(WindowInsets.Type.ime()))
+                } catch (e: Exception) {
+                    Log.e(TAG, "IME insets check failed", e)
+                }
+                insets
+            }
         }
 
         val params = WindowManager.LayoutParams(
             ringSize, ringSize,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -347,6 +547,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         setBusy(false)
         setAppearance(COLOR_RECORDING)
         setOpacity(active = true)
+        updateOverlayVisibility()
         startPulse()
 
         thread {
@@ -363,6 +564,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         stopPulse()
         setAppearance(COLOR_BUSY)
         setBusy(true)
+        updateOverlayVisibility()
 
         audioRecord?.stop()
         audioRecord?.release()
@@ -479,6 +681,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         setBusy(false)
         setAppearance(COLOR_IDLE)
         setOpacity(active = false)
+        updateOverlayVisibility()
     }
 
     // --- Text injection ---

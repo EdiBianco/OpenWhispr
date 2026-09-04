@@ -51,6 +51,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Best-effort: lets the background service show its "still running"
+        // notification (Android 13+ requires this permission for any
+        // notification, including the foreground-service one). Not gated on
+        // anything -- dictation works fine without it, this just makes the
+        // service more likely to survive being swiped from Recents.
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            !hasPerm(Manifest.permission.POST_NOTIFICATIONS)
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 2)
+        }
+
         val root = vertical(0, 0)
 
         // Top large header (like "Connected devices")

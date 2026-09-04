@@ -2,4 +2,8 @@
 <resources>
     <string name="app_name">Phone Whisper</string>
     <string name="accessibility_description">Dictation: records audio, transcribes, and inserts text into focused fields.</string>
+    <string name="notification_channel_name">Phone Whisper background service</string>
+    <string name="notification_channel_description">Keeps the dictation overlay running in the background</string>
+    <string name="notification_content_title">Phone Whisper is running</string>
+    <string name="notification_content_text">Tap the floating mic to dictate</string>
 </resources>
