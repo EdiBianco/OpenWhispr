@@ -17,9 +17,12 @@ import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -42,6 +45,9 @@ class WhisperAccessibilityService : AccessibilityService() {
         private const val RING_DP = 56
         private const val FEEDBACK_OFFSET_DP = 64
 
+        private const val FADE_IN_MS = 160L
+        private const val FADE_OUT_MS = 140L
+
         private const val COLOR_IDLE = 0xDD1C1C1E.toInt()
         private const val COLOR_RECORDING = 0xDDEF4444.toInt()
         private const val COLOR_BUSY = 0xDD6B6B6B.toInt()
@@ -53,6 +59,8 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     private var state = State.IDLE
     private var overlayView: FrameLayout? = null
+    private var overlayShown = false
+    private var keyboardVisible = false
     private var button: ImageView? = null
     private var spinner: ProgressBar? = null
     private var feedbackView: TextView? = null
@@ -77,6 +85,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         instance = this
         showOverlay()
+        updateOverlayVisibility()
         // Try to load local model in background
         thread { initLocalModel() }
     }
@@ -137,12 +146,18 @@ class WhisperAccessibilityService : AccessibilityService() {
         val overlay = FrameLayout(this).apply {
             addView(ring, FrameLayout.LayoutParams(ringSize, ringSize, Gravity.CENTER))
             addView(img, FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.CENTER))
+            alpha = 0f
+            visibility = View.INVISIBLE
+            setOnApplyWindowInsetsListener { _, insets ->
+                onKeyboardVisibilityChanged(insets.isVisible(WindowInsets.Type.ime()))
+                insets
+            }
         }
 
         val params = WindowManager.LayoutParams(
             ringSize, ringSize,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
@@ -233,6 +248,67 @@ class WhisperAccessibilityService : AccessibilityService() {
         spinner = null
         layoutParams = null
         feedbackLayoutParams = null
+    }
+
+    /**
+     * Tracks the system keyboard's visibility via WindowInsets on the
+     * overlay's own window -- this is a window-manager-level signal, not an
+     * accessibility-tree one, so it doesn't depend on the foreground app
+     * cooperating with accessibility focus events (which proved unreliable
+     * in apps like WhatsApp/Telegram with custom text composers).
+     */
+    private fun onKeyboardVisibilityChanged(visible: Boolean) {
+        keyboardVisible = visible
+        updateOverlayVisibility()
+    }
+
+    /**
+     * Shows the overlay only while the keyboard is visible; hides it
+     * otherwise. Skipped while actively recording/transcribing so it
+     * doesn't disappear mid-use.
+     */
+    private fun updateOverlayVisibility() {
+        if (state != State.IDLE) return
+        if (keyboardVisible) animateOverlayIn() else animateOverlayOut()
+    }
+
+    private fun animateOverlayIn() {
+        if (overlayShown) return
+        overlayShown = true
+        val view = overlayView ?: return
+        val params = layoutParams ?: return
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+
+        params.flags = params.flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE.inv()
+        wm.updateViewLayout(view, params)
+
+        view.animate().cancel()
+        view.visibility = View.VISIBLE
+        view.animate()
+            .alpha(1f)
+            .setDuration(FADE_IN_MS)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+    }
+
+    private fun animateOverlayOut() {
+        if (!overlayShown) return
+        overlayShown = false
+        val view = overlayView ?: return
+
+        view.animate().cancel()
+        view.animate()
+            .alpha(0f)
+            .setDuration(FADE_OUT_MS)
+            .setInterpolator(AccelerateInterpolator())
+            .withEndAction {
+                view.visibility = View.INVISIBLE
+                layoutParams?.let { params ->
+                    params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                    (getSystemService(WINDOW_SERVICE) as WindowManager).updateViewLayout(view, params)
+                }
+            }
+            .start()
     }
 
     private fun circle(color: Int) = GradientDrawable().apply {
@@ -388,9 +464,7 @@ class WhisperAccessibilityService : AccessibilityService() {
                 Log.e(TAG, "Local transcription failed", e)
                 handler.post {
                     toast("Local error: ${e.message}")
-                    state = State.IDLE
-                    setBusy(false)
-                    setAppearance(COLOR_IDLE)
+                    goIdle()
                 }
             }
         }
@@ -407,9 +481,7 @@ class WhisperAccessibilityService : AccessibilityService() {
             } else {
                 handler.post {
                     toast("Error: ${result.error ?: "empty transcript"}")
-                    state = State.IDLE
-                    setBusy(false)
-                    setAppearance(COLOR_IDLE)
+                    goIdle()
                 }
             }
         }
@@ -419,9 +491,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         if (text.isNullOrBlank()) {
             handler.post {
                 toast("No speech detected")
-                state = State.IDLE
-                setBusy(false)
-                setAppearance(COLOR_IDLE)
+                goIdle()
             }
             return
         }
@@ -434,9 +504,7 @@ class WhisperAccessibilityService : AccessibilityService() {
                 handler.post {
                     toast("Post-processing needs API key. Using raw text.")
                     injectText(text)
-                    state = State.IDLE
-                    setBusy(false)
-                    setAppearance(COLOR_IDLE)
+                    goIdle()
                 }
                 return
             }
@@ -450,26 +518,27 @@ class WhisperAccessibilityService : AccessibilityService() {
                     } else {
                         injectText(text, feedback = "Cleanup failed — raw copied to clipboard", feedbackDurationMs = 3000)
                     }
-                    state = State.IDLE
-                    setBusy(false)
-                    setAppearance(COLOR_IDLE)
+                    goIdle()
                 }
             }
         } else {
             handler.post {
                 injectText(text)
-                state = State.IDLE
-                setBusy(false)
-                setAppearance(COLOR_IDLE)
+                goIdle()
             }
         }
     }
 
     private fun reset(msg: String) {
         toast(msg)
+        goIdle()
+    }
+
+    private fun goIdle() {
         state = State.IDLE
         setBusy(false)
         setAppearance(COLOR_IDLE)
+        updateOverlayVisibility()
     }
 
     // --- Text injection ---
