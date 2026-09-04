@@ -11,8 +11,8 @@ Phone Whisper lets you speak into most apps without switching keyboards. Tap the
 It supports:
 
 - **Local on-device transcription** with sherpa-onnx
-- **Cloud transcription** with OpenAI Whisper
-- **Optional cleanup** with OpenAI to fix punctuation and grammar
+- **Cloud transcription** with Groq Whisper
+- **Optional cleanup** with Groq to fix punctuation and grammar
 
 If you try it and it genuinely saves you time, consider [sponsoring](https://github.com/sponsors/kafkasl)
 
@@ -72,7 +72,7 @@ make adb-install
 3. Enable the **Accessibility Service**
 4. Choose your transcription mode:
    - **Local**: download a model in the app
-   - **Cloud**: paste your OpenAI API key
+   - **Cloud**: paste your Groq API key
 
 Once setup is done, the floating button is ready.
 
@@ -87,10 +87,10 @@ It does **not** replace your keyboard. It does **not** run background automation
 Phone Whisper supports two modes:
 
 - **Local mode**: audio stays on-device
-- **Cloud mode**: audio is sent directly from your device to OpenAI's transcription API
-- **Optional cleanup**: transcript text is sent directly from your device to OpenAI's chat API
+- **Cloud mode**: audio is sent directly from your device to Groq's transcription API
+- **Optional cleanup**: transcript text is sent directly from your device to Groq's chat API
 
-I don't run a backend for this app. In cloud mode, requests go straight from your phone to OpenAI using your own API key.
+I don't run a backend for this app. In cloud mode, requests go straight from your phone to Groq using your own API key.
 
 Full policy: [PRIVACY.md](PRIVACY.md)
 
@@ -147,7 +147,7 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 - Some apps may block paste or text injection
 - Some apps use custom input surfaces instead of standard Android text fields
 - Local models are large
-- Cloud mode requires your own OpenAI API key
+- Cloud mode requires your own Groq API key
 
 ## Support the project
 

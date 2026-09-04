@@ -12,13 +12,13 @@ In local mode, audio is processed on-device using local speech recognition model
 
 ### Cloud mode
 
-In cloud mode, recorded audio is sent directly from the device to OpenAI's transcription API to generate text.
+In cloud mode, recorded audio is sent directly from the device to Groq's transcription API to generate text.
 
-If optional cleanup is enabled, the transcribed text is also sent directly from the device to OpenAI's chat API to improve punctuation, capitalization, and clarity.
+If optional cleanup is enabled, the transcribed text is also sent directly from the device to Groq's chat API to improve punctuation, capitalization, and clarity.
 
 ## API keys
 
-If you use cloud features, your OpenAI API key is stored locally on your device in app storage and used to authenticate requests sent directly to OpenAI.
+If you use cloud features, your Groq API key is stored locally on your device in app storage and used to authenticate requests sent directly to Groq.
 
 I do not operate a relay server for these requests.
 
@@ -32,7 +32,7 @@ Phone Whisper is not designed to monitor browsing, collect screen content for an
 
 I do not run a backend for Phone Whisper and do not collect user accounts, analytics, or uploaded recordings myself.
 
-Third-party services you choose to use, such as OpenAI, may process data according to their own terms and privacy policies.
+Third-party services you choose to use, such as Groq, may process data according to their own terms and privacy policies.
 
 ## Contact
 

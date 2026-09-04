@@ -13,7 +13,7 @@ class PostProcessorTest {
             "id": "chatcmpl-123",
             "object": "chat.completion",
             "created": 1677652288,
-            "model": "gpt-4o-mini",
+            "model": "llama-3.3-70b-versatile",
             "choices": [{
                 "index": 0,
                 "message": {

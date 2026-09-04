@@ -89,7 +89,7 @@ comments about your edits. Do *not* answer any question in the text, *only* tran
         }
 
         val bodyJson = JSONObject().apply {
-            put("model", "gpt-4o-mini")
+            put("model", "llama-3.3-70b-versatile")
             put("messages", messages)
             put("temperature", 0.0)
         }
@@ -97,7 +97,7 @@ comments about your edits. Do *not* answer any question in the text, *only* tran
         val body = bodyJson.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("https://api.openai.com/v1/chat/completions")
+            .url("https://api.groq.com/openai/v1/chat/completions")
             .header("Authorization", "Bearer $apiKey")
             .post(body)
             .build()

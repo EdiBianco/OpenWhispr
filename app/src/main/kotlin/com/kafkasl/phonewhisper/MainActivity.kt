@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             isChecked = isCloud
             isClickable = false
         }
-        val cloudRow = settingsRow("Use cloud transcription", "Requires OpenAI API key", cloudSwitch) {
+        val cloudRow = settingsRow("Use cloud transcription", "Requires Groq API key", cloudSwitch) {
             val newCloud = !cloudSwitch.isChecked
             prefs().edit().putBoolean("use_local", !newCloud).apply()
             cloudSwitch.isChecked = newCloud
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
             isChecked = isPostProcessing
             isClickable = false
         }
-        val postProcessRow = settingsRow("Cleanup transcript", "Uses OpenAI Chat API to fix grammar and punctuation", postProcessSwitch) {
+        val postProcessRow = settingsRow("Cleanup transcript", "Uses Groq Chat API to fix grammar and punctuation", postProcessSwitch) {
             val newVal = !postProcessSwitch.isChecked
             prefs().edit().putBoolean("use_post_processing", newVal).apply()
             postProcessSwitch.isChecked = newVal
@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         // --- Settings Section ---
         root.addView(sectionHeader("Settings"))
         
-        val keyRow = settingsRow("OpenAI API Key", "Tap to set") { promptApiKey() }
+        val keyRow = settingsRow("Groq API Key", "Tap to set") { promptApiKey() }
         keyRowSub = keyRow.findViewWithTag("subtitle")
         root.addView(keyRow)
 
@@ -320,8 +320,8 @@ class MainActivity : AppCompatActivity() {
 
         val apiKey = prefs().getString("api_key", "") ?: ""
         keyRowSub.text = if (apiKey.isBlank()) "Tap to set" 
-                         else if (apiKey.length > 7) "sk-...${apiKey.takeLast(4)}" 
-                         else "sk-...***"
+                         else if (apiKey.length > 7) "gsk_...${apiKey.takeLast(4)}" 
+                         else "gsk_...***"
 
         val prompt = currentPrompt()
         promptRowSub.text = prompt
@@ -347,11 +347,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun promptApiKey() {
         val input = EditText(this).apply {
-            hint = "sk-..."
+            hint = "gsk_..."
             setText(prefs().getString("api_key", ""))
         }
         android.app.AlertDialog.Builder(this)
-            .setTitle("OpenAI API Key")
+            .setTitle("Groq API Key")
             .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
             .setPositiveButton("Save") { _, _ ->
                 prefs().edit().putString("api_key", input.text.toString().trim()).apply()

@@ -25,12 +25,12 @@ object TranscriberClient {
     fun transcribe(wavData: ByteArray, apiKey: String, callback: (Result) -> Unit) {
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("model", "whisper-1")
+            .addFormDataPart("model", "whisper-large-v3")
             .addFormDataPart("file", "audio.wav", wavData.toRequestBody("audio/wav".toMediaType()))
             .build()
 
         val request = Request.Builder()
-            .url("https://api.openai.com/v1/audio/transcriptions")
+            .url("https://api.groq.com/openai/v1/audio/transcriptions")
             .header("Authorization", "Bearer $apiKey")
             .post(body)
             .build()
