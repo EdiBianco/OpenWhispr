@@ -20,7 +20,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityWindowInfo
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.widget.FrameLayout
@@ -249,9 +248,13 @@ class WhisperAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * Shows the overlay only while an editable text field is focused and the
-     * soft keyboard is on screen; hides it otherwise. Skipped while actively
-     * recording/transcribing so it doesn't disappear mid-use.
+     * Shows the overlay only while an editable text field has input focus;
+     * hides it otherwise. Skipped while actively recording/transcribing so
+     * it doesn't disappear mid-use.
+     *
+     * Deliberately keyed off focus alone, not IME window visibility --
+     * AccessibilityWindowInfo.TYPE_INPUT_METHOD detection proved unreliable
+     * across keyboards/devices (the overlay would just never show).
      */
     private fun updateOverlayVisibility() {
         if (state != State.IDLE) return
@@ -262,17 +265,13 @@ class WhisperAccessibilityService : AccessibilityService() {
         focused?.recycle()
         root?.recycle()
 
-        val shouldShow = hasEditableFocus && isKeyboardVisible()
-        if (shouldShow) animateOverlayIn() else animateOverlayOut()
+        if (hasEditableFocus) animateOverlayIn() else animateOverlayOut()
     }
 
     private fun isEditableTextField(node: AccessibilityNodeInfo): Boolean {
         val className = node.className?.toString().orEmpty()
         return node.isEditable || className.contains("EditText") || className.contains("TerminalView")
     }
-
-    private fun isKeyboardVisible(): Boolean =
-        windows?.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD } == true
 
     private fun animateOverlayIn() {
         if (overlayShown) return
