@@ -1,9 +1,19 @@
 <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="128" height="128" rx="28" fill="#1A73E8"/>
-  <g transform="translate(10, 10) scale(1.0)">
-    <path d="M54 20C46.27 20 40 26.27 40 34V52C40 59.73 46.27 66 54 66C61.73 66 68 59.73 68 52V34C68 26.27 61.73 20 54 20Z" fill="white"/>
-    <path d="M30 52C30 65.25 40.75 76 54 76C67.25 76 78 65.25 78 52" stroke="white" stroke-width="6" stroke-linecap="round"/>
-    <path d="M54 76V88" stroke="white" stroke-width="6" stroke-linecap="round"/>
-    <path d="M42 90H66" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <defs>
+    <radialGradient id="glass" cx="50%" cy="40%" r="75%">
+      <stop offset="0%" stop-color="#2C2C30"/>
+      <stop offset="55%" stop-color="#161618"/>
+      <stop offset="100%" stop-color="#08080A"/>
+    </radialGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#glass)"/>
+  <g transform="translate(10, 10)" stroke="white" stroke-width="7" stroke-linecap="round">
+    <line x1="38" y1="24" x2="70" y2="24"/>
+    <line x1="26.5" y1="34" x2="81.5" y2="34"/>
+    <line x1="21.5" y1="44" x2="86.5" y2="44"/>
+    <line x1="20" y1="54" x2="88" y2="54"/>
+    <line x1="21.5" y1="64" x2="86.5" y2="64"/>
+    <line x1="26.5" y1="74" x2="81.5" y2="74"/>
+    <line x1="38" y1="84" x2="70" y2="84"/>
   </g>
 </svg>

@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.kafkasl.phonewhisper"
+    namespace = "com.edib.openwhispr"
     compileSdk = 34
 
     signingConfigs {
@@ -21,11 +21,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kafkasl.phonewhisper"
+        applicationId = "com.edib.openwhispr"
         minSdk = 30
         targetSdk = 34
-        versionCode = 11
-        versionName = "2.3.0"
+        versionCode = 12
+        versionName = "3.0.0"
 
         ndk { abiFilters += "arm64-v8a" }
     }

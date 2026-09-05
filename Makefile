@@ -19,8 +19,8 @@ test:
 	./gradlew testDebugUnitTest
 
 install: build
-	scp -P $(SSH_PORT) $(APK) $(PHONE_HOST):~/storage/downloads/phone-whisper.apk
-	ssh -p $(SSH_PORT) $(PHONE_HOST) "termux-open ~/storage/downloads/phone-whisper.apk"
+	scp -P $(SSH_PORT) $(APK) $(PHONE_HOST):~/storage/downloads/openwhispr.apk
+	ssh -p $(SSH_PORT) $(PHONE_HOST) "termux-open ~/storage/downloads/openwhispr.apk"
 	@echo "APK sent — approve install on phone"
 
 adb-install: build
@@ -30,10 +30,10 @@ adb-install: build
 push-model:
 	@test -n "$(MODEL)" || (echo "Usage: make push-model MODEL=/path/to/model-dir" && exit 1)
 	$(ANDROID_HOME)/platform-tools/adb push $(MODEL)/ /data/local/tmp/$(notdir $(MODEL))/
-	$(ANDROID_HOME)/platform-tools/adb shell "run-as com.kafkasl.phonewhisper mkdir -p files/models/$(notdir $(MODEL))"
+	$(ANDROID_HOME)/platform-tools/adb shell "run-as com.edib.openwhispr mkdir -p files/models/$(notdir $(MODEL))"
 	@for f in $$(ls $(MODEL)/*.onnx $(MODEL)/*.ort $(MODEL)/*.txt 2>/dev/null); do \
 		echo "  copying $$(basename $$f)..."; \
-		$(ANDROID_HOME)/platform-tools/adb shell "run-as com.kafkasl.phonewhisper cp /data/local/tmp/$(notdir $(MODEL))/$$(basename $$f) files/models/$(notdir $(MODEL))/$$(basename $$f)"; \
+		$(ANDROID_HOME)/platform-tools/adb shell "run-as com.edib.openwhispr cp /data/local/tmp/$(notdir $(MODEL))/$$(basename $$f) files/models/$(notdir $(MODEL))/$$(basename $$f)"; \
 	done
 	@echo "Model pushed: $(notdir $(MODEL))"
 

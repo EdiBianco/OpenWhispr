@@ -1,4 +1,4 @@
-package com.kafkasl.phonewhisper
+package com.edib.openwhispr
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream

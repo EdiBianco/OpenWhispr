@@ -1,28 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  OpenWhispr launcher icon: a circular silhouette built from horizontal
+  rounded-cap bars of varying width (a digital sound-wave / VU-meter
+  motif), white on the dark "glass" adaptive-icon background.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M54,20c-7.73,0 -14,6.27 -14,14v18c0,7.73 6.27,14 14,14s14,-6.27 14,-14V34c0,-7.73 -6.27,-14 -14,-14z" />
-    <path
         android:fillColor="#00000000"
-        android:pathData="M30,52c0,13.25 10.75,24 24,24s24,-10.75 24,-24"
+        android:pathData="M38,24h32"
         android:strokeColor="#FFFFFFFF"
         android:strokeLineCap="round"
-        android:strokeWidth="6" />
+        android:strokeWidth="7" />
     <path
         android:fillColor="#00000000"
-        android:pathData="M54,76v12"
+        android:pathData="M26.5,34h55"
         android:strokeColor="#FFFFFFFF"
         android:strokeLineCap="round"
-        android:strokeWidth="6" />
+        android:strokeWidth="7" />
     <path
         android:fillColor="#00000000"
-        android:pathData="M42,90h24"
+        android:pathData="M21.5,44h65"
         android:strokeColor="#FFFFFFFF"
         android:strokeLineCap="round"
-        android:strokeWidth="6" />
+        android:strokeWidth="7" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M20,54h68"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="7" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M21.5,64h65"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="7" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M26.5,74h55"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="7" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M38,84h32"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="7" />
 </vector>

@@ -1,10 +1,10 @@
-# Privacy Policy for Phone Whisper
+# Privacy Policy for OpenWhispr
 
-Phone Whisper is an Android dictation app that records speech, transcribes it, and inserts the result into text fields across apps.
+OpenWhispr is an Android dictation app that records speech, transcribes it, and inserts the result into text fields across apps.
 
 ## Data handling
 
-Phone Whisper supports two transcription modes.
+OpenWhispr supports two transcription modes.
 
 ### Local mode
 
@@ -24,16 +24,16 @@ I do not operate a relay server for these requests.
 
 ## Accessibility Service
 
-Phone Whisper uses Android Accessibility Service only to identify the currently focused text field and insert dictated text after you explicitly interact with the floating overlay button.
+OpenWhispr uses Android Accessibility Service only to identify the currently focused text field and insert dictated text after you explicitly interact with the floating overlay button.
 
-Phone Whisper is not designed to monitor browsing, collect screen content for analytics, or perform background automation.
+OpenWhispr is not designed to monitor browsing, collect screen content for analytics, or perform background automation.
 
 ## Data collection
 
-I do not run a backend for Phone Whisper and do not collect user accounts, analytics, or uploaded recordings myself.
+I do not run a backend for OpenWhispr and do not collect user accounts, analytics, or uploaded recordings myself.
 
 Third-party services you choose to use, such as Groq, may process data according to their own terms and privacy policies.
 
 ## Contact
 
-For questions about privacy, contact: pol.avms@gmail.com
+For questions about privacy, open an issue at: https://github.com/EdiBianco/OpenWhispr

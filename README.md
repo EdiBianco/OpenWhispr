@@ -1,33 +1,33 @@
 <p align="center">
-  <img src="docs/logo.svg" width="128" height="128" alt="Phone Whisper Logo">
+  <img src="docs/logo.svg" width="128" height="128" alt="OpenWhispr Logo">
 </p>
 
-# Phone Whisper (Groq fork)
+# OpenWhispr
 
-Push-to-talk dictation for Android.
+Free, open-source, on-device push-to-talk dictation for Android — a free alternative to [Wispr Flow](https://wisprflow.ai).
 
-This is a fork of [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper) with cloud transcription and cleanup switched from OpenAI to [Groq](https://groq.com): transcription uses `whisper-large-v3` and cleanup uses `llama-3.3-70b-versatile`, both via Groq's OpenAI-compatible API. Everything else (local on-device transcription, the overlay, accessibility insertion) works the same as upstream.
+Speak naturally into any app and OpenWhispr turns your raw speech into clear, polished text: filler words removed, punctuation and formatting fixed automatically, then inserted straight into whatever field you're already typing in. Tap the floating button, speak, tap again — done.
 
-Phone Whisper lets you speak into most apps without switching keyboards. Tap the floating button, speak, tap again, and your text is inserted into the currently focused text field when the app exposes a standard Android input field.\
+It's completely free to run. Cloud transcription and cleanup use your own [Groq](https://groq.com) API key, and Groq's free tier is generous enough for everyday dictation without paying anything. Prefer to keep everything on-device? Local transcription needs no API key or internet connection at all.
+
+This is a fork of [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper), originally built around OpenAI. This fork switches cloud transcription and cleanup to Groq and adds a round of reliability and UX work on top — see below for the full list. If you find the original project useful, consider [sponsoring the original author](https://github.com/sponsors/kafkasl).
 
 It supports:
 
-- **Local on-device transcription** with sherpa-onnx
-- **Cloud transcription** with Groq Whisper
-- **Optional cleanup** with Groq to fix punctuation and grammar
-
-If you try it and it genuinely saves you time, consider [sponsoring](https://github.com/sponsors/kafkasl) the original author.
+- **Local on-device transcription** with sherpa-onnx — no API key, no internet required
+- **Cloud transcription** with Groq Whisper — free API key, fast, no local model download
+- **Optional AI cleanup** with Groq — removes filler words, fixes punctuation and grammar, formats emails
 
 ## What's changed in this fork
 
 - **Transcription**: `whisper-1` (OpenAI) → `whisper-large-v3` (Groq), via `https://api.groq.com/openai/v1/audio/transcriptions`
 - **Cleanup**: `gpt-4o-mini` (OpenAI) → `llama-3.3-70b-versatile` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
-- **API key**: the settings screen now asks for a Groq key (`gsk_...`) instead of an OpenAI key (`sk-...`)
-- **CI**: added a [GitHub Actions workflow](.github/workflows/build-apk.yml) that builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/phone-whisper/releases)
-- **Overlay visibility**: the mic overlay now shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
-- **Background service switch**: a "Background service" toggle in the app lets you pause the overlay/dictation without disabling the Accessibility permission itself
-- **Battery optimization prompt**: the app detects if Android may kill the background service to save battery and offers a one-tap link to exempt it; the background service also runs in the foreground with a persistent low-priority notification so it survives being swiped away in Recents
-- **Cleanup prompt**: replaced the old Dev/Simple/Custom prompt picker with a single, fixed literal-dictation-cleanup prompt (strict about self-corrections like "no actually...", never executes the transcript as an instruction, formats emails and dev syntax). It isn't shown or editable in the app; instead, an **Add custom instructions** field lets you append your own extra rules on top of it
+- **API key**: the settings screen now asks for a free [Groq API key](https://console.groq.com/keys) (`gsk_...`) instead of an OpenAI key (`sk-...`), with a direct link to get one
+- **CI**: a [GitHub Actions workflow](.github/workflows/build-apk.yml) builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/OpenWhispr/releases)
+- **Overlay visibility**: the mic overlay shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
+- **Stability**: hardened against crashes and killed background services, with a toggle to pause dictation without touching the Accessibility permission
+- **Battery**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
+- **Natural language cleanup**: a stricter cleanup prompt that handles self-corrections and preserves your intent instead of acting on it as a command, with room to add your own custom instructions on top
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
@@ -43,7 +43,7 @@ Local on-device transcription is untouched — it never called OpenAI in the fir
 
 ### Easiest: download the APK
 
-Grab the latest debug APK from the [Releases page](https://github.com/EdiBianco/phone-whisper/releases) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`.
+Grab the latest debug APK from the [Releases page](https://github.com/EdiBianco/OpenWhispr/releases) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`.
 
 Open it on your phone, install it, then launch the app once to finish setup.
 
@@ -52,7 +52,7 @@ Open it on your phone, install it, then launch the app once to finish setup.
 Requires JDK 17 and Android SDK.
 
 ```bash
-git clone https://github.com/EdiBianco/phone-whisper.git && cd phone-whisper
+git clone https://github.com/EdiBianco/OpenWhispr.git && cd OpenWhispr
 make build
 ```
 
@@ -81,19 +81,19 @@ make adb-install
 
 ### First-time setup
 
-1. Open **Phone Whisper**
+1. Open **OpenWhispr**
 2. Grant the **audio recording** permission
 3. Enable the **Accessibility Service**
 4. Choose your transcription mode:
    - **Local**: download a model in the app
-   - **Cloud**: paste your [Groq API key](https://console.groq.com/keys)
-5. When prompted, allow Phone Whisper to run **unrestricted by battery optimization** — otherwise Android may shut the background service down and the overlay will disappear until you reopen the app
+   - **Cloud**: paste your free [Groq API key](https://console.groq.com/keys) — the app links straight to that page when you tap to set the key
+5. When prompted, allow OpenWhispr to run **unrestricted by battery optimization** — otherwise Android may shut the background service down and the overlay will disappear until you reopen the app
 
 Once setup is done, the floating button is ready.
 
 ## Keeping the background service alive
 
-Android is aggressive about killing background services to save battery, and an Accessibility Service is no exception. Phone Whisper does a few things to stay running:
+Android is aggressive about killing background services to save battery, and an Accessibility Service is no exception. OpenWhispr does a few things to stay running:
 
 - Runs as a **foreground service** with a persistent, silent, minimum-priority notification — the standard way to keep a background service alive when the app is swiped away in the recent-apps screen
 - Prompts you to **exempt the app from battery optimization** (`Settings → Battery optimization` in the app, or the OS dialog it opens) the first time it detects the Accessibility Service is on but the exemption isn't granted
@@ -101,17 +101,17 @@ Android is aggressive about killing background services to save battery, and an 
 
 A **"Background service"** switch in the app lets you pause dictation (hide the overlay, stop reacting to taps) without revoking the Accessibility permission — handy if you want to quiet it temporarily instead of walking through Android's accessibility settings.
 
-Some phone manufacturers (Samsung, Xiaomi, OnePlus, and others) layer their own battery/app-sleep managers on top of stock Android and may still kill the service even after you grant the exemption above. If the overlay keeps disappearing, check your phone's own battery/app management settings for an "autostart" or "keep in background" option for Phone Whisper.
+Some phone manufacturers (Samsung, Xiaomi, OnePlus, and others) layer their own battery/app-sleep managers on top of stock Android and may still kill the service even after you grant the exemption above. If the overlay keeps disappearing, check your phone's own battery/app management settings for an "autostart" or "keep in background" option for OpenWhispr.
 
 ## Why does it need Accessibility?
 
-Phone Whisper uses Android Accessibility Service for one narrow reason: to insert dictated text into the currently focused text field across apps.
+OpenWhispr uses Android Accessibility Service for one narrow reason: to insert dictated text into the currently focused text field across apps.
 
 It does **not** replace your keyboard. It does **not** run background automation. It only acts after you explicitly tap the overlay button.
 
 ## Privacy
 
-Phone Whisper supports two modes:
+OpenWhispr supports two modes:
 
 - **Local mode**: audio stays on-device
 - **Cloud mode**: audio is sent directly from your device to Groq's transcription API
@@ -126,7 +126,7 @@ Full policy: [PRIVACY.md](PRIVACY.md)
 Models are stored in app storage under:
 
 ```bash
-/data/data/com.kafkasl.phonewhisper/files/models/
+/data/data/com.edib.openwhispr/files/models/
 ```
 
 Current catalog:
@@ -151,15 +151,15 @@ make clean       # clean build artifacts
 
 ## App compatibility
 
-Phone Whisper works best in apps that use standard Android text fields.
+OpenWhispr works best in apps that use standard Android text fields.
 Some apps use custom text surfaces or terminal-style views, which may not support direct accessibility paste.
-When insertion is not possible, Phone Whisper falls back to copying the transcript to the clipboard.
+When insertion is not possible, OpenWhispr falls back to copying the transcript to the clipboard.
 
 ### Termux
 
 Termux's main terminal area is not a standard Android text field, so direct insertion may not work there.
 
-To use Phone Whisper in Termux:
+To use OpenWhispr in Termux:
 
 1. Focus Termux
 2. Swipe the extra keys row (`ESC`, `CTRL`, `ALT`, arrows, etc.) left or right
@@ -178,7 +178,7 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 
 ## Support the project
 
-If Phone Whisper saves you time, you can sponsor the project on GitHub:
+OpenWhispr itself is free — if the underlying project it's forked from saves you time, you can sponsor the original author on GitHub:
 
 - https://github.com/sponsors/kafkasl
 

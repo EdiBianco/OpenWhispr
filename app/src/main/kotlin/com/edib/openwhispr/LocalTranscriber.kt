@@ -1,4 +1,4 @@
-package com.kafkasl.phonewhisper
+package com.edib.openwhispr
 
 import android.content.Context
 import android.util.Log

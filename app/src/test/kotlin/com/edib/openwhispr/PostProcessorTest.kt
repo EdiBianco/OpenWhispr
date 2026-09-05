@@ -1,4 +1,4 @@
-package com.kafkasl.phonewhisper
+package com.edib.openwhispr
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

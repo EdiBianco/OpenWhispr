@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "phone-whisper"
+rootProject.name = "openwhispr"
 include(":app")

@@ -1,4 +1,4 @@
-package com.kafkasl.phonewhisper
+package com.edib.openwhispr
 
 /** Wraps raw PCM bytes in a WAV container. */
 object WavWriter {

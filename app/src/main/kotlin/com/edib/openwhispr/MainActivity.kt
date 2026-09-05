@@ -1,4 +1,4 @@
-package com.kafkasl.phonewhisper
+package com.edib.openwhispr
 
 import android.Manifest
 import android.content.Intent
@@ -395,13 +395,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun promptApiKey() {
+        val link = TextView(this).apply {
+            text = android.text.Html.fromHtml(
+                "Don't have one? Get a free key at <a href=\"https://console.groq.com/keys\">console.groq.com/keys</a>",
+                android.text.Html.FROM_HTML_MODE_LEGACY
+            )
+            movementMethod = android.text.method.LinkMovementMethod.getInstance()
+            textSize = 13f
+            setPadding(0, 0, 0, dp(8))
+        }
         val input = EditText(this).apply {
             hint = "gsk_..."
             setText(prefs().getString("api_key", ""))
         }
+        val container = vertical(dp(24), dp(8)).apply {
+            addView(link)
+            addView(input)
+        }
         android.app.AlertDialog.Builder(this)
             .setTitle("Groq API Key")
-            .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
+            .setView(container)
             .setPositiveButton("Save") { _, _ ->
                 prefs().edit().putString("api_key", input.text.toString().trim()).apply()
                 refresh()
@@ -495,7 +508,7 @@ class MainActivity : AppCompatActivity() {
         ta.recycle()
         return color
     }
-    private fun prefs() = getSharedPreferences("phonewhisper", MODE_PRIVATE)
+    private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
     companion object {

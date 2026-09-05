@@ -38,19 +38,19 @@ jobs:
       - name: Rename APK with version
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/*.apk "dist/phone-whisper-v${{ steps.version.outputs.version }}-debug.apk"
+          cp app/build/outputs/apk/debug/*.apk "dist/openwhispr-v${{ steps.version.outputs.version }}-debug.apk"
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: phone-whisper-debug-apk
+          name: openwhispr-debug-apk
           path: dist/*.apk
 
       - name: Publish APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          name: Phone Whisper (Groq) v${{ steps.version.outputs.version }}
+          name: OpenWhispr v${{ steps.version.outputs.version }}
           body: |
             Debug build from commit ${{ github.sha }}.
             Uses Groq for transcription (whisper-large-v3) and cleanup (llama-3.3-70b-versatile).

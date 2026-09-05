@@ -1,4 +1,4 @@
-package com.kafkasl.phonewhisper
+package com.edib.openwhispr
 
 import android.accessibilityservice.AccessibilityService
 import android.app.NotificationChannel
@@ -60,7 +60,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         // app never fires a focus-related accessibility event at all.
         private const val FOCUS_POLL_MS = 500L
 
-        private const val NOTIF_CHANNEL_ID = "phonewhisper_service"
+        private const val NOTIF_CHANNEL_ID = "openwhispr_service"
         private const val NOTIF_ID = 1
 
         private const val COLOR_IDLE = 0xDD1C1C1E.toInt()
@@ -702,7 +702,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         feedback: String? = "Copied to clipboard",
         feedbackDurationMs: Long = 2000
     ) {
-        val clip = ClipData.newPlainText("phonewhisper", text)
+        val clip = ClipData.newPlainText("openwhispr", text)
         (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
         feedback?.let { showFeedback(it, feedbackDurationMs) }
 
@@ -846,6 +846,6 @@ class WhisperAccessibilityService : AccessibilityService() {
         )
     }
 
-    private fun prefs() = getSharedPreferences("phonewhisper", MODE_PRIVATE)
+    private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
     private fun toast(msg: String) { handler.post { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() } }
 }
