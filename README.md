@@ -21,7 +21,7 @@ It supports:
 ## What's changed in this fork
 
 - **Transcription**: `whisper-1` (OpenAI) → `whisper-large-v3` (Groq), via `https://api.groq.com/openai/v1/audio/transcriptions`
-- **Cleanup**: `gpt-4o-mini` (OpenAI) → `llama-3.3-70b-versatile` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
+- **Cleanup**: `gpt-4o-mini` (OpenAI) → `openai/gpt-oss-120b` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
 - **API key**: the settings screen now asks for a free [Groq API key](https://console.groq.com/keys) (`gsk_...`) instead of an OpenAI key (`sk-...`), with a direct link to get one
 - **CI**: a [GitHub Actions workflow](.github/workflows/build-apk.yml) builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/OpenWhispr/releases)
 - **Overlay visibility**: the mic overlay shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)

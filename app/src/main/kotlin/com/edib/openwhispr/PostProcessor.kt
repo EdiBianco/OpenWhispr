@@ -128,9 +128,14 @@ Output hygiene:
         }
 
         val bodyJson = JSONObject().apply {
-            put("model", "llama-3.3-70b-versatile")
+            put("model", "openai/gpt-oss-120b")
             put("messages", messages)
             put("temperature", 0.0)
+            // Low reasoning effort keeps latency down for this short cleanup
+            // task, and include_reasoning=false keeps any chain-of-thought
+            // out of the "content" field entirely (see parseResponse).
+            put("reasoning_effort", "low")
+            put("include_reasoning", false)
         }
 
         val body = bodyJson.toString().toRequestBody("application/json".toMediaType())
