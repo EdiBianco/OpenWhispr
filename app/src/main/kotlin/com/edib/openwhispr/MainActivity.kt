@@ -428,7 +428,7 @@ class MainActivity : AppCompatActivity() {
         // shown here -- this only lets the user append their own extra
         // refinements on top of it (see PostProcessor.effectivePrompt).
         val input = EditText(this).apply {
-            hint = "e.g. always spell out \"Amplifi Labs\" in full"
+            hint = "e.g. always spell out \"NASA\" in full"
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
             minLines = 4
             gravity = Gravity.TOP or Gravity.START
