@@ -59,6 +59,8 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 2)
         }
 
+        checkForUpdate()
+
         val root = vertical(0, 0)
 
         // Top large header (like "Connected devices")
@@ -366,6 +368,38 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             } catch (e2: Exception) {
                 toast("Couldn't open battery settings: ${e2.message}")
+            }
+        }
+    }
+
+    /** One-shot check (per app-open) against this repo's GitHub Releases.
+     * No backend involved. Shows a dialog linking to the release page when a
+     * newer version is available; does nothing otherwise. */
+    private fun checkForUpdate() {
+        val currentVersion = try {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        } catch (e: Exception) {
+            null
+        } ?: return
+
+        UpdateChecker.checkForUpdate(prefs(), currentVersion) { info ->
+            if (info != null) {
+                runOnUiThread {
+                    if (!isFinishing && !isDestroyed) {
+                        android.app.AlertDialog.Builder(this)
+                            .setTitle("Update available")
+                            .setMessage("OpenWhispr ${info.version} is available. You're on $currentVersion.")
+                            .setPositiveButton("View release") { _, _ ->
+                                try {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url)))
+                                } catch (e: Exception) {
+                                    toast("Couldn't open browser: ${e.message}")
+                                }
+                            }
+                            .setNegativeButton("Later", null)
+                            .show()
+                    }
+                }
             }
         }
     }

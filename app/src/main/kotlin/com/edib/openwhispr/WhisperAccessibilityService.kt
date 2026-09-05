@@ -666,8 +666,13 @@ class WhisperAccessibilityService : AccessibilityService() {
 
             PostProcessor.process(text, prompt, apiKey) { result ->
                 handler.post {
-                    if (result.text != null && result.text.isNotBlank()) {
-                        injectText(result.text)
+                    val cleaned = result.text?.trim()
+                    if (cleaned == "EMPTY") {
+                        // Model correctly identified filler-only/no-speech audio;
+                        // don't literally type the word "EMPTY" into the field.
+                        toast("No speech detected")
+                    } else if (!cleaned.isNullOrBlank()) {
+                        injectText(cleaned)
                     } else {
                         injectText(text, feedback = "Cleanup failed — raw copied to clipboard", feedbackDurationMs = 3000)
                     }

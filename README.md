@@ -28,6 +28,7 @@ It supports:
 - **Stability**: hardened against crashes and killed background services, with a toggle to pause dictation without touching the Accessibility permission
 - **Battery**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
 - **Natural language cleanup**: a stricter cleanup prompt that handles self-corrections and preserves your intent instead of acting on it as a command, with room to add your own custom instructions on top
+- **Update check**: the app checks this repo's GitHub Releases on open and prompts you to download a newer build when one's available
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
