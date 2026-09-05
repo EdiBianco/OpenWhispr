@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
 
         // Top large header (like "Connected devices")
         val header = TextView(this).apply {
-            text = "Phone Whisper"
+            text = "OpenWhispr"
             textSize = 32f
             setPadding(dp(24), dp(64), dp(24), dp(24))
         }
@@ -361,7 +361,7 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             // Some OEMs block the direct per-app request intent -- fall back
             // to the general battery-optimization list where the user can
-            // find Phone Whisper and exempt it manually.
+            // find OpenWhispr and exempt it manually.
             try {
                 startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             } catch (e2: Exception) {
@@ -380,12 +380,12 @@ class MainActivity : AppCompatActivity() {
         android.app.AlertDialog.Builder(this)
             .setTitle("Keep dictation running")
             .setMessage(
-                "Android's battery saver can shut down Phone Whisper's background " +
+                "Android's battery saver can shut down OpenWhispr's background " +
                 "service to save power, which makes the mic overlay disappear until " +
                 "you reopen the app.\n\n" +
                 "Allow it to run unrestricted so it stays available.\n\n" +
                 "On some phones (Samsung, Xiaomi, OnePlus, and others) you may also " +
-                "need to allow \"autostart\" or remove Phone Whisper from any " +
+                "need to allow \"autostart\" or remove OpenWhispr from any " +
                 "battery/app-sleep manager in your phone's own settings, separately " +
                 "from the Android dialog this opens."
             )
@@ -436,7 +436,7 @@ class MainActivity : AppCompatActivity() {
         }
         android.app.AlertDialog.Builder(this)
             .setTitle("Add custom instructions")
-            .setMessage("These are appended to Phone Whisper's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior.")
+            .setMessage("These are appended to OpenWhispr's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior.")
             .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
             .setPositiveButton("Save") { _, _ ->
                 prefs().edit().putString("custom_instructions", input.text.toString().trim()).apply()

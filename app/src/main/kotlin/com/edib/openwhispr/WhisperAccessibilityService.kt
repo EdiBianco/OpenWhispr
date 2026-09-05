@@ -41,7 +41,7 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     companion object {
         var instance: WhisperAccessibilityService? = null
-        private const val TAG = "PhoneWhisper"
+        private const val TAG = "OpenWhispr"
         private const val SAMPLE_RATE = 16000
         private const val BTN_DP = 44
         private const val PAD_DP = 10
@@ -538,7 +538,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     private fun startRecording() {
         if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
             != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            toast("Grant audio permission in Phone Whisper app"); return
+            toast("Grant audio permission in OpenWhispr app"); return
         }
 
         val bufSize = AudioRecord.getMinBufferSize(
@@ -625,7 +625,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     private fun transcribeApi(pcm: ByteArray) {
         val wav = WavWriter.encode(pcm)
         val apiKey = prefs().getString("api_key", "") ?: ""
-        if (apiKey.isBlank()) { reset("Set API key in Phone Whisper app"); return }
+        if (apiKey.isBlank()) { reset("Set API key in OpenWhispr app"); return }
 
         TranscriberClient.transcribe(wav, apiKey) { result ->
             if (result.text != null && result.text.isNotBlank()) {
