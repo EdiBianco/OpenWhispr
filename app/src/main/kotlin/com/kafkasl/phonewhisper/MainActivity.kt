@@ -31,13 +31,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var accRowSub: TextView
     private lateinit var keyRowSub: TextView
     private lateinit var batteryRowSub: TextView
-    private lateinit var promptRowSub: TextView
-    private lateinit var promptRow: LinearLayout
+    private lateinit var customInstructionsRowSub: TextView
+    private lateinit var customInstructionsRow: LinearLayout
     private lateinit var modelContainer: LinearLayout
-    private lateinit var promptContainer: LinearLayout
 
     private val modelRows = mutableMapOf<String, ModelRowViews>()
-    private val promptRows = mutableMapOf<String, PromptRowViews>()
     private var batteryWarningShown = false
 
     private data class ModelRowViews(
@@ -45,11 +43,6 @@ class MainActivity : AppCompatActivity() {
         val progress: LinearProgressIndicator,
         val subtitle: TextView,
         val dlBtn: MaterialButton
-    )
-
-    private data class PromptRowViews(
-        val radio: MaterialRadioButton,
-        val subtitle: TextView
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -159,15 +152,13 @@ class MainActivity : AppCompatActivity() {
         }
         root.addView(postProcessRow)
 
-        promptContainer = vertical(0)
-        for (preset in promptPresets()) promptContainer.addView(buildPromptRow(preset))
-        root.addView(promptContainer)
-
-        promptRow = settingsRow("Edit current prompt", currentPrompt()) { promptPostProcessing() }
-        promptRowSub = promptRow.findViewWithTag("subtitle")
-        promptRowSub.maxLines = 2
-        promptRowSub.ellipsize = android.text.TextUtils.TruncateAt.END
-        root.addView(promptRow)
+        customInstructionsRow = settingsRow("Add custom instructions", "Tap to add extra refinements") {
+            promptCustomInstructions()
+        }
+        customInstructionsRowSub = customInstructionsRow.findViewWithTag("subtitle")
+        customInstructionsRowSub.maxLines = 2
+        customInstructionsRowSub.ellipsize = android.text.TextUtils.TruncateAt.END
+        root.addView(customInstructionsRow)
 
         // --- Settings Section ---
         root.addView(sectionHeader("Settings"))
@@ -300,45 +291,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshAllCards() = MODEL_CATALOG.forEach { refreshCard(it) }
 
-    // --- Prompt Rows ---
-
-    private fun buildPromptRow(preset: PromptPreset): View {
-        val radio = MaterialRadioButton(this).apply {
-            isClickable = false
-            buttonTintList = ColorStateList.valueOf(attrColor(com.google.android.material.R.attr.colorPrimary))
-        }
-
-        val row = settingsRow(preset.title, preset.subtitle, radio) {
-            selectPrompt(preset.key)
-        }
-
-        promptRows[preset.key] = PromptRowViews(radio, row.findViewWithTag("subtitle"))
-        refreshPromptRow(preset)
-        return row
-    }
-
-    private fun selectPrompt(key: String) {
-        val prompt = when (key) {
-            "custom" -> customPrompt()
-            else -> promptPresets().firstOrNull { it.key == key }?.prompt
-        } ?: return
-        prefs().edit().putString("post_processing_prompt", prompt).apply()
-        refreshPromptRows(); refresh()
-    }
-
-    private fun refreshPromptRow(preset: PromptPreset) {
-        val views = promptRows[preset.key] ?: return
-        val current = currentPrompt()
-        val active = when (preset.key) {
-            "custom" -> current != PostProcessor.DEV_PROMPT && current != PostProcessor.SIMPLE_PROMPT
-            else -> current == preset.prompt
-        }
-        views.radio.isChecked = active
-        views.subtitle.text = if (preset.key == "custom") customPromptSummary() else preset.subtitle
-    }
-
-    private fun refreshPromptRows() = promptPresets().forEach { refreshPromptRow(it) }
-
     // --- State Updates ---
 
     private fun refresh() {
@@ -353,16 +305,18 @@ class MainActivity : AppCompatActivity() {
         accRowSub.text = if (acc) "Enabled" else "Tap to enable in settings"
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
-        promptContainer.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
-        promptRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
+        customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
 
         val apiKey = prefs().getString("api_key", "") ?: ""
         keyRowSub.text = if (apiKey.isBlank()) "Tap to set" 
                          else if (apiKey.length > 7) "gsk_...${apiKey.takeLast(4)}" 
                          else "gsk_...***"
 
-        val prompt = currentPrompt()
-        promptRowSub.text = prompt
+        val customInstructions = prefs().getString("custom_instructions", "") ?: ""
+        customInstructionsRowSub.text = if (customInstructions.isBlank())
+            "Tap to add extra refinements"
+        else
+            customInstructions.replace("\n", " ")
 
         val cur = prefs().getString("model_name", "") ?: ""
         if (cur.isBlank() || !File(filesDir, "models/$cur").exists()) {
@@ -386,7 +340,6 @@ class MainActivity : AppCompatActivity() {
             "Tap to allow background activity (recommended)"
 
         refreshAllCards()
-        refreshPromptRows()
         maybeShowBatteryWarning(acc, unrestricted)
     }
 
@@ -457,24 +410,23 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun promptPostProcessing() {
+    private fun promptCustomInstructions() {
+        // The base cleanup prompt itself is fixed in PostProcessor and never
+        // shown here -- this only lets the user append their own extra
+        // refinements on top of it (see PostProcessor.effectivePrompt).
         val input = EditText(this).apply {
-            hint = "Prompt"
+            hint = "e.g. always spell out \"Amplifi Labs\" in full"
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
-            minLines = 3
+            minLines = 4
             gravity = Gravity.TOP or Gravity.START
-            setText(currentPrompt())
+            setText(prefs().getString("custom_instructions", ""))
         }
         android.app.AlertDialog.Builder(this)
-            .setTitle("Edit current prompt")
+            .setTitle("Add custom instructions")
+            .setMessage("These are appended to Phone Whisper's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior.")
             .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
             .setPositiveButton("Save") { _, _ ->
-                val text = input.text.toString().trim()
-                val finalPrompt = if (text.isBlank()) PostProcessor.DEFAULT_PROMPT else text
-                prefs().edit()
-                    .putString("custom_post_processing_prompt", finalPrompt)
-                    .putString("post_processing_prompt", finalPrompt)
-                    .apply()
+                prefs().edit().putString("custom_instructions", input.text.toString().trim()).apply()
                 refresh()
             }
             .setNegativeButton("Cancel", null)
@@ -534,38 +486,6 @@ class MainActivity : AppCompatActivity() {
         orientation = LinearLayout.VERTICAL
         setPadding(padH, padV, padH, padV)
     }
-
-    private fun currentPrompt() = prefs().getString("post_processing_prompt", PostProcessor.DEFAULT_PROMPT) ?: PostProcessor.DEFAULT_PROMPT
-    private fun customPrompt() = prefs().getString("custom_post_processing_prompt", PostProcessor.DEFAULT_PROMPT) ?: PostProcessor.DEFAULT_PROMPT
-
-    private fun customPromptSummary(): String {
-        val prompt = customPrompt()
-        return if (prompt == PostProcessor.DEFAULT_PROMPT) "Your edited prompt"
-        else prompt.replace("\n", " ")
-    }
-
-    private data class PromptPreset(val key: String, val title: String, val subtitle: String, val prompt: String)
-
-    private fun promptPresets() = listOf(
-        PromptPreset(
-            key = "dev",
-            title = "Dev cleanup",
-            subtitle = "Best for coding, CLI, and project names",
-            prompt = PostProcessor.DEV_PROMPT
-        ),
-        PromptPreset(
-            key = "simple",
-            title = "Simple cleanup",
-            subtitle = "Grammar, punctuation, and light cleanup",
-            prompt = PostProcessor.SIMPLE_PROMPT
-        ),
-        PromptPreset(
-            key = "custom",
-            title = "Custom",
-            subtitle = customPromptSummary(),
-            prompt = customPrompt()
-        )
-    )
 
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private fun hasPerm(p: String) = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED

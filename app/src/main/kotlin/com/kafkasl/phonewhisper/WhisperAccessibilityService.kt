@@ -661,8 +661,9 @@ class WhisperAccessibilityService : AccessibilityService() {
                 return
             }
 
-            val prompt = prefs().getString("post_processing_prompt", PostProcessor.DEFAULT_PROMPT) ?: PostProcessor.DEFAULT_PROMPT
-            
+            val customInstructions = prefs().getString("custom_instructions", "") ?: ""
+            val prompt = PostProcessor.effectivePrompt(customInstructions)
+
             PostProcessor.process(text, prompt, apiKey) { result ->
                 handler.post {
                     if (result.text != null && result.text.isNotBlank()) {

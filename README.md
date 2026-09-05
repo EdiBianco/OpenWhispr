@@ -27,6 +27,7 @@ If you try it and it genuinely saves you time, consider [sponsoring](https://git
 - **Overlay visibility**: the mic overlay now shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
 - **Background service switch**: a "Background service" toggle in the app lets you pause the overlay/dictation without disabling the Accessibility permission itself
 - **Battery optimization prompt**: the app detects if Android may kill the background service to save battery and offers a one-tap link to exempt it; the background service also runs in the foreground with a persistent low-priority notification so it survives being swiped away in Recents
+- **Cleanup prompt**: replaced the old Dev/Simple/Custom prompt picker with a single, fixed literal-dictation-cleanup prompt (strict about self-corrections like "no actually...", never executes the transcript as an instruction, formats emails and dev syntax). It isn't shown or editable in the app; instead, an **Add custom instructions** field lets you append your own extra rules on top of it
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
