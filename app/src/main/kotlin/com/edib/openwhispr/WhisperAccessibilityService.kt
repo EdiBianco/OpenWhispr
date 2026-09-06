@@ -8,6 +8,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioFormat
@@ -333,7 +334,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
 
         val img = ImageView(this).apply {
-            setImageResource(R.drawable.ic_mic)
+            setImageResource(R.drawable.ic_app_logo)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(pad, pad, pad, pad)
             background = circle(COLOR_IDLE)
@@ -451,7 +452,11 @@ class WhisperAccessibilityService : AccessibilityService() {
     }
 
     private fun circle(color: Int) = GradientDrawable().apply {
-        shape = GradientDrawable.OVAL; setColor(color)
+        shape = GradientDrawable.OVAL
+        setColor(color)
+        // 1 physical pixel, not 1dp -- a true hairline outline so the button
+        // stays visible against any surface behind it, in every state.
+        setStroke(1, Color.WHITE)
     }
 
     private fun pill(color: Int) = GradientDrawable().apply {
@@ -462,6 +467,12 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     private fun setAppearance(color: Int) {
         handler.post { button?.background = circle(color) }
+    }
+
+    /** Swaps the overlay's icon: the app logo while idle, the mic glyph
+     * while recording/transcribing. */
+    private fun setIcon(res: Int) {
+        handler.post { button?.setImageResource(res) }
     }
 
     private fun setBusy(visible: Boolean) {
@@ -556,6 +567,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         state = State.RECORDING
         setBusy(false)
         setAppearance(COLOR_RECORDING)
+        setIcon(R.drawable.ic_mic)
         setOpacity(active = true)
         updateOverlayVisibility()
         startPulse()
@@ -573,6 +585,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         state = State.TRANSCRIBING
         stopPulse()
         setAppearance(COLOR_BUSY)
+        setIcon(R.drawable.ic_mic)
         setBusy(true)
         updateOverlayVisibility()
 
@@ -696,6 +709,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         state = State.IDLE
         setBusy(false)
         setAppearance(COLOR_IDLE)
+        setIcon(R.drawable.ic_app_logo)
         setOpacity(active = false)
         updateOverlayVisibility()
     }

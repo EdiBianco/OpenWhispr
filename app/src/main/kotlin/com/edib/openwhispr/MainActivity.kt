@@ -93,6 +93,14 @@ class MainActivity : AppCompatActivity() {
         accRowSub = accRow.findViewWithTag("subtitle")
         root.addView(accRow)
 
+        root.addView(TextView(this).apply {
+            text = "Needed to detect the focused text field and insert the cleaned-up text there."
+            textSize = 12f
+            setTextColor(attrColor(android.R.attr.textColorSecondary))
+            alpha = 0.8f
+            setPadding(dp(24), 0, dp(24), dp(12))
+        })
+
         val serviceEnabled = prefs().getBoolean("service_master_enabled", true)
         val serviceSwitch = MaterialSwitch(this).apply {
             isChecked = serviceEnabled
