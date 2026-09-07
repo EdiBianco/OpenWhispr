@@ -661,6 +661,8 @@ class MainActivity : AppCompatActivity() {
             • "$trigger, translate to Italian"
             • "$trigger, make this more formal"
             • "$trigger, turn this into a list"
+
+            You can chain more than one: "$trigger, translate to Italian and turn it into a list" applies them in that order.
         """.trimIndent()
         android.app.AlertDialog.Builder(this)
             .setTitle("Command examples")

@@ -90,6 +90,8 @@ Say **"Whisper Command"** at the start of a recording, followed by one of five w
 - `"Whisper Command, make this more formal"` -- change tone (formal, casual, professional, friendly, ...)
 - `"Whisper Command, turn this into a list"` -- reformat as a bulleted or numbered list
 
+You can chain more than one in the same command, and they're applied in the order you say them -- e.g. `"Whisper Command, translate to Italian and turn it into a list"` translates first, then lists the result.
+
 Anything outside these five is deliberately refused rather than attempted -- the same strict-contract approach as the default cleanup prompt, just inverted: this mode exists to act on instructions, but only these ones.
 
 Off by default -- enable it under **Voice Commands** in the app, where you can also change the trigger phrase and see the same examples list.
