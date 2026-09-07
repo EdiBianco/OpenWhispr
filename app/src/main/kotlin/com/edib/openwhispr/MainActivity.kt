@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
@@ -22,23 +23,39 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.radiobutton.MaterialRadioButton
+import com.google.android.material.tabs.TabLayout
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var statusSubtitle: TextView
+    private lateinit var audioRow: LinearLayout
     private lateinit var audioRowSub: TextView
+    private lateinit var audioDot: View
+    private lateinit var accRow: LinearLayout
     private lateinit var accRowSub: TextView
-    private lateinit var keyRowSub: TextView
+    private lateinit var accDot: View
+    private lateinit var accCaption: TextView
+    private lateinit var batteryRow: LinearLayout
     private lateinit var batteryRowSub: TextView
+    private lateinit var batteryDot: View
+    private lateinit var setupCollapsedRow: LinearLayout
+    private lateinit var setupCollapsedRowSub: TextView
+    private lateinit var setupDoneSummary: TextView
+    private lateinit var keyRowSub: TextView
     private lateinit var customInstructionsRowSub: TextView
     private lateinit var customInstructionsRow: LinearLayout
     private lateinit var modelContainer: LinearLayout
     private lateinit var voiceCommandsDetailContainer: LinearLayout
     private lateinit var triggerPhraseRowSub: TextView
+    private lateinit var tabLayout: TabLayout
+    private lateinit var statusContainer: LinearLayout
+    private lateinit var dictationContainer: LinearLayout
+    private lateinit var settingsContainer: LinearLayout
 
     private val modelRows = mutableMapOf<String, ModelRowViews>()
     private var batteryWarningShown = false
+    private var setupExpanded = false
 
     private data class ModelRowViews(
         val radio: MaterialRadioButton,
@@ -63,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
         checkForUpdate()
 
-        val root = vertical(0, 0)
+        val outer = vertical(0, 0)
 
         // Top large header (like "Connected devices")
         val header = TextView(this).apply {
@@ -71,38 +88,78 @@ class MainActivity : AppCompatActivity() {
             textSize = 32f
             setPadding(dp(24), dp(64), dp(24), dp(24))
         }
-        root.addView(header)
+        outer.addView(header)
 
-        // Status row
+        tabLayout = TabLayout(this).apply {
+            addTab(newTab().setText("Status"))
+            addTab(newTab().setText("Dictation"))
+            addTab(newTab().setText("Settings"))
+            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) { showTab(tab.position) }
+                override fun onTabUnselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {}
+            })
+        }
+        outer.addView(tabLayout)
+
+        statusContainer = vertical(0)
+        dictationContainer = vertical(0)
+        settingsContainer = vertical(0)
+
+        // ================= Status tab =================
+
         val statusRow = settingsRow("Status", "Checking...")
         statusSubtitle = statusRow.findViewWithTag("subtitle")
-        root.addView(statusRow)
+        statusContainer.addView(statusRow)
 
-        // --- Setup Section ---
-        root.addView(sectionHeader("Setup"))
-        
-        val audioRow = settingsRow("Audio permission", "Checking...") {
+        // --- Setup checklist card ---
+        setupCollapsedRow = settingsRow("Setup", "Checking...") {
+            setupExpanded = !setupExpanded
+            refresh()
+        }
+        setupCollapsedRowSub = setupCollapsedRow.findViewWithTag("subtitle")
+        statusContainer.addView(setupCollapsedRow)
+
+        setupDoneSummary = TextView(this).apply {
+            textSize = 14f
+            setTextColor(DOT_GREEN)
+            setPadding(dp(24), 0, dp(24), dp(8))
+        }
+        statusContainer.addView(setupDoneSummary)
+
+        audioDot = statusDot()
+        audioRow = settingsRow("Audio permission", "Checking...", leading = audioDot) {
             if (!hasPerm(Manifest.permission.RECORD_AUDIO)) {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
             }
         }
         audioRowSub = audioRow.findViewWithTag("subtitle")
-        root.addView(audioRow)
+        statusContainer.addView(audioRow)
 
-        val accRow = settingsRow("Accessibility service", "Checking...") {
+        accDot = statusDot()
+        accRow = settingsRow("Accessibility service", "Checking...", leading = accDot) {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
         accRowSub = accRow.findViewWithTag("subtitle")
-        root.addView(accRow)
+        statusContainer.addView(accRow)
 
-        root.addView(TextView(this).apply {
+        accCaption = TextView(this).apply {
             text = "Needed to detect the focused text field and insert the cleaned-up text there."
             textSize = 12f
             setTextColor(attrColor(android.R.attr.textColorSecondary))
             alpha = 0.8f
             setPadding(dp(24), 0, dp(24), dp(12))
-        })
+        }
+        statusContainer.addView(accCaption)
 
+        batteryDot = statusDot()
+        batteryRow = settingsRow("Battery optimization", "Checking...", leading = batteryDot) {
+            requestBatteryExemption()
+        }
+        batteryRowSub = batteryRow.findViewWithTag("subtitle")
+        statusContainer.addView(batteryRow)
+
+        // --- Background service ---
         val serviceEnabled = prefs().getBoolean("service_master_enabled", true)
         val serviceSwitch = MaterialSwitch(this).apply {
             isChecked = serviceEnabled
@@ -118,18 +175,13 @@ class MainActivity : AppCompatActivity() {
             serviceSwitch.isChecked = newVal
             WhisperAccessibilityService.instance?.refreshMasterEnabled()
         }
-        root.addView(serviceRow)
+        statusContainer.addView(serviceRow)
 
-        val batteryRow = settingsRow("Battery optimization", "Checking...") {
-            requestBatteryExemption()
-        }
-        batteryRowSub = batteryRow.findViewWithTag("subtitle")
-        root.addView(batteryRow)
+        // ================= Dictation tab =================
 
-        // --- Engine Section ---
-        
+        dictationContainer.addView(sectionHeader("Engine"))
+
         val isCloud = !prefs().getBoolean("use_local", true)
-        
         val cloudSwitch = MaterialSwitch(this).apply {
             isChecked = isCloud
             isClickable = false
@@ -140,17 +192,15 @@ class MainActivity : AppCompatActivity() {
             cloudSwitch.isChecked = newCloud
             refresh()
         }
-        root.addView(cloudRow)
+        dictationContainer.addView(cloudRow)
 
-        // Local Models section
         modelContainer = vertical(0)
         modelContainer.addView(sectionHeader("Local models"))
         for (m in MODEL_CATALOG) modelContainer.addView(buildModelRow(m))
-        root.addView(modelContainer)
+        dictationContainer.addView(modelContainer)
 
-        // --- Post-Processing Section ---
-        root.addView(sectionHeader("Post-Processing"))
-        
+        dictationContainer.addView(sectionHeader("Post-Processing"))
+
         val isPostProcessing = prefs().getBoolean("use_post_processing", false)
         val postProcessSwitch = MaterialSwitch(this).apply {
             isChecked = isPostProcessing
@@ -162,7 +212,7 @@ class MainActivity : AppCompatActivity() {
             postProcessSwitch.isChecked = newVal
             refresh()
         }
-        root.addView(postProcessRow)
+        dictationContainer.addView(postProcessRow)
 
         customInstructionsRow = settingsRow("Add custom instructions", "Tap to add extra refinements") {
             promptCustomInstructions()
@@ -170,10 +220,9 @@ class MainActivity : AppCompatActivity() {
         customInstructionsRowSub = customInstructionsRow.findViewWithTag("subtitle")
         customInstructionsRowSub.maxLines = 2
         customInstructionsRowSub.ellipsize = android.text.TextUtils.TruncateAt.END
-        root.addView(customInstructionsRow)
+        dictationContainer.addView(customInstructionsRow)
 
-        // --- Voice Commands Section ---
-        root.addView(sectionHeader("Voice Commands"))
+        dictationContainer.addView(sectionHeader("Voice Commands"))
 
         val isVoiceCommands = prefs().getBoolean("voice_commands_enabled", false)
         val voiceCommandsSwitch = MaterialSwitch(this).apply {
@@ -190,7 +239,7 @@ class MainActivity : AppCompatActivity() {
             voiceCommandsSwitch.isChecked = newVal
             refresh()
         }
-        root.addView(voiceCommandsRow)
+        dictationContainer.addView(voiceCommandsRow)
 
         voiceCommandsDetailContainer = vertical(0)
 
@@ -201,30 +250,63 @@ class MainActivity : AppCompatActivity() {
         val examplesRow = settingsRow("Command examples", "See what you can say") { showCommandExamples() }
         voiceCommandsDetailContainer.addView(examplesRow)
 
-        root.addView(voiceCommandsDetailContainer)
+        dictationContainer.addView(voiceCommandsDetailContainer)
 
-        // --- Settings Section ---
-        root.addView(sectionHeader("Settings"))
-        
+        // ================= Settings tab =================
+
+        settingsContainer.addView(sectionHeader("Settings"))
+
         val keyRow = settingsRow("Groq API Key", "Tap to set") { promptApiKey() }
         keyRowSub = keyRow.findViewWithTag("subtitle")
-        root.addView(keyRow)
+        settingsContainer.addView(keyRow)
+
+        settingsContainer.addView(sectionHeader("About"))
+
+        val versionName = try {
+            packageManager.getPackageInfo(packageName, 0).versionName ?: "unknown"
+        } catch (e: Exception) {
+            "unknown"
+        }
+        settingsContainer.addView(settingsRow("Version", versionName))
+
+        settingsContainer.addView(settingsRow("GitHub", "View source & releases") {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/EdiBianco/OpenWhispr")))
+            } catch (e: Exception) {
+                toast("Couldn't open browser: ${e.message}")
+            }
+        })
+
+        settingsContainer.addView(settingsRow("Check for updates", "Tap to check now") {
+            checkForUpdate(force = true)
+        })
+
+        outer.addView(statusContainer)
+        outer.addView(dictationContainer)
+        outer.addView(settingsContainer)
+        showTab(0)
 
         setContentView(ScrollView(this).apply {
             setBackgroundColor(attrColor(android.R.attr.colorBackground))
-            addView(root)
+            addView(outer)
         })
 
         if (!hasPerm(Manifest.permission.RECORD_AUDIO)) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
         }
-        
+
         refresh()
     }
 
     override fun onResume() { super.onResume(); refresh() }
     override fun onRequestPermissionsResult(c: Int, p: Array<String>, r: IntArray) {
         super.onRequestPermissionsResult(c, p, r); refresh()
+    }
+
+    private fun showTab(index: Int) {
+        statusContainer.visibility = if (index == 0) View.VISIBLE else View.GONE
+        dictationContainer.visibility = if (index == 1) View.VISIBLE else View.GONE
+        settingsContainer.visibility = if (index == 2) View.VISIBLE else View.GONE
     }
 
     // --- Model Rows ---
@@ -239,7 +321,7 @@ class MainActivity : AppCompatActivity() {
             textSize = 18f
             setTextColor(attrColor(com.google.android.material.R.attr.colorPrimary))
         }
-        
+
         val progress = LinearProgressIndicator(this).apply {
             visibility = View.GONE
             layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(4)).apply {
@@ -261,15 +343,15 @@ class MainActivity : AppCompatActivity() {
         ) {
             onModelAction(model)
         }
-        
+
         val textContainer = row.getChildAt(0) as LinearLayout
         textContainer.addView(progress)
-        
+
         modelRows[model.archive] = ModelRowViews(
             radio, progress, textContainer.findViewWithTag("subtitle"), dlBtn
         )
         refreshCard(model)
-        
+
         return row
     }
 
@@ -322,11 +404,11 @@ class MainActivity : AppCompatActivity() {
         val views = modelRows[model.archive] ?: return
         val active = prefs().getString("model_name", "") == model.archive
         val installed = ModelDownloader.isInstalled(this, model)
-        
+
         views.radio.isChecked = active
         views.radio.visibility = if (installed) View.VISIBLE else View.GONE
         views.dlBtn.visibility = if (installed) View.GONE else View.VISIBLE
-        
+
         if (views.progress.visibility == View.GONE) {
             views.subtitle.text = "${model.quality} · ${model.sizeMb} MB"
         }
@@ -343,9 +425,36 @@ class MainActivity : AppCompatActivity() {
         val usePostProcessing = prefs().getBoolean("use_post_processing", false)
         val hasKey = !prefs().getString("api_key", "").isNullOrBlank()
         val hasModel = LocalTranscriber.availableModels(this).isNotEmpty()
+        val unrestricted = isIgnoringBatteryOptimizations()
 
         audioRowSub.text = if (audio) "Granted" else "Tap to grant permission"
         accRowSub.text = if (acc) "Enabled" else "Tap to enable in settings"
+        batteryRowSub.text = if (unrestricted)
+            "Unrestricted — won't be shut down to save battery"
+        else
+            "Tap to allow background activity (recommended)"
+
+        // --- Setup checklist card ---
+        val allOk = audio && acc && unrestricted
+        val doneCount = listOf(audio, acc, unrestricted).count { it }
+
+        setupCollapsedRow.visibility = if (allOk) View.VISIBLE else View.GONE
+        setupCollapsedRowSub.text = if (setupExpanded) "Tap to collapse" else "Tap to review"
+
+        setupDoneSummary.visibility = if (!allOk && doneCount > 0) View.VISIBLE else View.GONE
+        setupDoneSummary.text = "✓ $doneCount of 3 setup steps ready"
+
+        fun rowVisibility(ok: Boolean) =
+            if (!ok || (allOk && setupExpanded)) View.VISIBLE else View.GONE
+
+        audioRow.visibility = rowVisibility(audio)
+        accRow.visibility = rowVisibility(acc)
+        accCaption.visibility = accRow.visibility
+        batteryRow.visibility = rowVisibility(unrestricted)
+
+        audioDot.background = dotDrawable(if (audio) DOT_GREEN else DOT_RED)
+        accDot.background = dotDrawable(if (acc) DOT_GREEN else DOT_RED)
+        batteryDot.background = dotDrawable(if (unrestricted) DOT_GREEN else DOT_RED)
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
@@ -355,8 +464,8 @@ class MainActivity : AppCompatActivity() {
         triggerPhraseRowSub.text = "\"${prefs().getString("command_trigger_phrase", "Whisper Command")}\""
 
         val apiKey = prefs().getString("api_key", "") ?: ""
-        keyRowSub.text = if (apiKey.isBlank()) "Tap to set" 
-                         else if (apiKey.length > 7) "gsk_...${apiKey.takeLast(4)}" 
+        keyRowSub.text = if (apiKey.isBlank()) "Tap to set"
+                         else if (apiKey.length > 7) "gsk_...${apiKey.takeLast(4)}"
                          else "gsk_...***"
 
         val customInstructions = prefs().getString("custom_instructions", "") ?: ""
@@ -379,12 +488,6 @@ class MainActivity : AppCompatActivity() {
 
         statusSubtitle.text = if (ready) "Ready — tap the overlay dot to dictate" else "Setup required"
         statusSubtitle.setTextColor(if (ready) attrColor(com.google.android.material.R.attr.colorPrimary) else attrColor(android.R.attr.textColorSecondary))
-
-        val unrestricted = isIgnoringBatteryOptimizations()
-        batteryRowSub.text = if (unrestricted)
-            "Unrestricted — won't be shut down to save battery"
-        else
-            "Tap to allow background activity (recommended)"
 
         refreshAllCards()
         maybeShowBatteryWarning(acc, unrestricted)
@@ -417,33 +520,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** One-shot check (per app-open) against this repo's GitHub Releases.
-     * No backend involved. Shows a dialog linking to the release page when a
-     * newer version is available; does nothing otherwise. */
-    private fun checkForUpdate() {
+    /** Checks this repo's GitHub Releases. No backend involved. Shows a
+     * dialog linking to the release page when a newer version is
+     * available. Runs automatically (and silently, when nothing's new)
+     * once per app-open; [force] bypasses the cache interval and always
+     * gives feedback, for the manual "Check for updates" row. */
+    private fun checkForUpdate(force: Boolean = false) {
         val currentVersion = try {
             packageManager.getPackageInfo(packageName, 0).versionName
         } catch (e: Exception) {
             null
         } ?: return
 
-        UpdateChecker.checkForUpdate(prefs(), currentVersion) { info ->
-            if (info != null) {
-                runOnUiThread {
-                    if (!isFinishing && !isDestroyed) {
-                        android.app.AlertDialog.Builder(this)
-                            .setTitle("Update available")
-                            .setMessage("OpenWhispr ${info.version} is available. You're on $currentVersion.")
-                            .setPositiveButton("View release") { _, _ ->
-                                try {
-                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url)))
-                                } catch (e: Exception) {
-                                    toast("Couldn't open browser: ${e.message}")
-                                }
+        UpdateChecker.checkForUpdate(prefs(), currentVersion, force) { info ->
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                if (info != null) {
+                    android.app.AlertDialog.Builder(this)
+                        .setTitle("Update available")
+                        .setMessage("OpenWhispr ${info.version} is available. You're on $currentVersion.")
+                        .setPositiveButton("View release") { _, _ ->
+                            try {
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url)))
+                            } catch (e: Exception) {
+                                toast("Couldn't open browser: ${e.message}")
                             }
-                            .setNegativeButton("Later", null)
-                            .show()
-                    }
+                        }
+                        .setNegativeButton("Later", null)
+                        .show()
+                } else if (force) {
+                    toast("You're up to date (v$currentVersion)")
                 }
             }
         }
@@ -547,24 +653,31 @@ class MainActivity : AppCompatActivity() {
 
     private fun showCommandExamples() {
         val trigger = prefs().getString("command_trigger_phrase", "Whisper Command") ?: "Whisper Command"
+        val message = """
+            Say the trigger phrase, then one of these -- applies to whatever's already in the field, or to text you dictate right after the command:
+
+            • "$trigger, summarize this in two sentences"
+            • "$trigger, enhance the flow"
+            • "$trigger, translate to Italian"
+            • "$trigger, make this more formal"
+            • "$trigger, turn this into a list"
+        """.trimIndent()
         android.app.AlertDialog.Builder(this)
             .setTitle("Command examples")
-            .setMessage(
-                "Say the trigger phrase, then one of these -- applies to whatever's already in the field, " +
-                "or to text you dictate right after the command:\n\n" +
-                "• "$trigger, summarize this in two sentences"\n" +
-                "• "$trigger, enhance the flow"\n" +
-                "• "$trigger, translate to Italian"\n" +
-                "• "$trigger, make this more formal"\n" +
-                "• "$trigger, turn this into a list""
-            )
+            .setMessage(message)
             .setPositiveButton("Got it", null)
             .show()
     }
 
     // --- UI Helpers ---
 
-    private fun settingsRow(title: String, subtitle: String, widget: View? = null, onClick: (() -> Unit)? = null): LinearLayout {
+    private fun settingsRow(
+        title: String,
+        subtitle: String,
+        widget: View? = null,
+        leading: View? = null,
+        onClick: (() -> Unit)? = null
+    ): LinearLayout {
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -579,16 +692,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        if (leading != null) row.addView(leading)
+
         val textContainer = vertical(0).apply {
             layoutParams = LinearLayout.LayoutParams(0, LP_WRAP, 1f)
         }
-        
+
         textContainer.addView(TextView(this).apply {
             text = title
             textSize = 18f
             setTextColor(attrColor(android.R.attr.textColorPrimary))
         })
-        
+
         textContainer.addView(TextView(this).apply {
             tag = "subtitle"
             text = subtitle
@@ -616,6 +731,18 @@ class MainActivity : AppCompatActivity() {
         setPadding(padH, padV, padH, padV)
     }
 
+    private fun dotDrawable(color: Int) = GradientDrawable().apply {
+        shape = GradientDrawable.OVAL
+        setColor(color)
+    }
+
+    private fun statusDot(): View = View(this).apply {
+        layoutParams = LinearLayout.LayoutParams(dp(10), dp(10)).apply {
+            marginEnd = dp(12)
+        }
+        background = dotDrawable(DOT_RED)
+    }
+
     private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
     private fun hasPerm(p: String) = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED
     private fun attrColor(attr: Int): Int {
@@ -630,5 +757,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val LP_MATCH = LinearLayout.LayoutParams.MATCH_PARENT
         private const val LP_WRAP = LinearLayout.LayoutParams.WRAP_CONTENT
+        private const val DOT_GREEN = 0xFF34C759.toInt()
+        private const val DOT_RED = 0xFFEF4444.toInt()
     }
 }

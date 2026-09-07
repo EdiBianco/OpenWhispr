@@ -36,6 +36,7 @@ object UpdateChecker {
     fun checkForUpdate(
         prefs: SharedPreferences,
         currentVersion: String,
+        force: Boolean = false,
         callback: (UpdateInfo?) -> Unit
     ) {
         val now = System.currentTimeMillis()
@@ -48,7 +49,7 @@ object UpdateChecker {
                 UpdateInfo(cachedVersion, cachedUrl)
             else null
 
-        if (now - lastCheck < CHECK_INTERVAL_MS) {
+        if (!force && now - lastCheck < CHECK_INTERVAL_MS) {
             callback(cachedResult())
             return
         }

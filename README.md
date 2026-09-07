@@ -30,6 +30,7 @@ It supports:
 - **Natural language cleanup**: a stricter cleanup prompt that handles self-corrections and preserves your intent instead of acting on it as a command, with room to add your own custom instructions on top
 - **Update check**: the app checks this repo's GitHub Releases on open and prompts you to download a newer build when one's available
 - **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation -- see [Voice commands](#voice-commands) below
+- **Settings screen**: reorganized into Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
