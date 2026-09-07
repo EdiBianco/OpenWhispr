@@ -88,7 +88,8 @@ Hard contract:
                     callback(Result(null, "HTTP ${response.code}"))
                     return
                 }
-                callback(PostProcessor.parseResponse(responseBody))
+                val parsed = PostProcessor.parseResponse(responseBody)
+                callback(Result(parsed.text, parsed.error))
             }
         })
     }
