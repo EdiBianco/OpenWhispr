@@ -29,6 +29,7 @@ It supports:
 - **Battery**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
 - **Natural language cleanup**: a stricter cleanup prompt that handles self-corrections and preserves your intent instead of acting on it as a command, with room to add your own custom instructions on top
 - **Update check**: the app checks this repo's GitHub Releases on open and prompts you to download a newer build when one's available
+- **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation -- see [Voice commands](#voice-commands) below
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 
@@ -77,6 +78,20 @@ make adb-install
 4. Audio is transcribed locally or in the cloud
 5. The text is inserted into the focused text field
 6. If insertion fails, the text is copied to the clipboard
+
+## Voice commands
+
+Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWhispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content):
+
+- `"Whisper Command, summarize this in two sentences"` -- summarize, with an optional length or limit
+- `"Whisper Command, enhance the flow"` -- rewrite for smoother, more natural flow without changing meaning
+- `"Whisper Command, translate to Italian"` -- translate to the named language
+- `"Whisper Command, make this more formal"` -- change tone (formal, casual, professional, friendly, ...)
+- `"Whisper Command, turn this into a list"` -- reformat as a bulleted or numbered list
+
+Anything outside these five is deliberately refused rather than attempted -- the same strict-contract approach as the default cleanup prompt, just inverted: this mode exists to act on instructions, but only these ones.
+
+Off by default -- enable it under **Voice Commands** in the app, where you can also change the trigger phrase and see the same examples list.
 
 ## Setup
 

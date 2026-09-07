@@ -661,6 +661,17 @@ class WhisperAccessibilityService : AccessibilityService() {
             return
         }
 
+        val voiceCommandsEnabled = prefs().getBoolean("voice_commands_enabled", false)
+        if (voiceCommandsEnabled) {
+            val trigger = prefs().getString("command_trigger_phrase", "Whisper Command")
+                ?: "Whisper Command"
+            val instruction = CommandProcessor.extractCommand(text, trigger)
+            if (instruction != null) {
+                handleVoiceCommand(instruction)
+                return
+            }
+        }
+
         val usePostProcessing = prefs().getBoolean("use_post_processing", false)
         val apiKey = prefs().getString("api_key", "") ?: ""
 
@@ -698,6 +709,98 @@ class WhisperAccessibilityService : AccessibilityService() {
                 goIdle()
             }
         }
+    }
+
+    /** Handles a "Whisper Command" voice command: reads whatever's in the
+     * focused field (if anything), sends it plus the spoken instruction to
+     * CommandProcessor's whitelisted-transformation prompt, and replaces the
+     * field's entire content with the result. */
+    private fun handleVoiceCommand(instruction: String) {
+        val apiKey = prefs().getString("api_key", "") ?: ""
+        if (apiKey.isBlank()) {
+            handler.post {
+                toast("Voice commands need a Groq API key")
+                goIdle()
+            }
+            return
+        }
+        if (instruction.isBlank()) {
+            handler.post {
+                toast("No command heard after the trigger phrase")
+                goIdle()
+            }
+            return
+        }
+
+        val fieldText = currentFieldText()
+
+        CommandProcessor.process(fieldText, instruction, apiKey) { result ->
+            handler.post {
+                val out = result.text?.trim()
+                when {
+                    out.isNullOrBlank() ->
+                        toast("Command failed: ${result.error ?: "empty response"}")
+                    out == CommandProcessor.UNSUPPORTED ->
+                        toast("Command not recognized -- try summarize, translate, tone, or list")
+                    else -> replaceFieldText(out)
+                }
+                goIdle()
+            }
+        }
+    }
+
+    /** Best-effort read of whatever text is already in the focused field,
+     * for voice commands that operate on existing content ("summarize
+     * this") rather than freshly dictated content. */
+    private fun currentFieldText(): String {
+        val candidates = findInjectionCandidates()
+        return try {
+            candidates.firstOrNull()?.text?.toString().orEmpty()
+        } finally {
+            candidates.forEach { it.recycle() }
+        }
+    }
+
+    /** Like injectText, but replaces the focused field's entire content
+     * instead of inserting at the cursor/selection -- used by voice
+     * commands, which transform the whole field rather than append to it. */
+    private fun replaceFieldText(text: String) {
+        val clip = ClipData.newPlainText("openwhispr", text)
+        (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
+
+        val candidates = findInjectionCandidates()
+        var replaced = false
+        try {
+            for (candidate in candidates) {
+                if (tryReplaceEntireNode(candidate, text)) {
+                    replaced = true
+                    break
+                }
+            }
+        } finally {
+            candidates.forEach { it.recycle() }
+        }
+
+        Log.i(TAG, if (replaced) "Command replace succeeded" else "Command replace failed; clipboard fallback only")
+        showFeedback(
+            if (replaced) "Command applied" else "Couldn't replace field -- copied to clipboard",
+            if (replaced) 2000 else 3000
+        )
+    }
+
+    private fun tryReplaceEntireNode(node: AccessibilityNodeInfo, text: String): Boolean {
+        logNode("Trying full replace on node", node)
+        node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+
+        if (node.isEditable || node.className?.toString()?.contains("EditText") == true) {
+            val args = Bundle().apply {
+                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
+            }
+            val setTextOk = node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+            Log.i(TAG, "Full-replace ACTION_SET_TEXT => $setTextOk")
+            if (setTextOk) return true
+        }
+        return false
     }
 
     private fun reset(msg: String) {

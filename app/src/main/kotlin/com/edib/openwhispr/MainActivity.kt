@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var customInstructionsRowSub: TextView
     private lateinit var customInstructionsRow: LinearLayout
     private lateinit var modelContainer: LinearLayout
+    private lateinit var voiceCommandsDetailContainer: LinearLayout
+    private lateinit var triggerPhraseRowSub: TextView
 
     private val modelRows = mutableMapOf<String, ModelRowViews>()
     private var batteryWarningShown = false
@@ -169,6 +171,37 @@ class MainActivity : AppCompatActivity() {
         customInstructionsRowSub.maxLines = 2
         customInstructionsRowSub.ellipsize = android.text.TextUtils.TruncateAt.END
         root.addView(customInstructionsRow)
+
+        // --- Voice Commands Section ---
+        root.addView(sectionHeader("Voice Commands"))
+
+        val isVoiceCommands = prefs().getBoolean("voice_commands_enabled", false)
+        val voiceCommandsSwitch = MaterialSwitch(this).apply {
+            isChecked = isVoiceCommands
+            isClickable = false
+        }
+        val voiceCommandsRow = settingsRow(
+            "Voice commands",
+            "Say a trigger phrase to translate, summarize, and more",
+            voiceCommandsSwitch
+        ) {
+            val newVal = !voiceCommandsSwitch.isChecked
+            prefs().edit().putBoolean("voice_commands_enabled", newVal).apply()
+            voiceCommandsSwitch.isChecked = newVal
+            refresh()
+        }
+        root.addView(voiceCommandsRow)
+
+        voiceCommandsDetailContainer = vertical(0)
+
+        val triggerPhraseRow = settingsRow("Trigger phrase", "Tap to change") { promptTriggerPhrase() }
+        triggerPhraseRowSub = triggerPhraseRow.findViewWithTag("subtitle")
+        voiceCommandsDetailContainer.addView(triggerPhraseRow)
+
+        val examplesRow = settingsRow("Command examples", "See what you can say") { showCommandExamples() }
+        voiceCommandsDetailContainer.addView(examplesRow)
+
+        root.addView(voiceCommandsDetailContainer)
 
         // --- Settings Section ---
         root.addView(sectionHeader("Settings"))
@@ -316,6 +349,10 @@ class MainActivity : AppCompatActivity() {
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
+
+        val voiceCommandsEnabled = prefs().getBoolean("voice_commands_enabled", false)
+        voiceCommandsDetailContainer.visibility = if (voiceCommandsEnabled) View.VISIBLE else View.GONE
+        triggerPhraseRowSub.text = "\"${prefs().getString("command_trigger_phrase", "Whisper Command")}\""
 
         val apiKey = prefs().getString("api_key", "") ?: ""
         keyRowSub.text = if (apiKey.isBlank()) "Tap to set" 
@@ -485,6 +522,43 @@ class MainActivity : AppCompatActivity() {
                 refresh()
             }
             .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun promptTriggerPhrase() {
+        val input = EditText(this).apply {
+            hint = "Whisper Command"
+            setText(prefs().getString("command_trigger_phrase", "Whisper Command"))
+        }
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Trigger phrase")
+            .setMessage("Say this phrase at the start of a recording to switch into command mode instead of normal dictation.")
+            .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
+            .setPositiveButton("Save") { _, _ ->
+                val phrase = input.text.toString().trim()
+                prefs().edit()
+                    .putString("command_trigger_phrase", if (phrase.isBlank()) "Whisper Command" else phrase)
+                    .apply()
+                refresh()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCommandExamples() {
+        val trigger = prefs().getString("command_trigger_phrase", "Whisper Command") ?: "Whisper Command"
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Command examples")
+            .setMessage(
+                "Say the trigger phrase, then one of these -- applies to whatever's already in the field, " +
+                "or to text you dictate right after the command:\n\n" +
+                "• "$trigger, summarize this in two sentences"\n" +
+                "• "$trigger, enhance the flow"\n" +
+                "• "$trigger, translate to Italian"\n" +
+                "• "$trigger, make this more formal"\n" +
+                "• "$trigger, turn this into a list""
+            )
+            .setPositiveButton("Got it", null)
             .show()
     }
 
