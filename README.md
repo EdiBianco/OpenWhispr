@@ -28,7 +28,7 @@ It supports:
 - **Stability**: hardened against crashes and killed background services, with a toggle to pause dictation without touching the Accessibility permission
 - **Battery**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
 - **Natural language cleanup**: a stricter cleanup prompt that handles self-corrections and preserves your intent instead of acting on it as a command, with room to add your own custom instructions on top
-- **Update check**: the app checks this repo's GitHub Releases on open and prompts you to download a newer build when one's available
+- **Update check**: the app checks this repo's GitHub Releases on open (plus a manual "Check for updates" row in Settings), and installs updates entirely in-app -- it downloads the .apk itself and hands it straight to the system installer, no browser involved
 - **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation -- see [Voice commands](#voice-commands) below
 - **Settings screen**: reorganized into Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
 

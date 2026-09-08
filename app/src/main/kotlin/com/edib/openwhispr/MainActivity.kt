@@ -539,19 +539,78 @@ class MainActivity : AppCompatActivity() {
                     android.app.AlertDialog.Builder(this)
                         .setTitle("Update available")
                         .setMessage("OpenWhispr ${info.version} is available. You're on $currentVersion.")
-                        .setPositiveButton("View release") { _, _ ->
-                            try {
-                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url)))
-                            } catch (e: Exception) {
-                                toast("Couldn't open browser: ${e.message}")
-                            }
-                        }
+                        .setPositiveButton("Update") { _, _ -> downloadAndInstallUpdate(info) }
                         .setNegativeButton("Later", null)
                         .show()
                 } else if (force) {
                     toast("You're up to date (v$currentVersion)")
                 }
             }
+        }
+    }
+
+    /** Downloads the release's .apk directly in-app and hands it to the
+     * system installer -- no browser tab, no external navigation. The final
+     * "install this app?" confirmation is a mandatory Android system dialog
+     * for a sideloaded APK and can't be skipped, but everything up to that
+     * point (download, progress) happens invisibly inside OpenWhispr. */
+    private fun downloadAndInstallUpdate(info: UpdateChecker.UpdateInfo) {
+        val apkUrl = info.apkUrl
+        if (apkUrl == null) {
+            // Release has no .apk asset (shouldn't normally happen) -- fall
+            // back to the release page rather than doing nothing.
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(info.url)))
+            } catch (e: Exception) {
+                toast("Couldn't open browser: ${e.message}")
+            }
+            return
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Allow installing updates")
+                .setMessage("To install updates in-app, allow OpenWhispr to install unknown apps on the next screen, then come back and tap Update again.")
+                .setPositiveButton("Continue") { _, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:$packageName")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        toast("Couldn't open settings: ${e.message}")
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+            return
+        }
+
+        toast("Downloading update…")
+        UpdateChecker.downloadApk(this, apkUrl) { file, error ->
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                if (file == null) {
+                    toast("Download failed: ${error ?: "unknown error"}")
+                    return@runOnUiThread
+                }
+                installApk(file)
+            }
+        }
+    }
+
+    private fun installApk(file: java.io.File) {
+        val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            toast("Couldn't start installer: ${e.message}")
         }
     }
 
