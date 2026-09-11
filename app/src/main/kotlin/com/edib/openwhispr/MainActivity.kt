@@ -82,12 +82,21 @@ class MainActivity : AppCompatActivity() {
 
         val outer = vertical(0, 0)
 
-        // Top large header (like "Connected devices")
-        val header = TextView(this).apply {
-            text = "OpenWhispr"
-            textSize = 32f
+        // Top large header (like "Connected devices"), with the app icon
+        // alongside the name.
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(24), dp(64), dp(24), dp(24))
         }
+        header.addView(ImageView(this).apply {
+            setImageResource(R.mipmap.ic_launcher)
+            layoutParams = LinearLayout.LayoutParams(dp(40), dp(40)).apply { marginEnd = dp(12) }
+        })
+        header.addView(TextView(this).apply {
+            text = "OpenWispr"
+            textSize = 32f
+        })
         outer.addView(header)
 
         tabLayout = TabLayout(this).apply {
@@ -511,7 +520,7 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             // Some OEMs block the direct per-app request intent -- fall back
             // to the general battery-optimization list where the user can
-            // find OpenWhispr and exempt it manually.
+            // find OpenWispr and exempt it manually.
             try {
                 startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             } catch (e2: Exception) {
@@ -538,7 +547,7 @@ class MainActivity : AppCompatActivity() {
                 if (info != null) {
                     android.app.AlertDialog.Builder(this)
                         .setTitle("Update available")
-                        .setMessage("OpenWhispr ${info.version} is available. You're on $currentVersion.")
+                        .setMessage("OpenWispr ${info.version} is available. You're on $currentVersion.")
                         .setPositiveButton("Update") { _, _ -> downloadAndInstallUpdate(info) }
                         .setNegativeButton("Later", null)
                         .show()
@@ -553,7 +562,7 @@ class MainActivity : AppCompatActivity() {
      * system installer -- no browser tab, no external navigation. The final
      * "install this app?" confirmation is a mandatory Android system dialog
      * for a sideloaded APK and can't be skipped, but everything up to that
-     * point (download, progress) happens invisibly inside OpenWhispr. */
+     * point (download, progress) happens invisibly inside OpenWispr. */
     private fun downloadAndInstallUpdate(info: UpdateChecker.UpdateInfo) {
         val apkUrl = info.apkUrl
         if (apkUrl == null) {
@@ -570,7 +579,7 @@ class MainActivity : AppCompatActivity() {
         if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
             android.app.AlertDialog.Builder(this)
                 .setTitle("Allow installing updates")
-                .setMessage("To install updates in-app, allow OpenWhispr to install unknown apps on the next screen, then come back and tap Update again.")
+                .setMessage("To install updates in-app, allow OpenWispr to install unknown apps on the next screen, then come back and tap Update again.")
                 .setPositiveButton("Continue") { _, _ ->
                     try {
                         startActivity(
@@ -624,12 +633,12 @@ class MainActivity : AppCompatActivity() {
         android.app.AlertDialog.Builder(this)
             .setTitle("Keep dictation running")
             .setMessage(
-                "Android's battery saver can shut down OpenWhispr's background " +
+                "Android's battery saver can shut down OpenWispr's background " +
                 "service to save power, which makes the mic overlay disappear until " +
                 "you reopen the app.\n\n" +
                 "Allow it to run unrestricted so it stays available.\n\n" +
                 "On some phones (Samsung, Xiaomi, OnePlus, and others) you may also " +
-                "need to allow \"autostart\" or remove OpenWhispr from any " +
+                "need to allow \"autostart\" or remove OpenWispr from any " +
                 "battery/app-sleep manager in your phone's own settings, separately " +
                 "from the Android dialog this opens."
             )
@@ -680,7 +689,7 @@ class MainActivity : AppCompatActivity() {
         }
         android.app.AlertDialog.Builder(this)
             .setTitle("Add custom instructions")
-            .setMessage("These are appended to OpenWhispr's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior.")
+            .setMessage("These are appended to OpenWispr's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior.")
             .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
             .setPositiveButton("Save") { _, _ ->
                 prefs().edit().putString("custom_instructions", input.text.toString().trim()).apply()

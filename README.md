@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/logo.svg" width="128" height="128" alt="OpenWhispr Logo">
+  <img src="docs/logo.svg" width="128" height="128" alt="OpenWispr Logo">
 </p>
 
-# OpenWhispr
+# OpenWispr
 
 Free, open-source, on-device push-to-talk dictation for Android — a free alternative to [Wispr Flow](https://wisprflow.ai).
 
-Speak naturally into any app and OpenWhispr turns your raw speech into clear, polished text: filler words removed, punctuation and formatting fixed automatically, then inserted straight into whatever field you're already typing in. Tap the floating button, speak, tap again — done.
+Speak naturally into any app and OpenWispr turns your raw speech into clear, polished text: filler words removed, punctuation and formatting fixed automatically, then inserted straight into whatever field you're already typing in. Tap the floating button, speak, tap again — done.
 
 It's completely free to run. Cloud transcription and cleanup use your own [Groq](https://groq.com) API key, and Groq's free tier is generous enough for everyday dictation without paying anything. Prefer to keep everything on-device? Local transcription needs no API key or internet connection at all.
 
@@ -82,7 +82,7 @@ make adb-install
 
 ## Voice commands
 
-Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWhispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content):
+Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content):
 
 - `"Whisper Command, summarize this in two sentences"` -- summarize, with an optional length or limit
 - `"Whisper Command, enhance the flow"` -- rewrite for smoother, more natural flow without changing meaning
@@ -100,19 +100,19 @@ Off by default -- enable it under **Voice Commands** in the app, where you can a
 
 ### First-time setup
 
-1. Open **OpenWhispr**
+1. Open **OpenWispr**
 2. Grant the **audio recording** permission
 3. Enable the **Accessibility Service**
 4. Choose your transcription mode:
    - **Local**: download a model in the app
    - **Cloud**: paste your free [Groq API key](https://console.groq.com/keys) — the app links straight to that page when you tap to set the key
-5. When prompted, allow OpenWhispr to run **unrestricted by battery optimization** — otherwise Android may shut the background service down and the overlay will disappear until you reopen the app
+5. When prompted, allow OpenWispr to run **unrestricted by battery optimization** — otherwise Android may shut the background service down and the overlay will disappear until you reopen the app
 
 Once setup is done, the floating button is ready.
 
 ## Keeping the background service alive
 
-Android is aggressive about killing background services to save battery, and an Accessibility Service is no exception. OpenWhispr does a few things to stay running:
+Android is aggressive about killing background services to save battery, and an Accessibility Service is no exception. OpenWispr does a few things to stay running:
 
 - Runs as a **foreground service** with a persistent, silent, minimum-priority notification — the standard way to keep a background service alive when the app is swiped away in the recent-apps screen
 - Prompts you to **exempt the app from battery optimization** (`Settings → Battery optimization` in the app, or the OS dialog it opens) the first time it detects the Accessibility Service is on but the exemption isn't granted
@@ -120,17 +120,17 @@ Android is aggressive about killing background services to save battery, and an 
 
 A **"Background service"** switch in the app lets you pause dictation (hide the overlay, stop reacting to taps) without revoking the Accessibility permission — handy if you want to quiet it temporarily instead of walking through Android's accessibility settings.
 
-Some phone manufacturers (Samsung, Xiaomi, OnePlus, and others) layer their own battery/app-sleep managers on top of stock Android and may still kill the service even after you grant the exemption above. If the overlay keeps disappearing, check your phone's own battery/app management settings for an "autostart" or "keep in background" option for OpenWhispr.
+Some phone manufacturers (Samsung, Xiaomi, OnePlus, and others) layer their own battery/app-sleep managers on top of stock Android and may still kill the service even after you grant the exemption above. If the overlay keeps disappearing, check your phone's own battery/app management settings for an "autostart" or "keep in background" option for OpenWispr.
 
 ## Why does it need Accessibility?
 
-OpenWhispr uses Android Accessibility Service for one narrow reason: to insert dictated text into the currently focused text field across apps.
+OpenWispr uses Android Accessibility Service for one narrow reason: to insert dictated text into the currently focused text field across apps.
 
 It does **not** replace your keyboard. It does **not** run background automation. It only acts after you explicitly tap the overlay button.
 
 ## Privacy
 
-OpenWhispr supports two modes:
+OpenWispr supports two modes:
 
 - **Local mode**: audio stays on-device
 - **Cloud mode**: audio is sent directly from your device to Groq's transcription API
@@ -170,15 +170,15 @@ make clean       # clean build artifacts
 
 ## App compatibility
 
-OpenWhispr works best in apps that use standard Android text fields.
+OpenWispr works best in apps that use standard Android text fields.
 Some apps use custom text surfaces or terminal-style views, which may not support direct accessibility paste.
-When insertion is not possible, OpenWhispr falls back to copying the transcript to the clipboard.
+When insertion is not possible, OpenWispr falls back to copying the transcript to the clipboard.
 
 ### Termux
 
 Termux's main terminal area is not a standard Android text field, so direct insertion may not work there.
 
-To use OpenWhispr in Termux:
+To use OpenWispr in Termux:
 
 1. Focus Termux
 2. Swipe the extra keys row (`ESC`, `CTRL`, `ALT`, arrows, etc.) left or right
@@ -197,7 +197,7 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 
 ## Support the project
 
-OpenWhispr itself is free — if the underlying project it's forked from saves you time, you can sponsor the original author on GitHub:
+OpenWispr itself is free — if the underlying project it's forked from saves you time, you can sponsor the original author on GitHub:
 
 - https://github.com/sponsors/kafkasl
 
