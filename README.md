@@ -31,6 +31,8 @@ It supports:
 - **Update check**: the app checks this repo's GitHub Releases on open (plus a manual "Check for updates" row in Settings), and installs updates entirely in-app -- it downloads the .apk itself and hands it straight to the system installer, no browser involved
 - **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation -- see [Voice commands](#voice-commands) below
 - **Settings screen**: reorganized into Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
+- **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation -- the app now walks you through unlocking it before sending you to the system screen
+- **Update notes**: the update dialog shows a short "what's new" for the new version (see [CHANGELOG.md](CHANGELOG.md)), not just a version number
 
 Local on-device transcription is untouched — it never called OpenAI in the first place.
 

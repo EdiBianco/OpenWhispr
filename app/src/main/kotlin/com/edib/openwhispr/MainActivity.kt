@@ -147,7 +147,12 @@ class MainActivity : AppCompatActivity() {
 
         accDot = statusDot()
         accRow = settingsRow("Accessibility service", "Checking...", leading = accDot) {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            val alreadyEnabled = WhisperAccessibilityService.instance != null
+            if (!alreadyEnabled && android.os.Build.VERSION.SDK_INT >= 33) {
+                showRestrictedSettingsHelp()
+            } else {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
         }
         accRowSub = accRow.findViewWithTag("subtitle")
         statusContainer.addView(accRow)
@@ -502,6 +507,29 @@ class MainActivity : AppCompatActivity() {
         maybeShowBatteryWarning(acc, unrestricted)
     }
 
+    /** Android 13+ silently disables the Accessibility toggle for apps
+     * installed outside the Play Store ("Restricted settings"), with no
+     * explanation in the Settings UI itself -- it just looks broken. Walks
+     * the user through unlocking it before sending them to the system
+     * screen, instead of letting them hit a dead end and assume the app
+     * doesn't work. */
+    private fun showRestrictedSettingsHelp() {
+        android.app.AlertDialog.Builder(this)
+            .setTitle("One extra step on Android 13+")
+            .setMessage(
+                "Android blocks this permission by default for apps installed outside the Play Store -- that's normal, not a bug.\n\n" +
+                "If the Accessibility toggle looks greyed out or won't switch on:\n" +
+                "1. Long-press the OpenWispr icon -> App info\n" +
+                "2. Tap the \u22ee menu (top right) -> \"Allow restricted settings\"\n" +
+                "3. Come back and enable Accessibility as usual"
+            )
+            .setPositiveButton("Open Accessibility settings") { _, _ ->
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     // --- Battery optimization ---
 
     private fun isIgnoringBatteryOptimizations(): Boolean {
@@ -547,7 +575,15 @@ class MainActivity : AppCompatActivity() {
                 if (info != null) {
                     android.app.AlertDialog.Builder(this)
                         .setTitle("Update available")
-                        .setMessage("OpenWispr ${info.version} is available. You're on $currentVersion.")
+                        .setMessage(
+                            buildString {
+                                append("OpenWispr ${info.version} is available. You're on $currentVersion.")
+                                if (!info.notes.isNullOrBlank()) {
+                                    append("\n\nWhat's new:\n")
+                                    append(info.notes)
+                                }
+                            }
+                        )
                         .setPositiveButton("Update") { _, _ -> downloadAndInstallUpdate(info) }
                         .setNegativeButton("Later", null)
                         .show()

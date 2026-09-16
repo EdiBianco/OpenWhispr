@@ -12,12 +12,21 @@ import java.io.IOException
  * release's .apk asset directly so the install flow never has to leave the
  * app for a browser. No backend involved -- just the public GitHub API. */
 object UpdateChecker {
-    data class UpdateInfo(val version: String, val url: String, val apkUrl: String?)
+    data class UpdateInfo(val version: String, val url: String, val apkUrl: String?, val notes: String?)
 
     private val client = OkHttpClient()
     private const val CHECK_INTERVAL_MS = 12 * 60 * 60 * 1000L // don't hammer GitHub on every app open
     private const val RELEASES_URL =
         "https://api.github.com/repos/EdiBianco/OpenWhispr/releases/latest"
+
+    // Matches the <!--WHATS_NEW_START-->...<!--WHATS_NEW_END--> block the
+    // release workflow wraps around that version's CHANGELOG.md section, so
+    // the update dialog can show a short "what's new" instead of just a
+    // version number.
+    private val WHATS_NEW_REGEX = Regex(
+        "<!--WHATS_NEW_START-->(.*?)<!--WHATS_NEW_END-->",
+        RegexOption.DOT_MATCHES_ALL
+    )
 
     /** True if [latest] (e.g. "v3.2.0") is a strictly newer version than
      * [current] (e.g. "3.1.1"). Compares numeric dot-separated parts. */
@@ -48,10 +57,11 @@ object UpdateChecker {
         val cachedVersion = prefs.getString("cached_update_version", null)
         val cachedUrl = prefs.getString("cached_update_url", null)
         val cachedApkUrl = prefs.getString("cached_update_apk_url", null)
+        val cachedNotes = prefs.getString("cached_update_notes", null)
 
         fun cachedResult(): UpdateInfo? =
             if (cachedVersion != null && cachedUrl != null && isNewer(cachedVersion, currentVersion))
-                UpdateInfo(cachedVersion, cachedUrl, cachedApkUrl)
+                UpdateInfo(cachedVersion, cachedUrl, cachedApkUrl, cachedNotes)
             else null
 
         if (!force && now - lastCheck < CHECK_INTERVAL_MS) {
@@ -71,6 +81,9 @@ object UpdateChecker {
                     val obj = JSONObject(body)
                     val tag = obj.optString("tag_name", "")
                     val url = obj.optString("html_url", "")
+                    val releaseBody = obj.optString("body", "")
+                    val notes = WHATS_NEW_REGEX.find(releaseBody)
+                        ?.groupValues?.get(1)?.trim()?.takeIf { it.isNotBlank() }
 
                     var apkUrl: String? = null
                     val assets = obj.optJSONArray("assets")
@@ -90,9 +103,10 @@ object UpdateChecker {
                         .putString("cached_update_version", tag)
                         .putString("cached_update_url", url)
                         .putString("cached_update_apk_url", apkUrl)
+                        .putString("cached_update_notes", notes)
                         .apply()
                     if (tag.isNotBlank() && url.isNotBlank() && isNewer(tag, currentVersion)) {
-                        callback(UpdateInfo(tag, url, apkUrl))
+                        callback(UpdateInfo(tag, url, apkUrl, notes))
                     } else {
                         callback(null)
                     }
