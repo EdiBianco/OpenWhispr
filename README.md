@@ -10,7 +10,7 @@ Speak naturally into any app and OpenWispr turns your raw speech into clear, pol
 
 It's completely free to run. Cloud transcription and cleanup use your own [Groq](https://groq.com) API key, and Groq's free tier is generous enough for everyday dictation without paying anything. Prefer to keep everything on-device? Local transcription needs no API key or internet connection at all.
 
-This is a fork of [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper), originally built around OpenAI. This fork switches cloud transcription and cleanup to Groq and adds a round of reliability and UX work on top — see below for the full list. If you find the original project useful, consider [sponsoring the original author](https://github.com/sponsors/kafkasl).
+This is a fork of [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper), originally built around OpenAI. This fork switches cloud transcription and cleanup to Groq, adds improved processing, multilingual support, and command mode, and layers on a round of reliability and UX work on top.
 
 It supports:
 
@@ -18,31 +18,24 @@ It supports:
 - **Cloud transcription** with Groq Whisper — free API key, fast, no local model download
 - **Optional AI cleanup** with Groq — removes filler words, fixes punctuation and grammar, formats emails
 
-## What's changed in this fork
+## Features
 
-- **Transcription**: `whisper-1` (OpenAI) → `whisper-large-v3` (Groq), via `https://api.groq.com/openai/v1/audio/transcriptions`
-- **Cleanup**: `gpt-4o-mini` (OpenAI) → `openai/gpt-oss-120b` (Groq), via `https://api.groq.com/openai/v1/chat/completions`
-- **API key**: the settings screen now asks for a free [Groq API key](https://console.groq.com/keys) (`gsk_...`) instead of an OpenAI key (`sk-...`), with a direct link to get one
-- **CI**: a [GitHub Actions workflow](.github/workflows/build-apk.yml) builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/OpenWhispr/releases)
-- **Overlay visibility**: the mic overlay shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
+- **Two transcription modes**: cloud transcription via Groq Whisper (`whisper-large-v3`), or fully local, on-device transcription via sherpa-onnx — no API key, no internet, no data leaving the phone
+- **Optional AI cleanup**: Groq (`openai/gpt-oss-120b`) removes filler words, fixes punctuation and grammar, and formats emails, with a stricter prompt that handles self-corrections and preserves your intent instead of acting on it as a command — plus room to add your own custom instructions on top
+- **Free Groq API key**: the settings screen asks for a free [Groq API key](https://console.groq.com/keys) (`gsk_...`), with a direct link to get one
+- **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation — see [Voice commands](#voice-commands) below
+- **Multilingual**: works across languages for both transcription and cleanup
+- **Smart overlay visibility**: the mic overlay shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
 - **Stability**: hardened against crashes and killed background services, with a toggle to pause dictation without touching the Accessibility permission
-- **Battery**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
-- **Natural language cleanup**: a stricter cleanup prompt that handles self-corrections and preserves your intent instead of acting on it as a command, with room to add your own custom instructions on top
-- **Update check**: the app checks this repo's GitHub Releases on open (plus a manual "Check for updates" row in Settings), and installs updates entirely in-app -- it downloads the .apk itself and hands it straight to the system installer, no browser involved
-- **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation -- see [Voice commands](#voice-commands) below
-- **Settings screen**: reorganized into Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
-- **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation -- the app now walks you through unlocking it before sending you to the system screen
-- **Update notes**: the update dialog shows a short "what's new" for the new version (see [CHANGELOG.md](CHANGELOG.md)), not just a version number
-
-Local on-device transcription is untouched — it never called OpenAI in the first place.
+- **Battery-aware**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
+- **In-app updates**: the app checks this repo's GitHub Releases on open (plus a manual "Check for updates" row in Settings) and installs updates entirely in-app — it downloads the .apk itself and hands it straight to the system installer, no browser involved, with a short "what's new" summary for each release (see [CHANGELOG.md](CHANGELOG.md))
+- **Organized settings**: Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
+- **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation — the app walks you through unlocking it before sending you to the system screen
+- **CI-built releases**: a [GitHub Actions workflow](.github/workflows/build-apk.yml) builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/OpenWhispr/releases)
 
 ## Why I built this
 
-- I like SwiftKey and want to keep it as keyboard but...
-- Most keyboard dictation felt too inaccurate
-- Gemini's voice input auto submits your transcription (which is pretty bad) so you can't edit it before sending
-- Post processing yields much better results, specially adding a list of keywords and technical terms you often use
-- Inserting text into the field you're already using lets you keep editing it like any other draft.
+After trying [Wispr Flow](https://wisprflow.ai) on macOS, I went looking for something with the same effectiveness and usability on Android — and couldn't find it. So I decided to build it myself, exactly the way I wanted it, starting from a codebase simple enough to actually customize.
 
 ## Install
 
@@ -196,12 +189,6 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 - Some apps use custom input surfaces instead of standard Android text fields
 - Local models are large
 - Cloud mode requires your own Groq API key
-
-## Support the project
-
-OpenWispr itself is free — if the underlying project it's forked from saves you time, you can sponsor the original author on GitHub:
-
-- https://github.com/sponsors/kafkasl
 
 ## License
 
