@@ -24,8 +24,8 @@ android {
         applicationId = "com.edib.openwhispr"
         minSdk = 30
         targetSdk = 34
-        versionCode = 24
-        versionName = "3.9.0"
+        versionCode = 25
+        versionName = "3.10.0"
 
         ndk { abiFilters += "arm64-v8a" }
     }
@@ -51,7 +51,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
+    implementation("com.google.android.material:material:1.14.0")
     implementation("org.apache.commons:commons-compress:1.27.1")
 
     testImplementation("junit:junit:4.13.2")

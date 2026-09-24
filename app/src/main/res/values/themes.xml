@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.OpenWhispr" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.OpenWhispr" parent="Theme.Material3Expressive.DayNight.NoActionBar">
         <!-- Accent Colors -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
         <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
-        
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryContainer">@color/secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/on_secondary_container</item>
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorTertiaryContainer">@color/tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/on_tertiary_container</item>
+
         <!-- Status / Navigation Bars -->
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">?android:attr/colorBackground</item>
