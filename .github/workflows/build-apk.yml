@@ -34,7 +34,14 @@ jobs:
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          set +e
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+          STATUS=${PIPESTATUS[0]}
+          if [ "$STATUS" -ne 0 ]; then
+            tail -n 60 build.log | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          fi
 
       - name: Read app version
         id: version
