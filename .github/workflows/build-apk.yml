@@ -36,10 +36,10 @@ jobs:
       - name: Build debug APK
         run: |
           set +e
-          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+          ./gradlew assembleDebug --no-daemon 2>&1 | tee build.log
           STATUS=${PIPESTATUS[0]}
           if [ "$STATUS" -ne 0 ]; then
-            tail -n 60 build.log | while IFS= read -r line; do echo "::error::$line"; done
+            grep -n -A 25 "FAILURE:" build.log | head -n 80 | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
           fi
 
