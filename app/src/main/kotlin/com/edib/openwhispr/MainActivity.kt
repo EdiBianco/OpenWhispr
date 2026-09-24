@@ -328,12 +328,12 @@ class MainActivity : AppCompatActivity() {
     private fun buildModelRow(model: Model): View {
         val radio = MaterialRadioButton(this).apply {
             isClickable = false
-            buttonTintList = ColorStateList.valueOf(attrColor(com.google.android.material.R.attr.colorPrimary))
+            buttonTintList = ColorStateList.valueOf(attrColor(androidx.appcompat.R.attr.colorPrimary))
         }
         val dlBtn = MaterialButton(this, null, com.google.android.material.R.attr.materialIconButtonStyle).apply {
             text = "↓"
             textSize = 18f
-            setTextColor(attrColor(com.google.android.material.R.attr.colorPrimary))
+            setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary))
         }
 
         val progress = LinearProgressIndicator(this).apply {
@@ -501,7 +501,7 @@ class MainActivity : AppCompatActivity() {
         val ready = audio && acc && (localReady || cloudReady) && postReady
 
         statusSubtitle.text = if (ready) "Ready — tap the overlay dot to dictate" else "Setup required"
-        statusSubtitle.setTextColor(if (ready) attrColor(com.google.android.material.R.attr.colorPrimary) else attrColor(android.R.attr.textColorSecondary))
+        statusSubtitle.setTextColor(if (ready) attrColor(androidx.appcompat.R.attr.colorPrimary) else attrColor(android.R.attr.textColorSecondary))
 
         refreshAllCards()
         maybeShowBatteryWarning(acc, unrestricted)
@@ -828,7 +828,7 @@ class MainActivity : AppCompatActivity() {
         text = title
         textSize = 14f
         setTypeface(typeface, Typeface.BOLD)
-        setTextColor(attrColor(com.google.android.material.R.attr.colorPrimary)) // Neutral Android-like blue
+        setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary)) // Neutral Android-like blue
         setPadding(dp(24), dp(24), dp(24), dp(8))
     }
 
