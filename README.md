@@ -10,8 +10,6 @@ Speak naturally into any app and OpenWispr turns your raw speech into clear, pol
 
 It's completely free to run. Cloud transcription and cleanup use your own [Groq](https://groq.com) API key, and Groq's free tier is generous enough for everyday dictation without paying anything. Prefer to keep everything on-device? Local transcription needs no API key or internet connection at all.
 
-This is a fork of [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper), originally built around OpenAI. This fork switches cloud transcription and cleanup to Groq, adds improved processing, multilingual support, and command mode, and layers on a round of reliability and UX work on top.
-
 It supports:
 
 - **Local on-device transcription** with sherpa-onnx — no API key, no internet required
@@ -31,11 +29,12 @@ It supports:
 - **In-app updates**: the app checks this repo's GitHub Releases on open (plus a manual "Check for updates" row in Settings) and installs updates entirely in-app — it downloads the .apk itself and hands it straight to the system installer, no browser involved, with a short "what's new" summary for each release (see [CHANGELOG.md](CHANGELOG.md))
 - **Organized settings**: Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
 - **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation — the app walks you through unlocking it before sending you to the system screen
-- **CI-built releases**: a [GitHub Actions workflow](.github/workflows/build-apk.yml) builds the debug APK on every push to `main` and publishes it to a version-tagged [GitHub Release](https://github.com/EdiBianco/OpenWhispr/releases)
 
 ## Why I built this
 
-After trying [Wispr Flow](https://wisprflow.ai) on macOS, I went looking for something with the same effectiveness and usability on Android — and couldn't find it. So I decided to build it myself, exactly the way I wanted it, starting from a codebase simple enough to actually customize.
+After trying [Freeflow](https://github.com/zachlatta/freeflow) on macOS, I went looking for something with the same effectiveness and usability on Android — and couldn't find it. So I decided to build it myself, exactly the way I wanted it, starting from a codebase simple enough to actually customize.
+
+That codebase was [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper), originally built around OpenAI. This fork switches cloud transcription and cleanup to Groq, adds improved processing, multilingual support, and command mode, and layers on a round of reliability and UX work on top.
 
 ## Install
 
@@ -95,7 +94,7 @@ Off by default -- enable it under **Voice Commands** in the app, where you can a
 
 ### First-time setup
 
-1. Open **OpenWispr**
+1. Open **OpenWispr*(*
 2. Grant the **audio recording** permission
 3. Enable the **Accessibility Service**
 4. Choose your transcription mode:
