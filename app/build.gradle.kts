@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.edib.openwhispr"
-    compileSdk = 34
+    compileSdk = 35
 
     signingConfigs {
         getByName("debug") {
@@ -23,7 +23,7 @@ android {
     defaultConfig {
         applicationId = "com.edib.openwhispr"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 25
         versionName = "3.10.0"
 
