@@ -858,19 +858,29 @@ class MainActivity : AppCompatActivity() {
             hint = "e.g. always spell out \"NASA\" in full"
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
             minLines = 4
+            setHorizontallyScrolling(false)
             gravity = Gravity.TOP or Gravity.START
             setText(prefs().getString("custom_instructions", ""))
         }
-        android.app.AlertDialog.Builder(this)
+        val content = vertical(0, 0).apply {
+            addView(TextView(this@MainActivity).apply {
+                text = "These are appended to OpenWispr's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior."
+                textSize = 14f
+                setTextColor(attrColor(android.R.attr.textColorSecondary))
+                setPadding(0, 0, 0, dp(8))
+            })
+            addView(input)
+        }
+        val dialog = android.app.AlertDialog.Builder(this)
             .setTitle("Add custom instructions")
-            .setMessage("These are appended to OpenWispr's built-in cleanup rules. They can't override its safety, formatting, or self-correction behavior.")
-            .setView(input.apply { setPadding(dp(24), dp(8), dp(24), dp(8)) })
+            .setView(scrollableDialogContent(content))
             .setPositiveButton("Save") { _, _ ->
                 prefs().edit().putString("custom_instructions", input.text.toString().trim()).apply()
                 refresh()
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .create()
+        showResizingDialog(dialog)
     }
 
     private fun promptTriggerPhrase() {
@@ -968,6 +978,17 @@ class MainActivity : AppCompatActivity() {
         setTypeface(typeface, Typeface.BOLD)
         setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary)) // Neutral Android-like blue
         setPadding(dp(24), dp(24), dp(24), dp(8))
+    }
+
+    private fun scrollableDialogContent(content: View) = ScrollView(this).apply {
+        isFillViewport = true
+        setPadding(dp(24), dp(8), dp(24), dp(8))
+        addView(content, FrameLayout.LayoutParams(LP_MATCH, LP_WRAP))
+    }
+
+    private fun showResizingDialog(dialog: android.app.AlertDialog) {
+        dialog.show()
+        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     }
 
     private fun vertical(padH: Int, padV: Int = padH) = LinearLayout(this).apply {
