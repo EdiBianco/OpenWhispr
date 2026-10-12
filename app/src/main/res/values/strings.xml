@@ -188,7 +188,7 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="dictionary_saved_local_message">The dictionary helps recognize and write names, acronyms, and specialized terms during dictation and cleanup. The form before | is the final spelling; variants after | are pronunciation and recognition hints only. The dictionary stays active with custom instructions. Older one-term lines still work. Example: OpenWhispr | open whisper, open wisper.</string>
 
     <!-- Strings for the actionable status row, update dialog and cleanup feedback -->
-    <string name="about_current_version">You're on v%1$s · tap to check</string>
+    <string name="about_current_version">You\'re on v%1$s · tap to check</string>
     <string name="key_needed_hint">Not set — needed for cloud and cleanup</string>
     <string name="status_missing_audio">Grant audio permission</string>
     <string name="status_missing_accessibility">Turn on the accessibility service</string>
@@ -202,7 +202,7 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="view_on_github">View on GitHub</string>
     <string name="no_release_notes">No release notes were published for this version.</string>
     <string name="update_not_installed_title">Update not installed</string>
-    <string name="update_not_installed_message">Couldn't download or verify the update, so it wasn't installed.
+    <string name="update_not_installed_message">Couldn\'t download or verify the update, so it wasn\'t installed.
 
 Reason: %1$s</string>
     <string name="close_dialog">Close</string>
