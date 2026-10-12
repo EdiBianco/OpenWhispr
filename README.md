@@ -4,7 +4,7 @@
 
 # OpenWispr
 
-[![Download APK](https://img.shields.io/github/v/release/EdiBianco/OpenWhispr?label=Download%20APK&logo=android)](https://github.com/EdiBianco/OpenWhispr/releases/latest)
+[![Download APK - Latest Version](https://img.shields.io/github/v/release/EdiBianco/OpenWhispr?label=Download%20APK&logo=android)](https://github.com/EdiBianco/OpenWhispr/releases/latest)
 
 Free, open-source, on-device push-to-talk dictation for Android — a free alternative to [Wispr Flow](https://wisprflow.ai).
 
