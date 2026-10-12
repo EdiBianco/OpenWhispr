@@ -1,0 +1,6 @@
+{
+  "name": "OpenWispr",
+  "description": "Push-to-talk dictation for Android that transcribes speech and inserts text into focused fields.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
