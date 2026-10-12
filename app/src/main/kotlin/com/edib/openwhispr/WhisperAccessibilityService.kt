@@ -18,6 +18,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -60,8 +61,9 @@ class WhisperAccessibilityService : AccessibilityService() {
         private const val NOTIF_ID = 1
 
         private const val COLOR_IDLE = 0xDD1C1C1E.toInt()
-        private const val COLOR_RECORDING = 0xDDEF4444.toInt()
-        private const val COLOR_BUSY = 0xDD6B6B6B.toInt()
+        // [ui] Soft red for the recording state (logo tint + outline);
+        // replaces the old solid red / grey button colours.
+        private const val COLOR_REC_ACCENT = 0xFFFF6B6B.toInt()
         private const val COLOR_FEEDBACK_BG = 0xEE1C1C1E.toInt()
         private const val COLOR_RING = 0xFFE8EAED.toInt()
     }
@@ -88,6 +90,8 @@ class WhisperAccessibilityService : AccessibilityService() {
     private var accessibilityFocusSignal = false
     private var imeVisibleSignal = false
     private var button: ImageView? = null
+    // [ui] Smoothed recording level for the voice-reactive overlay (main thread).
+    private var audioLevel = 0f
     private var spinner: ProgressBar? = null
     private var feedbackView: TextView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
@@ -109,6 +113,9 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     // Local transcription engine (loaded lazily)
     private var localTranscriber: LocalTranscriber? = null
+    // [privacy] Set by initLocalModel (background thread), read on tap.
+    @Volatile private var localModelLoading = false
+    @Volatile private var localModelError: String? = null
 
     private val dp get() = resources.displayMetrics.density
     private val screenW get() = resources.displayMetrics.widthPixels
@@ -194,28 +201,55 @@ class WhisperAccessibilityService : AccessibilityService() {
         // A corrupted/incompatible model file or a native (sherpa-onnx)
         // load failure here must not be allowed to crash the process --
         // that takes the whole accessibility service down with it.
+        // [privacy] Track loading/failure so local mode can tell the user
+        // why it isn't ready instead of silently using the cloud.
+        localModelLoading = true
+        localModelError = null
         try {
+            // [privacy] A build without the native engine can never transcribe
+            // locally; say so rather than failing (or crashing) on every load.
+            if (!LocalTranscriber.nativeEngineAvailable) {
+                localTranscriber = null
+                localModelError = "This build doesn't include the on-device speech engine"
+                return
+            }
+            var attempted = false
             val modelName = prefs().getString("model_name", "") ?: ""
             if (modelName.isBlank()) {
                 // Auto-detect first available model
                 val models = LocalTranscriber.availableModels(this)
                 if (models.isNotEmpty()) {
                     Log.i(TAG, "Auto-detected model: ${models.first()}")
+                    attempted = true
                     localTranscriber = LocalTranscriber.create(this, models.first())
                 }
             } else {
+                attempted = true
                 localTranscriber = LocalTranscriber.create(this, modelName)
             }
             if (localTranscriber != null) {
                 Log.i(TAG, "Local transcription ready")
             } else {
-                Log.i(TAG, "No local model found, will use API")
+                Log.i(TAG, "No local model loaded")
+                if (attempted) localModelError = "Couldn't load the local model. Try selecting or re-downloading it"
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Local model init failed, falling back to API", e)
+        } catch (e: Throwable) {
+            // [security] Throwable, not Exception: native/linkage failures are
+            // Errors and previously escaped this thread, crashing the service.
+            Log.e(TAG, "Local model init failed", e)
             localTranscriber = null
+            localModelError = "Couldn't load the local model. Try selecting or re-downloading it"
+        } finally {
+            localModelLoading = false
         }
     }
+
+    /** [privacy] Why local mode can't transcribe right now. Shown instead of
+     * sending audio to the cloud. */
+    private fun localUnavailableMessage(): String =
+        if (localModelLoading) "Local model is still loading, try again in a moment"
+        else localModelError
+            ?: "No local model. Download one in OpenWispr, or turn on cloud transcription"
 
     /** Reload local model (called from MainActivity when settings change) */
     fun reloadModel() { thread { initLocalModel() } }
@@ -522,12 +556,14 @@ class WhisperAccessibilityService : AccessibilityService() {
         feedbackLayoutParams = null
     }
 
-    private fun circle(color: Int) = GradientDrawable().apply {
+    // [ui] Outline colour/width are parameters now (recording uses a thin
+    // soft-red outline); the defaults keep the original white hairline.
+    private fun circle(color: Int, stroke: Int = Color.WHITE, strokePx: Int = 1) = GradientDrawable().apply {
         shape = GradientDrawable.OVAL
         setColor(color)
         // 1 physical pixel, not 1dp -- a true hairline outline so the button
         // stays visible against any surface behind it, in every state.
-        setStroke(1, Color.WHITE)
+        setStroke(strokePx, stroke)
     }
 
     private fun pill(color: Int) = GradientDrawable().apply {
@@ -536,14 +572,22 @@ class WhisperAccessibilityService : AccessibilityService() {
         setColor(color)
     }
 
-    private fun setAppearance(color: Int) {
-        handler.post { button?.background = circle(color) }
-    }
-
-    /** Swaps the overlay's icon: the app logo while idle, the mic glyph
-     * while recording/transcribing. */
-    private fun setIcon(res: Int) {
-        handler.post { button?.setImageResource(res) }
+    /** [ui] The overlay always shows the app's bar logo on the dark
+     * button. Recording tints the bars soft red with a thin red outline
+     * (and onAudioLevel makes the button follow your voice); otherwise
+     * white bars and the original hairline. Replaces the old red button
+     * with a blinking white mic glyph. */
+    private fun setRecordingLook(recording: Boolean) {
+        handler.post {
+            val b = button ?: return@post
+            b.setImageResource(R.drawable.ic_app_logo)
+            b.background = if (recording) circle(COLOR_IDLE, COLOR_REC_ACCENT, (1.5f * dp).toInt())
+                           else circle(COLOR_IDLE)
+            b.imageTintList = if (recording) ColorStateList.valueOf(COLOR_REC_ACCENT) else null
+            audioLevel = 0f
+            b.animate().cancel()
+            b.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+        }
     }
 
     private fun setBusy(visible: Boolean) {
@@ -592,19 +636,17 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun startPulse() {
-        button?.let {
-            it.animate().alpha(0.4f).setDuration(500).withEndAction {
-                it.animate().alpha(1f).setDuration(500).withEndAction {
-                    if (state == State.RECORDING) startPulse()
-                }.start()
-            }.start()
-        }
-    }
-
-    private fun stopPulse() {
-        button?.animate()?.cancel()
-        button?.alpha = 1f
+    /** [ui] Voice-reactive recording: [level] (0..1, the latest audio
+     * buffer's peak) drives the button's size. VU-style smoothing -- rises
+     * at once, falls slowly -- so it swells as you speak and settles when
+     * you're quiet. Max 1.15x fits inside the overlay window (56dp around a
+     * 44dp button). Runs on the main thread. */
+    private fun onAudioLevel(level: Float) {
+        if (state != State.RECORDING) return
+        audioLevel = maxOf(level, audioLevel * 0.85f)
+        val scale = 1f + 0.15f * audioLevel
+        button?.scaleX = scale
+        button?.scaleY = scale
     }
 
     // --- State machine ---
@@ -623,6 +665,12 @@ class WhisperAccessibilityService : AccessibilityService() {
             toast(getString(R.string.grant_audio_permission)); return
         }
 
+        // [privacy] In local mode, don't start recording if there's no local
+        // model to transcribe with -- tell the user before they speak.
+        if (prefs().getBoolean("use_local", true) && localTranscriber == null) {
+            toast(localUnavailableMessage()); return
+        }
+
         val bufSize = AudioRecord.getMinBufferSize(
             SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
         )
@@ -637,26 +685,35 @@ class WhisperAccessibilityService : AccessibilityService() {
         audioRecord!!.startRecording()
         state = State.RECORDING
         setBusy(false)
-        setAppearance(COLOR_RECORDING)
-        setIcon(R.drawable.ic_mic)
+        setRecordingLook(true) // [ui]
         setOpacity(active = true)
         updateOverlayVisibility()
-        startPulse()
 
         thread {
             val buf = ByteArray(bufSize)
             while (state == State.RECORDING) {
                 val n = audioRecord?.read(buf, 0, buf.size) ?: break
-                if (n > 0) pcmStream?.write(buf, 0, n)
+                if (n > 0) {
+                    pcmStream?.write(buf, 0, n)
+                    // [ui] Peak of this buffer (16-bit little-endian PCM),
+                    // only read for the overlay's voice-reactive size.
+                    var peak = 0
+                    var i = 0
+                    while (i + 1 < n) {
+                        val sample = ((buf[i + 1].toInt() shl 8) or (buf[i].toInt() and 0xFF)).toShort().toInt()
+                        peak = maxOf(peak, abs(sample))
+                        i += 2
+                    }
+                    val level = (peak / 12000f).coerceIn(0f, 1f)
+                    handler.post { onAudioLevel(level) }
+                }
             }
         }
     }
 
     private fun stopAndTranscribe() {
         state = State.TRANSCRIBING
-        stopPulse()
-        setAppearance(COLOR_BUSY)
-        setIcon(R.drawable.ic_mic)
+        setRecordingLook(false) // [ui] white bars + the existing spinner ring
         setBusy(true)
         updateOverlayVisibility()
 
@@ -672,8 +729,13 @@ class WhisperAccessibilityService : AccessibilityService() {
         val useLocal = prefs().getBoolean("use_local", true)
         val local = localTranscriber
 
+        // [privacy] Local mode never falls back to the cloud: previously a
+        // missing/unloaded model sent the recording to Groq without notice.
+        // Now the audio is discarded and the user is told why.
         if (useLocal && local != null) {
             transcribeLocal(pcm, local)
+        } else if (useLocal) {
+            reset(localUnavailableMessage())
         } else {
             transcribeApi(pcm)
         }
@@ -773,10 +835,21 @@ class WhisperAccessibilityService : AccessibilityService() {
                         // Model correctly identified filler-only/no-speech audio;
                         // don't literally type the word "EMPTY" into the field.
                         toast(getString(R.string.no_speech_detected))
+                    } else if (!cleaned.isNullOrBlank() && PostProcessor.looksGenerated(text, cleaned)) {
+                        // [cleanup] The model wrote or rewrote content instead of
+                        // cleaning (e.g. drafted the email you described). Never
+                        // insert that; insert your own words instead.
+                        Log.i(TAG, "Cleanup output rejected (not a cleanup of the transcript); using raw text")
+                        if (injectText(text)) showFeedback(getString(R.string.cleanup_skipped_kept_words), 3000)
                     } else if (!cleaned.isNullOrBlank()) {
                         injectText(cleaned)
                     } else {
-                        injectText(text, feedback = getString(R.string.cleanup_failed_clipboard), feedbackDurationMs = 3000)
+                        // [privacy] injectText only shows its feedback when it falls back
+                        // to the clipboard; if the raw text was inserted, still say
+                        // that cleanup failed.
+                        if (injectText(text, feedback = getString(R.string.cleanup_failed_clipboard), feedbackDurationMs = 3000)) {
+                            showFeedback(getString(R.string.cleanup_failed_inserted_raw), 3000)
+                        }
                     }
                     goIdle()
                 }
@@ -843,9 +916,6 @@ class WhisperAccessibilityService : AccessibilityService() {
      * instead of inserting at the cursor/selection -- used by voice
      * commands, which transform the whole field rather than append to it. */
     private fun replaceFieldText(text: String) {
-        val clip = ClipData.newPlainText("openwhispr", text)
-        (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-
         val candidates = findInjectionCandidates()
         var replaced = false
         try {
@@ -859,6 +929,9 @@ class WhisperAccessibilityService : AccessibilityService() {
             candidates.forEach { it.recycle() }
         }
 
+        // [privacy] Replacement uses ACTION_SET_TEXT (no clipboard), so the
+        // clipboard is only used as the fallback when it fails.
+        if (!replaced) copyToClipboard(text)
         Log.i(TAG, if (replaced) "Command replace succeeded" else "Command replace failed; clipboard fallback only")
         showFeedback(
             getString(if (replaced) R.string.command_applied else R.string.replace_failed_clipboard),
@@ -889,22 +962,25 @@ class WhisperAccessibilityService : AccessibilityService() {
     private fun goIdle() {
         state = State.IDLE
         setBusy(false)
-        setAppearance(COLOR_IDLE)
-        setIcon(R.drawable.ic_app_logo)
+        setRecordingLook(false) // [ui]
         setOpacity(active = false)
         updateOverlayVisibility()
     }
 
     // --- Text injection ---
 
+    /** Inserts [text] into the focused field. Returns true if it landed.
+     *
+     * [privacy] Insertion pastes, so the text goes on the clipboard first
+     * (marked sensitive, see copyToClipboard); if nothing accepts it, it
+     * stays there for the user to paste. [feedback] is shown only in that
+     * case -- previously it was shown before insertion, even on success. */
     private fun injectText(
         text: String,
         feedback: String? = getString(R.string.copied_to_clipboard),
         feedbackDurationMs: Long = 2000
-    ) {
-        val clip = ClipData.newPlainText("openwhispr", text)
-        (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-        feedback?.let { showFeedback(it, feedbackDurationMs) }
+    ): Boolean {
+        copyToClipboard(text)
 
         val candidates = findInjectionCandidates()
         Log.i(TAG, "Injecting text into ${candidates.size} candidate node(s)")
@@ -922,6 +998,23 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
 
         Log.i(TAG, if (injected) "Text injection action reported success" else "No injection action succeeded; clipboard fallback only")
+        if (!injected) feedback?.let { showFeedback(it, feedbackDurationMs) }
+        return injected
+    }
+
+    /** [privacy] Puts dictated text on the clipboard (needed: paste-based
+     * injection and the manual fallback read it from there), marked as
+     * sensitive. Android 13+ then hides it in the clipboard preview, and
+     * keyboards that honour the flag keep it out of clipboard suggestions.
+     * Pasting is unaffected. The extra's key is the literal value of
+     * ClipDescription.EXTRA_IS_SENSITIVE (API 33), so this compiles and runs
+     * on minSdk 30, where it is simply ignored. */
+    private fun copyToClipboard(text: String) {
+        val clip = ClipData.newPlainText("openwhispr", text)
+        clip.description.extras = PersistableBundle().apply {
+            putBoolean("android.content.extra.IS_SENSITIVE", true)
+        }
+        (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
     }
 
     private fun findInjectionCandidates(): List<AccessibilityNodeInfo> {
@@ -1040,9 +1133,13 @@ class WhisperAccessibilityService : AccessibilityService() {
         val actions = node.actionList.joinToString { action ->
             action.label?.toString() ?: action.id.toString()
         }
+        // [privacy] Never log a field's contents or accessibility label (it can
+        // be the user's message, email, etc.) -- only its length/presence.
+        // Logcat is readable over adb and is bundled into bug reports, and the
+        // app can't control how long it's kept.
         Log.i(
             TAG,
-            "$prefix package=${node.packageName} class=${node.className} focused=${node.isFocused} editable=${node.isEditable} text=${node.text} desc=${node.contentDescription} actions=[$actions]"
+            "$prefix package=${node.packageName} class=${node.className} focused=${node.isFocused} editable=${node.isEditable} textLen=${node.text?.length ?: 0} hasDesc=${node.contentDescription != null} actions=[$actions]"
         )
     }
 

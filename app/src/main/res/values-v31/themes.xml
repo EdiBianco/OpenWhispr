@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- [ui] Launch theme for MainActivity: the app theme plus an animated
+         splash (Android 12+). Being a child of Theme.OpenWhispr, light/dark
+         resolve exactly as before. The background is the launcher icon's
+         own dark "glass" colour so the splash matches the icon. -->
+    <style name="Theme.OpenWhispr.Launch" parent="Theme.OpenWhispr">
+        <item name="android:windowSplashScreenBackground">#FF161618</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon_animated</item>
+        <item name="android:windowSplashScreenAnimationDuration">700</item>
+    </style>
+</resources>

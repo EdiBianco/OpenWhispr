@@ -186,4 +186,26 @@ Vous pouvez combiner des commandes : %1$s, traduis en italien puis transforme le
     <string name="dictionary_word_count">%1$d mots</string>
     <string name="dictionary_input_hint">Une entrée par ligne. Exemple : OpenWhispr | open whisper, open wisper</string>
     <string name="dictionary_saved_local_message">Le dictionnaire aide à reconnaître et écrire les noms propres, acronymes et termes spécialisés pendant la dictée et la correction. La forme avant | est l’orthographe finale ; les variantes après | sont uniquement des indices de prononciation et de reconnaissance. Le dictionnaire reste actif avec des consignes personnalisées. Les anciennes lignes avec un seul terme restent valides. Exemple : OpenWhispr | open whisper, open wisper.</string>
+
+    <!-- Strings for the actionable status row, update dialog and cleanup feedback -->
+    <string name="about_current_version">Version actuelle : v%1$s · touchez pour vérifier</string>
+    <string name="key_needed_hint">Non défini — requis pour le cloud et la correction</string>
+    <string name="status_missing_audio">Autorisez l’accès au micro</string>
+    <string name="status_missing_accessibility">Activez le service d’accessibilité</string>
+    <string name="status_missing_model">Téléchargez un modèle local — onglet Dictée</string>
+    <string name="status_missing_key">Ajoutez votre clé API Groq — onglet Paramètres</string>
+    <string name="status_missing_cleanup_key">La correction nécessite une clé API — onglet Paramètres</string>
+    <string name="status_ready_mode">Prêt · %1$s — touchez le point de la bulle pour dicter</string>
+    <string name="mode_on_device">sur l’appareil</string>
+    <string name="mode_cloud">cloud</string>
+    <string name="mode_cleanup_suffix"> + correction</string>
+    <string name="view_on_github">Voir sur GitHub</string>
+    <string name="no_release_notes">Aucune note de version n’a été publiée pour cette version.</string>
+    <string name="update_not_installed_title">Mise à jour non installée</string>
+    <string name="update_not_installed_message">La mise à jour n’a pas pu être téléchargée ou vérifiée, elle n’a donc pas été installée.
+
+Raison : %1$s</string>
+    <string name="close_dialog">Fermer</string>
+    <string name="cleanup_skipped_kept_words">Correction ignorée — vos mots exacts ont été conservés</string>
+    <string name="cleanup_failed_inserted_raw">Échec de la correction — texte brut inséré</string>
 </resources>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  [ui] Animated splash icon (Android 12+): the launcher icon's own seven
+  sound-wave bars, each growing outward from its centre, staggered from the
+  middle bar outwards, so the waveform "speaks" into shape (~660ms).
+  Same path data as ic_launcher_foreground.xml; scaled to 0.9 so the round
+  caps sit inside the splash screen's circular icon mask.
+-->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="108dp"
+            android:height="108dp"
+            android:viewportWidth="108"
+            android:viewportHeight="108">
+            <group
+                android:pivotX="54"
+                android:pivotY="54"
+                android:scaleX="0.9"
+                android:scaleY="0.9">
+                <path
+                    android:name="bar0"
+                    android:pathData="M38,24h32"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+                <path
+                    android:name="bar1"
+                    android:pathData="M26.5,34h55"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+                <path
+                    android:name="bar2"
+                    android:pathData="M21.5,44h65"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+                <path
+                    android:name="bar3"
+                    android:pathData="M20,54h68"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+                <path
+                    android:name="bar4"
+                    android:pathData="M21.5,64h65"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+                <path
+                    android:name="bar5"
+                    android:pathData="M26.5,74h55"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+                <path
+                    android:name="bar6"
+                    android:pathData="M38,84h32"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeLineCap="round"
+                    android:strokeWidth="7"
+                    android:trimPathStart="0.5"
+                    android:trimPathEnd="0.5" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="bar0">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="210"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="210"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bar1">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="140"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="140"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bar2">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="70"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="70"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bar3">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="0"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="0"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bar4">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="70"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="70"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bar5">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="140"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="140"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="bar6">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="trimPathStart"
+                    android:valueFrom="0.5"
+                    android:valueTo="0"
+                    android:startOffset="210"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="trimPathEnd"
+                    android:valueFrom="0.5"
+                    android:valueTo="1"
+                    android:startOffset="210"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

@@ -68,16 +68,7 @@ internal fun cleanupRequest(
     config: CleanupProviderConfig,
 ): Request {
     require(apiKey.isNotBlank()) { "Cleanup API key is required" }
-    val messages = JSONArray().apply {
-        put(JSONObject().apply {
-            put("role", "system")
-            put("content", prompt)
-        })
-        put(JSONObject().apply {
-            put("role", "user")
-            put("content", text)
-        })
-    }
+    val messages = PostProcessor.cleanupMessages(text, prompt)
     val bodyJson = JSONObject().apply {
         put("model", config.requestModel())
         put("messages", messages)

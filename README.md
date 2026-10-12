@@ -26,7 +26,7 @@ It supports:
 - **Smart overlay visibility**: the mic overlay shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
 - **Stability**: hardened against crashes and killed background services, with a toggle to pause dictation without touching the Accessibility permission
 - **Battery-aware**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
-- **In-app updates**: the app checks this repo's GitHub Releases on open (plus a manual "Check for updates" row in Settings) and installs updates entirely in-app — it downloads the .apk itself and hands it straight to the system installer, no browser involved, with a short "what's new" summary for each release (see [CHANGELOG.md](CHANGELOG.md))
+- **In-app updates**: tap "Check for updates" in Settings (or opt in to checking automatically on open) and the app checks this repo's GitHub Releases, then installs updates entirely in-app — it downloads the .apk itself and hands it straight to the system installer, no browser involved, with a short "what's new" summary for each release (see [CHANGELOG.md](CHANGELOG.md)). The downloaded .apk is checked against GitHub's published SHA-256 checksum and not installed if it doesn't match
 - **Organized settings**: Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
 - **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation — the app walks you through unlocking it before sending you to the system screen
 
@@ -126,9 +126,10 @@ It does **not** replace your keyboard. It does **not** run background automation
 
 OpenWispr supports two modes:
 
-- **Local mode**: audio stays on-device
+- **Local mode**: audio stays on-device. If no local model is ready, the app tells you instead of falling back to the cloud. (If Cleanup or Voice commands are on, the transcript *text* is still sent to Groq.)
 - **Cloud mode**: audio is sent directly from your device to Groq's transcription API
 - **Optional cleanup**: transcript text is sent directly from your device to Groq's chat API
+- **Clipboard**: dictated text is placed on the clipboard to paste it, marked as sensitive so Android 13+ hides its preview
 
 I don't run a backend for this app. In cloud mode, requests go straight from your phone to Groq using your own API key.
 
@@ -188,6 +189,13 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 - Some apps use custom input surfaces instead of standard Android text fields
 - Local models are large
 - Cloud mode requires your own Groq API key
+
+## Contributors
+
+Thanks to everyone who has contributed to OpenWispr:
+
+- [@vgkeeper](https://github.com/vgkeeper) (Gaëtan): custom dictionary for transcription and cleanup ([#3](https://github.com/EdiBianco/OpenWhispr/pull/3)), French localization ([#4](https://github.com/EdiBianco/OpenWhispr/pull/4)), resizable dictation bubble ([#5](https://github.com/EdiBianco/OpenWhispr/pull/5)), and keyboard-friendly custom instructions dialog ([#7](https://github.com/EdiBianco/OpenWhispr/pull/7))
+- [@MrASrivastava](https://github.com/MrASrivastava): UI polish, launch splash, voice-reactive overlay, clipboard and privacy fixes, and opt-in checksum-verified update checks ([#1](https://github.com/EdiBianco/OpenWhispr/pull/1))
 
 ## License
 

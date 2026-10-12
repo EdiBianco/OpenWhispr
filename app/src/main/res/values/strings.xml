@@ -186,4 +186,26 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="dictionary_word_count">%1$d words</string>
     <string name="dictionary_input_hint">One entry per line. Example: OpenWhispr | open whisper, open wisper</string>
     <string name="dictionary_saved_local_message">The dictionary helps recognize and write names, acronyms, and specialized terms during dictation and cleanup. The form before | is the final spelling; variants after | are pronunciation and recognition hints only. The dictionary stays active with custom instructions. Older one-term lines still work. Example: OpenWhispr | open whisper, open wisper.</string>
+
+    <!-- Strings for the actionable status row, update dialog and cleanup feedback -->
+    <string name="about_current_version">You're on v%1$s · tap to check</string>
+    <string name="key_needed_hint">Not set — needed for cloud and cleanup</string>
+    <string name="status_missing_audio">Grant audio permission</string>
+    <string name="status_missing_accessibility">Turn on the accessibility service</string>
+    <string name="status_missing_model">Download a local model — Dictation tab</string>
+    <string name="status_missing_key">Add your Groq API key — Settings tab</string>
+    <string name="status_missing_cleanup_key">Cleanup needs an API key — Settings tab</string>
+    <string name="status_ready_mode">Ready · %1$s — tap the overlay dot to dictate</string>
+    <string name="mode_on_device">on-device</string>
+    <string name="mode_cloud">cloud</string>
+    <string name="mode_cleanup_suffix"> + cleanup</string>
+    <string name="view_on_github">View on GitHub</string>
+    <string name="no_release_notes">No release notes were published for this version.</string>
+    <string name="update_not_installed_title">Update not installed</string>
+    <string name="update_not_installed_message">Couldn't download or verify the update, so it wasn't installed.
+
+Reason: %1$s</string>
+    <string name="close_dialog">Close</string>
+    <string name="cleanup_skipped_kept_words">Cleanup skipped — kept your exact words</string>
+    <string name="cleanup_failed_inserted_raw">Cleanup failed — inserted raw text</string>
 </resources>

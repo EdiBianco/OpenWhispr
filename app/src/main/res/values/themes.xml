@@ -17,4 +17,8 @@
         <item name="android:statusBarColor">?android:attr/colorBackground</item>
         <item name="android:navigationBarColor">?android:attr/colorBackground</item>
     </style>
+
+    <!-- [ui] Launch theme for MainActivity. Identical to the app theme on
+         Android 11; values-v31 adds the animated splash for Android 12+. -->
+    <style name="Theme.OpenWhispr.Launch" parent="Theme.OpenWhispr" />
 </resources>

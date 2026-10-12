@@ -27,6 +27,22 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
         private const val MAX_ACTIVE_PATHS = 4
         private const val HOTWORD_MODEL_ARCHIVE = "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8"
 
+        /** [privacy] Whether the on-device engine (libsherpa-onnx-jni.so)
+         * is present in this build. It lives in the gitignored
+         * app/src/main/jniLibs/, so a build made without it has no local
+         * engine at all. Same loadLibrary call the sherpa bindings make
+         * (a no-op if already loaded). */
+        val nativeEngineAvailable: Boolean by lazy {
+            try {
+                System.loadLibrary("sherpa-onnx-jni")
+                true
+            } catch (e: Throwable) {
+                Log.e(TAG, "sherpa-onnx native library not available", e)
+                false
+            }
+        }
+
+        /** Find available model dirs under the app's files/models/ dir */
         fun availableModels(ctx: Context): List<String> {
             val modelsDir = File(ctx.filesDir, "models")
             if (!modelsDir.exists()) return emptyList()
@@ -78,7 +94,10 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
                 }
                 Log.e(TAG, "Failed to load model: $modelName, cause=${e.javaClass.simpleName}")
                 null
-            } catch (e: LinkageError) {
+            } catch (e: Throwable) {
+                // [security] Throwable, not Exception: a missing/broken native
+                // library throws UnsatisfiedLinkError / NoClassDefFoundError
+                // (Errors), which previously escaped and crashed the service.
                 hotwordsFile.delete()
                 Log.e(TAG, "Native runtime unavailable for model=$modelName, cause=${e.javaClass.simpleName}")
                 null
