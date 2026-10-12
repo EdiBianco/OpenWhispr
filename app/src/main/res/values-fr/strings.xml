@@ -29,4 +29,15 @@
     <string name="invalid_cleanup_url">Saisissez une URL de service HTTPS valide.</string>
     <string name="save">Enregistrer</string>
     <string name="cancel">Annuler</string>
+    <string name="bubble_size_section">Bulle de dictée flottante</string>
+    <string name="bubble_size">Taille de la bulle</string>
+    <string name="bubble_size_accessibility">Taille de la bulle de dictée flottante</string>
+    <string name="bubble_size_help">De %1$d %% (minimum) à %2$d %% (maximum) ; %3$d %% est la taille standard. La modification est immédiate.</string>
+    <string name="bubble_standard">standard</string>
+    <string name="bubble_smaller">plus petite</string>
+    <string name="bubble_larger">plus grande</string>
+    <string name="bubble_standard_accessibility">taille standard</string>
+    <string name="bubble_smaller_accessibility">plus petite que la taille standard</string>
+    <string name="bubble_larger_accessibility">plus grande que la taille standard</string>
+    <string name="percent_unit">pour cent</string>
 </resources>

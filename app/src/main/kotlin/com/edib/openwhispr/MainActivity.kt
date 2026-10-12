@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.slider.Slider
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.tabs.TabLayout
 import java.io.File
@@ -281,6 +282,63 @@ class MainActivity : AppCompatActivity() {
         val keyRow = settingsRow("Groq API Key", "Tap to set") { promptApiKey() }
         keyRowSub = keyRow.findViewWithTag("subtitle")
         settingsContainer.addView(keyRow)
+
+        settingsContainer.addView(sectionHeader(getString(R.string.bubble_size_section)))
+        val bubbleSizePanel = vertical(dp(24), dp(8))
+        val bubbleSizeLabel = TextView(this).apply {
+            text = getString(R.string.bubble_size)
+            textSize = 18f
+            setTextColor(attrColor(android.R.attr.textColorPrimary))
+        }
+        bubbleSizePanel.addView(bubbleSizeLabel)
+
+        val selectedBubbleSize = TextView(this).apply {
+            textSize = 14f
+            setTextColor(attrColor(android.R.attr.textColorSecondary))
+            setPadding(0, dp(2), 0, dp(4))
+            accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+        }
+        bubbleSizePanel.addView(selectedBubbleSize)
+
+        bubbleSizeLabel.id = View.generateViewId()
+        val bubbleSizeSlider = Slider(this).apply {
+            id = View.generateViewId()
+            valueFrom = BubbleSize.MIN_PERCENT.toFloat()
+            valueTo = BubbleSize.MAX_PERCENT.toFloat()
+            stepSize = BubbleSize.STEP_PERCENT.toFloat()
+            value = currentBubbleSizePercent().toFloat()
+            setLabelFormatter { localizedBubbleLabel(it.toInt()) }
+            contentDescription = getString(R.string.bubble_size_accessibility)
+            layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(64))
+        }
+        bubbleSizeLabel.labelFor = bubbleSizeSlider.id
+        bubbleSizeSlider.addOnChangeListener { slider, value, fromUser ->
+            if (fromUser) {
+                val percent = BubbleSize.sliderPercent(value.toInt())
+                prefs().edit().putInt(BubbleSize.PREFERENCE_KEY, percent).apply()
+                selectedBubbleSize.text = localizedBubbleLabel(percent)
+                slider.contentDescription = "${getString(R.string.bubble_size_accessibility)}, ${localizedBubbleDescription(percent)}"
+                WhisperAccessibilityService.instance?.refreshBubbleSize()
+            }
+        }
+        val initialBubbleSize = currentBubbleSizePercent()
+        selectedBubbleSize.text = localizedBubbleLabel(initialBubbleSize)
+        bubbleSizeSlider.contentDescription = "${getString(R.string.bubble_size_accessibility)}, ${localizedBubbleDescription(initialBubbleSize)}"
+        bubbleSizePanel.addView(bubbleSizeSlider)
+
+        val rangeCaption = TextView(this).apply {
+            text = getString(
+                R.string.bubble_size_help,
+                BubbleSize.MIN_PERCENT,
+                BubbleSize.MAX_PERCENT,
+                BubbleSize.DEFAULT_PERCENT,
+            )
+            textSize = 12f
+            setTextColor(attrColor(android.R.attr.textColorSecondary))
+            labelFor = bubbleSizeSlider.id
+        }
+        bubbleSizePanel.addView(rangeCaption)
+        settingsContainer.addView(bubbleSizePanel)
 
         settingsContainer.addView(sectionHeader("About"))
 
@@ -1037,6 +1095,27 @@ class MainActivity : AppCompatActivity() {
         return getString(summary)
     }
 
+    private fun currentBubbleSizePercent(): Int {
+        val storedValue = try {
+            prefs().getInt(BubbleSize.PREFERENCE_KEY, BubbleSize.DEFAULT_PERCENT)
+        } catch (_: ClassCastException) {
+            null
+        }
+        return BubbleSize.preferencePercent(storedValue)
+    }
+    private fun localizedBubbleLabel(percent: Int) = BubbleSize.valueLabel(
+        percent,
+        standard = getString(R.string.bubble_standard),
+        smaller = getString(R.string.bubble_smaller),
+        larger = getString(R.string.bubble_larger),
+    )
+    private fun localizedBubbleDescription(percent: Int) = BubbleSize.accessibilityDescription(
+        percent,
+        standard = getString(R.string.bubble_standard_accessibility),
+        smaller = getString(R.string.bubble_smaller_accessibility),
+        larger = getString(R.string.bubble_larger_accessibility),
+        percentUnit = getString(R.string.percent_unit),
+    )
     private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 

@@ -44,12 +44,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         var instance: WhisperAccessibilityService? = null
         private const val TAG = "OpenWhispr"
         private const val SAMPLE_RATE = 16000
-        private const val BTN_DP = 44
-        private const val PAD_DP = 10
         private const val MARGIN_DP = 8
-        private const val TAP_THRESHOLD_DP = 10
-        private const val RING_DP = 56
-        private const val FEEDBACK_OFFSET_DP = 64
 
         private const val ALPHA_IDLE = 0.7f
         private const val ALPHA_ACTIVE = 1.0f
@@ -72,6 +67,13 @@ class WhisperAccessibilityService : AccessibilityService() {
     }
 
     private enum class State { IDLE, RECORDING, TRANSCRIBING }
+
+    private class BubbleOverlay(context: Context) : FrameLayout(context) {
+        override fun performClick(): Boolean {
+            super.performClick()
+            return true
+        }
+    }
 
     private var state = State.IDLE
     private var overlayView: FrameLayout? = null
@@ -318,13 +320,68 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
     }
 
+    fun refreshBubbleSize() {
+        handler.post {
+            try {
+                val view = overlayView ?: return@post
+                val lp = layoutParams ?: return@post
+                val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+                val dimensions = BubbleSize.dimensions(currentBubbleSizePercent())
+                val ringSize = (dimensions.ringDp * dp).toInt()
+                val margin = (MARGIN_DP * dp).toInt()
+                val position = BubbleSize.clampPosition(
+                    lp.x, lp.y, screenW, screenH, ringSize, margin
+                )
+
+                lp.width = ringSize
+                lp.height = ringSize
+                lp.x = position.x
+                lp.y = position.y
+                (spinner?.layoutParams as? FrameLayout.LayoutParams)?.let { ringParams ->
+                    ringParams.width = ringSize
+                    ringParams.height = ringSize
+                    spinner?.layoutParams = ringParams
+                }
+                (button?.layoutParams as? FrameLayout.LayoutParams)?.let { buttonParams ->
+                    val buttonSize = (dimensions.buttonDp * dp).toInt()
+                    buttonParams.width = buttonSize
+                    buttonParams.height = buttonSize
+                    button?.layoutParams = buttonParams
+                }
+                button?.setPadding(
+                    (dimensions.paddingDp * dp).toInt(),
+                    (dimensions.paddingDp * dp).toInt(),
+                    (dimensions.paddingDp * dp).toInt(),
+                    (dimensions.paddingDp * dp).toInt()
+                )
+                wm.updateViewLayout(view, lp)
+
+                feedbackLayoutParams?.let { feedbackParams ->
+                    positionFeedback(feedbackParams, lp)
+                    feedbackView?.let { wm.updateViewLayout(it, feedbackParams) }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "refreshBubbleSize failed", e)
+            }
+        }
+    }
+
+    private fun currentBubbleSizePercent(): Int = BubbleSize.preferencePercent(
+        try {
+            prefs().getInt(BubbleSize.PREFERENCE_KEY, BubbleSize.DEFAULT_PERCENT)
+        } catch (_: ClassCastException) {
+            null
+        }
+    )
+
     // --- Overlay ---
 
     private fun showOverlay() {
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        val buttonSize = (BTN_DP * dp).toInt()
-        val ringSize = (RING_DP * dp).toInt()
-        val pad = (PAD_DP * dp).toInt()
+        val dimensions = BubbleSize.dimensions(currentBubbleSizePercent())
+        val buttonSize = (dimensions.buttonDp * dp).toInt()
+        val ringSize = (dimensions.ringDp * dp).toInt()
+        val pad = (dimensions.paddingDp * dp).toInt()
         val margin = (MARGIN_DP * dp).toInt()
 
         val ring = ProgressBar(this).apply {
@@ -340,9 +397,11 @@ class WhisperAccessibilityService : AccessibilityService() {
             background = circle(COLOR_IDLE)
         }
 
-        val overlay = FrameLayout(this).apply {
+        val overlay = BubbleOverlay(this).apply {
             addView(ring, FrameLayout.LayoutParams(ringSize, ringSize, Gravity.CENTER))
             addView(img, FrameLayout.LayoutParams(buttonSize, buttonSize, Gravity.CENTER))
+            contentDescription = "OpenWhispr dictation bubble"
+            setOnClickListener { onTap() }
             alpha = 0f
             visibility = View.INVISIBLE
             setOnApplyWindowInsetsListener { _, insets ->
@@ -377,8 +436,16 @@ class WhisperAccessibilityService : AccessibilityService() {
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    params.x = startX + (ev.rawX - touchX).toInt()
-                    params.y = startY + (ev.rawY - touchY).toInt()
+                    val position = BubbleSize.clampPosition(
+                        startX + (ev.rawX - touchX).toInt(),
+                        startY + (ev.rawY - touchY).toInt(),
+                        screenW,
+                        screenH,
+                        params.width,
+                        margin
+                    )
+                    params.x = position.x
+                    params.y = position.y
                     wm.updateViewLayout(v, params)
                     feedbackLayoutParams?.let {
                         positionFeedback(it, params)
@@ -388,11 +455,13 @@ class WhisperAccessibilityService : AccessibilityService() {
                 }
                 MotionEvent.ACTION_UP -> {
                     val moved = abs(ev.rawX - touchX) + abs(ev.rawY - touchY)
-                    if (moved < TAP_THRESHOLD_DP * dp) {
-                        onTap()
+                    if (moved < BubbleSize.dimensions(currentBubbleSizePercent()).tapThresholdDp * dp) {
+                        v.performClick()
                     } else {
-                        params.x = if (params.x + ringSize / 2 > screenW / 2)
-                            screenW - ringSize - margin else margin
+                        params.x = BubbleSize.snappedX(params.x, params.width, screenW, margin)
+                        params.y = BubbleSize.clampPosition(
+                            params.x, params.y, screenW, screenH, params.width, margin
+                        ).y
                         wm.updateViewLayout(v, params)
                         feedbackLayoutParams?.let {
                             positionFeedback(it, params)
@@ -496,7 +565,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         bubbleParams: WindowManager.LayoutParams
     ) {
         val margin = (MARGIN_DP * dp).toInt()
-        val offset = (FEEDBACK_OFFSET_DP * dp).toInt()
+        val offset = (BubbleSize.dimensions(currentBubbleSizePercent()).feedbackOffsetDp * dp).toInt()
         feedbackParams.x = maxOf(margin, bubbleParams.x - offset)
         feedbackParams.y = maxOf(margin, bubbleParams.y - margin)
     }

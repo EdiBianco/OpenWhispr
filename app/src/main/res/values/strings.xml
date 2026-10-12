@@ -29,4 +29,15 @@
     <string name="invalid_cleanup_url">Enter a valid HTTPS service URL.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="bubble_size_section">Floating dictation bubble</string>
+    <string name="bubble_size">Bubble size</string>
+    <string name="bubble_size_accessibility">Floating dictation bubble size</string>
+    <string name="bubble_size_help">%1$d%% (smallest) to %2$d%% (largest); %3$d%% is standard. Changes apply immediately.</string>
+    <string name="bubble_standard">standard</string>
+    <string name="bubble_smaller">smaller</string>
+    <string name="bubble_larger">larger</string>
+    <string name="bubble_standard_accessibility">standard size</string>
+    <string name="bubble_smaller_accessibility">smaller than standard</string>
+    <string name="bubble_larger_accessibility">larger than standard</string>
+    <string name="percent_unit">percent</string>
 </resources>
