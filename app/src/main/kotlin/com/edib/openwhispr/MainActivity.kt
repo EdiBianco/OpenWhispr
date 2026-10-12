@@ -568,9 +568,13 @@ class MainActivity : AppCompatActivity() {
                         views.subtitle.text = getString(R.string.extracting)
                     }
                     is DownloadState.Done -> {
+                        // Don't load the native model right after download: sherpa-onnx can
+                        // SIGSEGV/SIGABRT below the JVM, which try/catch can't intercept.
+                        // Keep it installed; the user taps the row to activate it.
                         views.progress.visibility = View.GONE
-                        selectModel(model.archive)
-                        toast(getString(R.string.model_ready, model.name))
+                        refreshAllCards()
+                        refresh()
+                        toast(getString(R.string.model_downloaded_tap_to_activate, model.name))
                     }
                     is DownloadState.Error -> {
                         views.progress.visibility = View.GONE

@@ -69,7 +69,7 @@
     <string name="model_quality_fast">★★☆ Rapide</string>
     <string name="model_specs">%1$s · %2$d Mo</string>
     <string name="download_progress">Téléchargement : %1$d %%</string>
-    <string name="model_ready">Le modèle %1$s est prêt.</string>
+    <string name="model_downloaded_tap_to_activate">Le modèle %1$s est téléchargé. Touchez-le pour l\'activer.</string>
     <string name="model_download_error">Erreur de téléchargement : %1$s</string>
     <string name="unknown_error">Erreur inconnue</string>
     <string name="empty_download_response">Le téléchargement n’a renvoyé aucune donnée.</string>

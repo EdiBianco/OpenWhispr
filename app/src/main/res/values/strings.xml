@@ -69,7 +69,7 @@
     <string name="model_quality_fast">★★☆ Fast</string>
     <string name="model_specs">%1$s · %2$d MB</string>
     <string name="download_progress">Downloading: %1$d%%</string>
-    <string name="model_ready">Model %1$s is ready.</string>
+    <string name="model_downloaded_tap_to_activate">Model %1$s downloaded. Tap it to activate.</string>
     <string name="model_download_error">Download error: %1$s</string>
     <string name="unknown_error">Unknown error</string>
     <string name="empty_download_response">The download returned no data.</string>
