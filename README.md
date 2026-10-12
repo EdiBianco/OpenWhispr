@@ -4,6 +4,8 @@
 
 # OpenWispr
 
+[![Download APK](https://img.shields.io/github/v/release/EdiBianco/OpenWhispr?label=Download%20APK&logo=android)](https://github.com/EdiBianco/OpenWhispr/releases/latest)
+
 Free, open-source, on-device push-to-talk dictation for Android — a free alternative to [Wispr Flow](https://wisprflow.ai).
 
 Speak naturally into any app and OpenWispr turns your raw speech into clear, polished text: filler words removed, punctuation and formatting fixed automatically, then inserted straight into whatever field you're already typing in. Tap the floating button, speak, tap again — done.
