@@ -12,8 +12,10 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.ToneGenerator
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -97,6 +99,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     private var layoutParams: WindowManager.LayoutParams? = null
     private var feedbackLayoutParams: WindowManager.LayoutParams? = null
     private var audioRecord: AudioRecord? = null
+    private var stopTone: ToneGenerator? = null
     private var pcmStream: ByteArrayOutputStream? = null
     private val handler = Handler(Looper.getMainLooper())
     private val hideFeedback = Runnable {
@@ -123,6 +126,13 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         instance = this
+        try {
+            stopTone?.release()
+            stopTone = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 70)
+        } catch (e: RuntimeException) {
+            stopTone = null
+            Log.w(TAG, "Recording stop tone unavailable", e)
+        }
         showOverlay()
         startForegroundNotification()
         updateOverlayVisibility()
@@ -147,6 +157,8 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         instance = null
+        stopTone?.release()
+        stopTone = null
         handler.removeCallbacks(focusPoller)
         try {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -768,11 +780,23 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
     }
 
+    private fun playRecordingStoppedTone() {
+        try {
+            if (stopTone?.startTone(ToneGenerator.TONE_PROP_BEEP, 150) == false) {
+                Log.w(TAG, "Recording stop tone did not start")
+            }
+        } catch (e: RuntimeException) {
+            // Audio feedback must never prevent the captured speech from being transcribed.
+            Log.w(TAG, "Recording stop tone unavailable", e)
+        }
+    }
+
     private fun transcribeApi(pcm: ByteArray) {
         val wav = WavWriter.encode(pcm)
         val apiKey = SecureKeyStorage.groqApiKey(this)
         if (apiKey.isBlank()) { reset(getString(R.string.set_groq_key)); return }
 
+        playRecordingStoppedTone()
         TranscriberClient.transcribe(wav, apiKey, Dictionary.load(prefs())) { result ->
             if (result.text != null && result.text.isNotBlank()) {
                 handleTranscriptionResult(result.text)
