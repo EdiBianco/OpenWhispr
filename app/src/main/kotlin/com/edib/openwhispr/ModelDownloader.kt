@@ -12,19 +12,19 @@ data class Model(
     val name: String,
     val archive: String,
     val sizeMb: Int,
-    val quality: String,
+    val qualityResId: Int,
     val recommended: Boolean = false,
 )
 
 val MODEL_CATALOG = listOf(
     Model("Parakeet 110M", "sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8",
-        100, "★★★ Best value", recommended = true),
+        100, R.string.model_quality_best_value, recommended = true),
     Model("Whisper Base", "sherpa-onnx-whisper-base.en",
-        199, "★★★"),
+        199, R.string.model_quality_stars),
     Model("Parakeet 0.6B", "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
-        465, "★★★★ Best quality"),
+        465, R.string.model_quality_best),
     Model("Moonshine Tiny", "sherpa-onnx-moonshine-tiny-en-int8",
-        103, "★★☆ Fast"),
+        103, R.string.model_quality_fast),
 )
 
 sealed class DownloadState {
@@ -54,12 +54,12 @@ object ModelDownloader {
 
         Thread {
             try {
-                downloadFile(url, tmpFile, onState)
+                downloadFile(url, tmpFile, ctx.getString(R.string.empty_download_response), onState)
                 onState(DownloadState.Extracting)
                 extractTarBz2(tmpFile, outDir)
                 onState(DownloadState.Done)
             } catch (e: Exception) {
-                onState(DownloadState.Error(e.message ?: "Unknown error"))
+                onState(DownloadState.Error(e.message ?: ctx.getString(R.string.unknown_error)))
             } finally {
                 tmpFile.delete()
             }
@@ -70,11 +70,11 @@ object ModelDownloader {
         modelDir(ctx, model).deleteRecursively()
 
     private fun downloadFile(
-        url: String, dest: File, onState: (DownloadState) -> Unit
+        url: String, dest: File, emptyResponseMessage: String, onState: (DownloadState) -> Unit
     ) {
         val response = client.newCall(Request.Builder().url(url).build()).execute()
         if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
-        val body = response.body ?: throw IOException("Empty response")
+        val body = response.body ?: throw IOException(emptyResponseMessage)
         val total = body.contentLength()
         var downloaded = 0L
 

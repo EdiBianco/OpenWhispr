@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="setup_steps_ready">
+        <item quantity="one">%1$d of 3 setup steps complete</item>
+        <item quantity="other">%1$d of 3 setup steps complete</item>
+    </plurals>
+</resources>

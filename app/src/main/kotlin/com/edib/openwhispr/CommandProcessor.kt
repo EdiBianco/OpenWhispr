@@ -7,7 +7,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
-/** Handles "Whisper Command" voice commands: a fixed whitelist of
+/** Handles voice commands after the configured trigger phrase has been detected: a fixed whitelist of
  * transformations (summarize, enhance flow, translate, change tone, turn
  * into a list) applied either to text dictated in the same breath as the
  * command, or to whatever's already in the focused field. Deliberately
@@ -20,7 +20,7 @@ object CommandProcessor {
 
     const val UNSUPPORTED = "UNSUPPORTED_COMMAND"
 
-    const val COMMAND_PROMPT = """You are a voice-command text editor triggered by the spoken phrase "Whisper Command". You receive CURRENT_TEXT (whatever is already in the user's text field, may be empty) and an INSTRUCTION spoken right after the trigger phrase.
+    const val COMMAND_PROMPT = """You are a voice-command text editor. The app has already detected and removed the user's configured spoken trigger phrase. You receive CURRENT_TEXT (whatever is already in the user's text field, may be empty) and an INSTRUCTION spoken after that phrase.
 Hard contract:
 - Return only the final transformed text.
 - No explanations, no markdown, no quotes around the result, no restating the instruction.

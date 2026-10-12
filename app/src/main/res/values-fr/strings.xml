@@ -2,13 +2,150 @@
 <resources>
     <string name="app_name">OpenWispr</string>
     <string name="accessibility_description">Dictée : enregistre l’audio, le transcrit et insère le texte dans le champ actif.</string>
-    <string name="notification_channel_name">Service OpenWispr en arrière-plan</string>
+    <string name="notification_channel_name">Service en arrière-plan OpenWispr</string>
     <string name="notification_channel_description">Maintient la fenêtre de dictée active en arrière-plan</string>
     <string name="notification_content_title">OpenWispr est en cours d’exécution</string>
     <string name="notification_content_text">Touchez le micro flottant pour dicter</string>
+    <string name="language">Langue</string>
+    <string name="language_summary">Choisir la langue de l’appareil, l’anglais ou le français</string>
+    <string name="english">Anglais</string>
+    <string name="french">Français</string>
+    <string name="cancel">Annuler</string>
+
+    <string name="tab_status">État</string>
+    <string name="tab_dictation">Dictée</string>
+    <string name="tab_settings">Paramètres</string>
+    <string name="checking">Vérification…</string>
+    <string name="audio_permission">Autorisation audio</string>
+    <string name="accessibility_service">Service d’accessibilité</string>
+    <string name="battery_optimization">Optimisation de la batterie</string>
+    <string name="background_service">Service en arrière-plan</string>
+    <string name="background_service_summary">Mettre en pause le micro flottant sans désactiver l’accessibilité</string>
+    <string name="local_models">Modèles locaux</string>
+    <string name="cloud_transcription">Utiliser la transcription dans le cloud</string>
+    <string name="requires_groq_key">Nécessite une clé API Groq</string>
+    <string name="post_processing">Post-traitement</string>
+    <string name="cleanup_transcript">Améliorer la transcription</string>
+    <string name="cleanup_transcript_summary">Utilise l’API de chat Groq pour corriger la grammaire et la ponctuation</string>
+    <string name="voice_commands">Commandes vocales</string>
+
+    <string name="about">À propos</string>
+    <string name="version">Version</string>
+    <string name="check_updates">Vérifier les mises à jour</string>
+    <string name="tap_check_now">Touchez pour vérifier</string>
+    <string name="download_starting">Démarrage du téléchargement…</string>
+    <string name="extracting">Extraction…</string>
+    <string name="granted">Accordée</string>
+    <string name="enabled">Activé</string>
+    <string name="tap_grant_permission">Touchez pour accorder l’autorisation</string>
+    <string name="tap_enable_settings">Touchez pour activer dans les paramètres</string>
+    <string name="setup_required">Configuration requise</string>
+    <string name="save">Enregistrer</string>
+    <string name="later">Plus tard</string>
+    <string name="update">Mettre à jour</string>
+    <string name="command_examples">Exemples de commandes</string>
+    <string name="system_default">Langue de l’appareil</string>
+    <string name="unknown_version">Inconnue</string>
+    <string name="add_custom_instructions">Consignes personnalisées</string>
+
+    <string name="setup">Configuration</string>
+    <string name="accessibility_help">Permet à OpenWispr de détecter le champ actif et d’y insérer le texte transcrit.</string>
+    <string name="engine">Moteur</string>
+    <string name="tap_add_refinements">Touchez pour ajouter des consignes</string>
+    <string name="voice_commands_summary">Dites une phrase déclencheuse pour traduire, résumer et plus encore</string>
+    <string name="trigger_phrase">Phrase déclencheuse</string>
+    <string name="tap_to_change">Touchez pour modifier</string>
+    <string name="see_what_you_can_say">Voir les commandes vocales possibles</string>
+    <string name="groq_api_key">Clé API Groq</string>
+    <string name="tap_to_set">Touchez pour définir</string>
+    <string name="github">GitHub</string>
+    <string name="github_summary">Code source et versions</string>
+    <string name="open_browser_failed">Impossible d’ouvrir le navigateur : %1$s</string>
+    <string name="download_model">Télécharger %1$s</string>
+    <string name="downloading_model">Téléchargement de %1$s</string>
+    <string name="model_quality_best_value">★★★ Meilleur rapport qualité-prix</string>
+    <string name="model_quality_stars">★★★</string>
+    <string name="model_quality_best">★★★★ Meilleure qualité</string>
+    <string name="model_quality_fast">★★☆ Rapide</string>
+    <string name="model_specs">%1$s · %2$d Mo</string>
+    <string name="download_progress">Téléchargement : %1$d %%</string>
+    <string name="model_ready">Le modèle %1$s est prêt.</string>
+    <string name="model_download_error">Erreur de téléchargement : %1$s</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="empty_download_response">Le téléchargement n’a renvoyé aucune donnée.</string>
+    <string name="battery_unrestricted">Aucune restriction — l’activité en arrière-plan ne sera pas arrêtée pour économiser la batterie</string>
+    <string name="battery_restriction_hint">Touchez pour autoriser l’activité en arrière-plan (recommandé)</string>
+    <string name="tap_to_collapse">Touchez pour réduire</string>
+    <string name="tap_to_review">Touchez pour vérifier</string>
+    <string name="trigger_phrase_display">« %1$s »</string>
+    <string name="masked_api_key">gsk_…%1$s</string>
+    <string name="masked_api_key_short">gsk_…••••</string>
+
+    <string name="status_ready">Prêt — touchez le micro flottant pour dicter</string>
+    <string name="restricted_settings_title">Étape supplémentaire sur Android 13+</string>
+    <string name="restricted_settings_message">Android peut restreindre les services d’accessibilité installés en dehors de Google Play. Si l’interrupteur d’OpenWispr est désactivé :
+
+1. Appuyez longuement sur l’icône d’OpenWispr et ouvrez Informations sur l’application.
+2. Ouvrez le menu en haut à droite, puis choisissez Autoriser les paramètres restreints.
+3. Revenez ici et activez le service d’accessibilité.</string>
+    <string name="open_accessibility_settings">Ouvrir les paramètres d’accessibilité</string>
+    <string name="already_unrestricted">L’activité en arrière-plan est déjà sans restriction.</string>
+    <string name="open_settings_failed">Impossible d’ouvrir les paramètres : %1$s</string>
+    <string name="open_battery_settings_failed">Impossible d’ouvrir les paramètres de batterie : %1$s</string>
+    <string name="update_available">Mise à jour disponible</string>
+    <string name="update_available_message">OpenWispr %1$s est disponible. Votre version actuelle est la %2$s.</string>
+    <string name="whats_new">Nouveautés</string>
+    <string name="up_to_date">Vous utilisez la dernière version (%1$s)</string>
+    <string name="allow_install_updates">Autoriser l’installation des mises à jour</string>
+    <string name="allow_install_updates_message">Pour installer les mises à jour dans OpenWispr, autorisez l’installation d’applications inconnues sur l’écran suivant. Revenez ensuite ici et touchez de nouveau Mettre à jour.</string>
+    <string name="continue_button">Continuer</string>
+    <string name="downloading_update">Téléchargement de la mise à jour…</string>
+    <string name="download_failed">Échec du téléchargement : %1$s</string>
+    <string name="installer_start_failed">Impossible de démarrer le programme d’installation : %1$s</string>
+    <string name="keep_dictation_running">Maintenir la dictée active</string>
+    <string name="battery_warning_message">La gestion de la batterie Android ou certains fabricants peuvent arrêter les applications en arrière-plan pour économiser l’énergie. Cela peut interrompre la dictée lorsque OpenWispr n’est pas à l’écran.
+
+Autorisez l’activité sans restriction en arrière-plan pour que le service de dictée puisse rester actif. Vous pourrez modifier ce réglage plus tard dans les paramètres Android.</string>
+    <string name="disable_restrictions">Autoriser l’activité en arrière-plan</string>
+    <string name="groq_key_help_html">Besoin d’une clé API Groq ? Obtenez-en une gratuitement ici : &lt;a href="https://console.groq.com/keys"&gt;console.groq.com/keys&lt;/a&gt;.</string>
+    <string name="groq_api_key_hint">gsk_…</string>
+    <string name="custom_instructions_hint">Par exemple : toujours écrire NASA en toutes lettres</string>
+    <string name="custom_instructions_help">Ces consignes complètent les règles intégrées de correction d’OpenWispr. Elles ne peuvent pas remplacer ses règles de sécurité, de mise en forme ou d’autocorrection.</string>
+    <string name="default_trigger_phrase">Commande Whisper</string>
+    <string name="command_mode_help">Dites cette phrase au début d’un enregistrement pour passer en mode commande plutôt qu’en dictée normale.</string>
+    <string name="command_examples_body">Dites %1$s, puis l’une de ces commandes. Elles s’appliquent au texte déjà présent dans le champ ou au texte dicté juste après la commande :
+
+• %1$s, résume en deux phrases
+• %1$s, rends le texte plus fluide
+• %1$s, traduis en italien
+• %1$s, adopte un ton plus formel
+• %1$s, transforme le texte en liste
+
+Vous pouvez combiner des commandes : %1$s, traduis en italien puis transforme le texte en liste. Elles seront appliquées dans cet ordre.</string>
+    <string name="got_it">Compris</string>
+    <string name="overlay_content_description">Micro de dictée. Touchez deux fois pour démarrer ou arrêter l’enregistrement.</string>
+    <string name="grant_audio_permission">Autorisez l’accès au microphone dans les paramètres d’OpenWispr.</string>
+    <string name="audio_permission_denied">Autorisation d’accès au microphone refusée.</string>
+    <string name="no_audio_captured">Aucun son n’a été enregistré.</string>
+    <string name="local_transcription_error">Échec de la transcription locale : %1$s</string>
+    <string name="set_groq_key">Ajoutez votre clé API Groq dans les paramètres d’OpenWispr.</string>
+    <string name="transcription_error">Échec de la transcription : %1$s</string>
+    <string name="empty_transcript">Le service de transcription n’a renvoyé aucun texte.</string>
+    <string name="no_speech_detected">Aucune parole détectée.</string>
+    <string name="cleanup_needs_key">La correction du texte nécessite une clé API. La transcription d’origine sera utilisée.</string>
+    <string name="cleanup_failed_clipboard">Échec de la correction ; le texte d’origine a été copié dans le presse-papiers.</string>
+    <string name="voice_commands_need_key">Les commandes vocales nécessitent une clé API Groq.</string>
+    <string name="no_command_after_trigger">Aucune commande n’a été détectée après la phrase déclencheuse.</string>
+    <string name="command_failed">Échec de la commande : %1$s</string>
+    <string name="empty_response">Le service a renvoyé une réponse vide.</string>
+    <string name="command_not_recognized">Commande non reconnue. Essayez de résumer, de traduire, de changer le ton ou de créer une liste.</string>
+    <string name="command_applied">Commande appliquée.</string>
+    <string name="replace_failed_clipboard">Impossible de remplacer le champ ; le texte a été copié dans le presse-papiers.</string>
+    <string name="copied_to_clipboard">Copié dans le presse-papiers.</string>
+
+    <!-- Strings kept from main (cleanup provider, bubble size) -->
     <string name="text_enhancement">Amélioration du texte</string>
     <string name="text_enhancement_help">Après la dictée, cette option corrige les erreurs de transcription, la ponctuation et la mise en forme à l’aide du service de correction sélectionné.</string>
-    <string name="cleanup_transcript">Améliorer le texte</string>
     <string name="cleanup_service">Service de correction</string>
     <string name="cleanup_provider_title">Service de correction</string>
     <string name="groq_recommended">Groq (recommandé)</string>
@@ -27,8 +164,6 @@
     <string name="clear_cleanup_key">Supprimer la clé du service personnalisé</string>
     <string name="cleanup_api_key_cleared">Clé du service personnalisé supprimée</string>
     <string name="invalid_cleanup_url">Saisissez une URL de service HTTPS valide.</string>
-    <string name="save">Enregistrer</string>
-    <string name="cancel">Annuler</string>
     <string name="bubble_size_section">Bulle de dictée flottante</string>
     <string name="bubble_size">Taille de la bulle</string>
     <string name="bubble_size_accessibility">Taille de la bulle de dictée flottante</string>
@@ -40,4 +175,5 @@
     <string name="bubble_smaller_accessibility">plus petite que la taille standard</string>
     <string name="bubble_larger_accessibility">plus grande que la taille standard</string>
     <string name="percent_unit">pour cent</string>
+    <string name="saved_securely">Enregistrée de façon sécurisée</string>
 </resources>
