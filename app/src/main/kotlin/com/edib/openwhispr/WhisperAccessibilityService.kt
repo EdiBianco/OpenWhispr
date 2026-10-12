@@ -754,6 +754,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     }
 
     private fun transcribeLocal(pcm: ByteArray, transcriber: LocalTranscriber) {
+        playRecordingStoppedTone()
         thread {
             try {
                 // Convert 16-bit PCM bytes to float samples
