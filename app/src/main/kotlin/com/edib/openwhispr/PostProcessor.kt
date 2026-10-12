@@ -1,9 +1,6 @@
 package com.edib.openwhispr
 
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
@@ -82,7 +79,7 @@ Output hygiene:
 - Never prepend boilerplate such as "Here is the clean transcript".
 - If the transcript is empty or only filler, return exactly: EMPTY"""
 
-    /** Builds the system prompt actually sent to Groq: the fixed default
+    /** Builds the system prompt sent to the selected cleanup provider: the fixed default
      * prompt above, plus the user's own custom instructions (if any)
      * appended as a clearly-scoped addendum so they can't be mistaken for
      * (or override) the hard contract rules above them. */
@@ -115,37 +112,23 @@ Output hygiene:
         }
     }
 
-    fun process(text: String, prompt: String, apiKey: String, callback: (Result) -> Unit) {
-        val messages = JSONArray().apply {
-            put(JSONObject().apply {
-                put("role", "system")
-                put("content", prompt)
-            })
-            put(JSONObject().apply {
-                put("role", "user")
-                put("content", text)
-            })
+    /** Backwards-compatible Groq cleanup entry point. */
+    fun process(text: String, prompt: String, apiKey: String, callback: (Result) -> Unit) =
+        process(text, prompt, apiKey, CleanupProviderConfig(), callback)
+
+    fun process(
+        text: String,
+        prompt: String,
+        apiKey: String,
+        config: CleanupProviderConfig,
+        callback: (Result) -> Unit,
+    ) {
+        val request = try {
+            cleanupRequest(text, prompt, apiKey, config)
+        } catch (e: IllegalArgumentException) {
+            callback(Result(null, e.message ?: "Invalid cleanup configuration"))
+            return
         }
-
-        val bodyJson = JSONObject().apply {
-            put("model", "openai/gpt-oss-120b")
-            put("messages", messages)
-            put("temperature", 0.0)
-            // Low reasoning effort keeps latency down for this short cleanup
-            // task, and include_reasoning=false keeps any chain-of-thought
-            // out of the "content" field entirely (see parseResponse).
-            put("reasoning_effort", "low")
-            put("include_reasoning", false)
-        }
-
-        val body = bodyJson.toString().toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url("https://api.groq.com/openai/v1/chat/completions")
-            .header("Authorization", "Bearer $apiKey")
-            .post(body)
-            .build()
-
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback(Result(null, e.message))

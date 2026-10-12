@@ -43,8 +43,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var setupCollapsedRowSub: TextView
     private lateinit var setupDoneSummary: TextView
     private lateinit var keyRowSub: TextView
+    private lateinit var cleanupProviderRowSub: TextView
     private lateinit var customInstructionsRowSub: TextView
     private lateinit var customInstructionsRow: LinearLayout
+    private lateinit var cleanupProviderRow: LinearLayout
     private lateinit var modelContainer: LinearLayout
     private lateinit var voiceCommandsDetailContainer: LinearLayout
     private lateinit var triggerPhraseRowSub: TextView
@@ -213,20 +215,26 @@ class MainActivity : AppCompatActivity() {
         for (m in MODEL_CATALOG) modelContainer.addView(buildModelRow(m))
         dictationContainer.addView(modelContainer)
 
-        dictationContainer.addView(sectionHeader("Post-Processing"))
+        dictationContainer.addView(sectionHeader(getString(R.string.text_enhancement)))
 
         val isPostProcessing = prefs().getBoolean("use_post_processing", false)
         val postProcessSwitch = MaterialSwitch(this).apply {
             isChecked = isPostProcessing
             isClickable = false
         }
-        val postProcessRow = settingsRow("Cleanup transcript", "Uses Groq Chat API to fix grammar and punctuation", postProcessSwitch) {
+        val postProcessRow = settingsRow(getString(R.string.cleanup_transcript), getString(R.string.text_enhancement_help), postProcessSwitch) {
             val newVal = !postProcessSwitch.isChecked
             prefs().edit().putBoolean("use_post_processing", newVal).apply()
             postProcessSwitch.isChecked = newVal
             refresh()
         }
         dictationContainer.addView(postProcessRow)
+
+        cleanupProviderRow = settingsRow(getString(R.string.cleanup_service), getString(R.string.cleanup_service_groq_ready)) {
+            promptCleanupProvider()
+        }
+        cleanupProviderRowSub = cleanupProviderRow.findViewWithTag("subtitle")
+        dictationContainer.addView(cleanupProviderRow)
 
         customInstructionsRow = settingsRow("Add custom instructions", "Tap to add extra refinements") {
             promptCustomInstructions()
@@ -437,7 +445,12 @@ class MainActivity : AppCompatActivity() {
         val acc = WhisperAccessibilityService.instance != null
         val useLocal = prefs().getBoolean("use_local", true)
         val usePostProcessing = prefs().getBoolean("use_post_processing", false)
-        val hasKey = !prefs().getString("api_key", "").isNullOrBlank()
+        val groqApiKey = SecureKeyStorage.groqApiKey(this)
+        val cleanupConfig = cleanupProviderConfig()
+        val cleanupApiKey = if (cleanupConfig.provider == CleanupProviderConfig.Provider.GROQ)
+            groqApiKey else SecureKeyStorage.cleanupApiKey(this)
+        val hasGroqKey = groqApiKey.isNotBlank()
+        val hasCleanupKey = cleanupApiKey.isNotBlank()
         val hasModel = LocalTranscriber.availableModels(this).isNotEmpty()
         val unrestricted = isIgnoringBatteryOptimizations()
 
@@ -472,15 +485,14 @@ class MainActivity : AppCompatActivity() {
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
+        cleanupProviderRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
+        cleanupProviderRowSub.text = cleanupProviderSummary()
 
         val voiceCommandsEnabled = prefs().getBoolean("voice_commands_enabled", false)
         voiceCommandsDetailContainer.visibility = if (voiceCommandsEnabled) View.VISIBLE else View.GONE
         triggerPhraseRowSub.text = "\"${prefs().getString("command_trigger_phrase", "Whisper Command")}\""
 
-        val apiKey = prefs().getString("api_key", "") ?: ""
-        keyRowSub.text = if (apiKey.isBlank()) "Tap to set"
-                         else if (apiKey.length > 7) "gsk_...${apiKey.takeLast(4)}"
-                         else "gsk_...***"
+        keyRowSub.text = if (hasGroqKey) "Saved securely" else "Tap to set"
 
         val customInstructions = prefs().getString("custom_instructions", "") ?: ""
         customInstructionsRowSub.text = if (customInstructions.isBlank())
@@ -496,8 +508,8 @@ class MainActivity : AppCompatActivity() {
 
         // Ready logic
         val localReady = useLocal && hasModel
-        val cloudReady = !useLocal && hasKey
-        val postReady = !usePostProcessing || hasKey
+        val cloudReady = !useLocal && hasGroqKey
+        val postReady = !usePostProcessing || hasCleanupKey
         val ready = audio && acc && (localReady || cloudReady) && postReady
 
         statusSubtitle.text = if (ready) "Ready — tap the overlay dot to dictate" else "Setup required"
@@ -695,7 +707,10 @@ class MainActivity : AppCompatActivity() {
         }
         val input = EditText(this).apply {
             hint = "gsk_..."
-            setText(prefs().getString("api_key", ""))
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            isSaveEnabled = false
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+            setText(SecureKeyStorage.groqApiKey(this@MainActivity))
         }
         val container = vertical(dp(24), dp(8)).apply {
             addView(link)
@@ -705,11 +720,134 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Groq API Key")
             .setView(container)
             .setPositiveButton("Save") { _, _ ->
-                prefs().edit().putString("api_key", input.text.toString().trim()).apply()
+                SecureKeyStorage.saveGroqApiKey(this, input.text.toString().trim())
                 refresh()
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun promptCleanupProvider() {
+        val config = cleanupProviderConfig()
+        val providers = CleanupProviderConfig.Provider.entries
+        val providerPicker = Spinner(this).apply {
+            layoutParams = LinearLayout.LayoutParams(LP_MATCH, LP_WRAP)
+            adapter = ArrayAdapter(
+                this@MainActivity,
+                android.R.layout.simple_spinner_item,
+                listOf(getString(R.string.groq_recommended), getString(R.string.custom_service)),
+            ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            setSelection(providers.indexOf(config.provider))
+        }
+        fun fieldLabel(labelRes: Int) = TextView(this).apply {
+            text = getString(labelRes)
+            textSize = 13f
+            setTextColor(attrColor(android.R.attr.textColorSecondary))
+            setPadding(0, dp(8), 0, dp(2))
+        }
+        val baseUrlLabel = fieldLabel(R.string.custom_service_url)
+        val baseUrl = EditText(this).apply {
+            hint = getString(R.string.openrouter_url_placeholder)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI
+            setText(config.baseUrl)
+        }
+        val modelLabel = fieldLabel(R.string.custom_service_model)
+        val model = EditText(this).apply {
+            hint = CleanupProviderConfig.DEFAULT_MODEL
+            setText(config.model)
+        }
+        val apiKeyLabel = fieldLabel(R.string.custom_service_key)
+        val apiKey = EditText(this).apply {
+            hint = getString(R.string.api_key_hint)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            isSaveEnabled = false
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+            setText(SecureKeyStorage.cleanupApiKey(this@MainActivity))
+        }
+        val details = TextView(this).apply {
+            text = getString(R.string.custom_service_help)
+            textSize = 13f
+            setTextColor(attrColor(android.R.attr.textColorSecondary))
+            setPadding(0, dp(8), 0, 0)
+        }
+        val customFields = listOf<View>(baseUrlLabel, baseUrl, modelLabel, model, apiKeyLabel, apiKey, details)
+        fun updateCustomFields() {
+            val show = providers[providerPicker.selectedItemPosition].requiresCustomConfiguration
+            customFields.forEach { it.visibility = if (show) View.VISIBLE else View.GONE }
+        }
+        val container = vertical(dp(24), dp(8)).apply {
+            addView(TextView(this@MainActivity).apply {
+                text = getString(R.string.choose_cleanup_provider)
+                textSize = 14f
+                setTextColor(attrColor(android.R.attr.textColorSecondary))
+                setPadding(0, 0, 0, dp(8))
+            })
+            addView(providerPicker)
+            addView(baseUrlLabel)
+            addView(baseUrl)
+            addView(modelLabel)
+            addView(model)
+            addView(apiKeyLabel)
+            addView(apiKey)
+            addView(details)
+        }
+        val scroll = ScrollView(this).apply { addView(container) }
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.cleanup_provider_title)
+            .setView(scroll)
+            .setPositiveButton(getString(R.string.save), null)
+            .setNeutralButton(R.string.clear_cleanup_key, null)
+            .setNegativeButton(getString(R.string.cancel), null)
+            .create()
+        dialog.setOnShowListener {
+            fun updateNeutralButton() {
+                dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL).visibility =
+                    if (providers[providerPicker.selectedItemPosition].requiresCustomConfiguration) View.VISIBLE else View.GONE
+            }
+            updateCustomFields()
+            updateNeutralButton()
+            providerPicker.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    updateCustomFields()
+                    updateNeutralButton()
+                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
+            }
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val selectedProvider = providers[providerPicker.selectedItemPosition]
+                val nextConfig = CleanupProviderConfig(
+                    provider = selectedProvider,
+                    baseUrl = baseUrl.text.toString().trim().ifBlank { CleanupProviderConfig.DEFAULT_BASE_URL },
+                    model = model.text.toString().trim().ifBlank { CleanupProviderConfig.DEFAULT_MODEL },
+                )
+                if (selectedProvider.requiresCustomConfiguration) {
+                    try {
+                        nextConfig.chatCompletionsUrl()
+                    } catch (_: IllegalArgumentException) {
+                        toast(getString(R.string.invalid_cleanup_url))
+                        return@setOnClickListener
+                    }
+                }
+                prefs().edit()
+                    .putString("cleanup_provider", selectedProvider.preferenceValue)
+                    .putString("cleanup_base_url", nextConfig.baseUrl)
+                    .putString("cleanup_model", nextConfig.model)
+                    .apply()
+                if (selectedProvider.requiresCustomConfiguration) {
+                    apiKey.text.toString().trim().takeIf { it.isNotBlank() }
+                        ?.let { SecureKeyStorage.saveCleanupApiKey(this, it) }
+                }
+                dialog.dismiss()
+                refresh()
+            }
+            dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                SecureKeyStorage.saveCleanupApiKey(this, "")
+                apiKey.text.clear()
+                toast(getString(R.string.cleanup_api_key_cleared))
+                refresh()
+            }
+        }
+        dialog.show()
     }
 
     private fun promptCustomInstructions() {
@@ -857,6 +995,27 @@ class MainActivity : AppCompatActivity() {
         ta.recycle()
         return color
     }
+    private fun cleanupProviderConfig() = CleanupProviderConfig.fromPreferences(
+        prefs().getString("cleanup_provider", null),
+        prefs().getString("cleanup_base_url", null),
+        prefs().getString("cleanup_model", null),
+    )
+
+    private fun cleanupProviderSummary(): String {
+        val config = cleanupProviderConfig()
+        val configured = when (config.provider) {
+            CleanupProviderConfig.Provider.GROQ -> SecureKeyStorage.groqApiKey(this).isNotBlank()
+            CleanupProviderConfig.Provider.OPENAI_COMPATIBLE -> SecureKeyStorage.cleanupApiKey(this).isNotBlank()
+        }
+        val summary = when (config.provider) {
+            CleanupProviderConfig.Provider.GROQ ->
+                if (configured) R.string.cleanup_service_groq_ready else R.string.cleanup_service_groq_setup
+            CleanupProviderConfig.Provider.OPENAI_COMPATIBLE ->
+                if (configured) R.string.cleanup_service_custom_ready else R.string.cleanup_service_custom_setup
+        }
+        return getString(summary)
+    }
+
     private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 

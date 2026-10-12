@@ -637,8 +637,8 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     private fun transcribeApi(pcm: ByteArray) {
         val wav = WavWriter.encode(pcm)
-        val apiKey = prefs().getString("api_key", "") ?: ""
-        if (apiKey.isBlank()) { reset("Set API key in OpenWispr app"); return }
+        val apiKey = SecureKeyStorage.groqApiKey(this)
+        if (apiKey.isBlank()) { reset("Set Groq API key in OpenWispr app"); return }
 
         TranscriberClient.transcribe(wav, apiKey) { result ->
             if (result.text != null && result.text.isNotBlank()) {
@@ -673,12 +673,18 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
 
         val usePostProcessing = prefs().getBoolean("use_post_processing", false)
-        val apiKey = prefs().getString("api_key", "") ?: ""
+        val cleanupConfig = CleanupProviderConfig.fromPreferences(
+            prefs().getString("cleanup_provider", null),
+            prefs().getString("cleanup_base_url", null),
+            prefs().getString("cleanup_model", null),
+        )
+        val apiKey = if (cleanupConfig.provider == CleanupProviderConfig.Provider.GROQ)
+            SecureKeyStorage.groqApiKey(this) else SecureKeyStorage.cleanupApiKey(this)
 
         if (usePostProcessing) {
             if (apiKey.isBlank()) {
                 handler.post {
-                    toast("Post-processing needs API key. Using raw text.")
+                    toast("Cleanup needs an API key. Using raw text.")
                     injectText(text)
                     goIdle()
                 }
@@ -688,7 +694,7 @@ class WhisperAccessibilityService : AccessibilityService() {
             val customInstructions = prefs().getString("custom_instructions", "") ?: ""
             val prompt = PostProcessor.effectivePrompt(customInstructions)
 
-            PostProcessor.process(text, prompt, apiKey) { result ->
+            PostProcessor.process(text, prompt, apiKey, cleanupConfig) { result ->
                 handler.post {
                     val cleaned = result.text?.trim()
                     if (cleaned == "EMPTY") {
@@ -716,7 +722,7 @@ class WhisperAccessibilityService : AccessibilityService() {
      * CommandProcessor's whitelisted-transformation prompt, and replaces the
      * field's entire content with the result. */
     private fun handleVoiceCommand(instruction: String) {
-        val apiKey = prefs().getString("api_key", "") ?: ""
+        val apiKey = SecureKeyStorage.groqApiKey(this)
         if (apiKey.isBlank()) {
             handler.post {
                 toast("Voice commands need a Groq API key")

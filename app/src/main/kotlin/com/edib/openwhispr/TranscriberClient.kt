@@ -11,6 +11,9 @@ object TranscriberClient {
 
     private val client = OkHttpClient()
 
+    const val TRANSCRIPTION_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
+    const val TRANSCRIPTION_MODEL = "whisper-large-v3"
+
     fun parseResponse(json: String): Result = try {
         val obj = JSONObject(json)
         when {
@@ -25,12 +28,12 @@ object TranscriberClient {
     fun transcribe(wavData: ByteArray, apiKey: String, callback: (Result) -> Unit) {
         val body = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("model", "whisper-large-v3")
+            .addFormDataPart("model", TRANSCRIPTION_MODEL)
             .addFormDataPart("file", "audio.wav", wavData.toRequestBody("audio/wav".toMediaType()))
             .build()
 
         val request = Request.Builder()
-            .url("https://api.groq.com/openai/v1/audio/transcriptions")
+            .url(TRANSCRIPTION_URL)
             .header("Authorization", "Bearer $apiKey")
             .post(body)
             .build()

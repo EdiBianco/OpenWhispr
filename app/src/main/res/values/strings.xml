@@ -6,4 +6,27 @@
     <string name="notification_channel_description">Keeps the dictation overlay running in the background</string>
     <string name="notification_content_title">OpenWispr is running</string>
     <string name="notification_content_text">Tap the floating mic to dictate</string>
+    <string name="text_enhancement">Text enhancement</string>
+    <string name="text_enhancement_help">After you dictate, this optional feature corrects transcription mistakes, punctuation, and formatting using the selected cleanup service.</string>
+    <string name="cleanup_transcript">Improve text</string>
+    <string name="cleanup_service">Cleanup service</string>
+    <string name="cleanup_provider_title">Cleanup service</string>
+    <string name="groq_recommended">Groq (recommended)</string>
+    <string name="custom_service">Custom service</string>
+    <string name="choose_cleanup_provider">Groq is the recommended default and uses the key saved in Settings. Choose Custom service to use OpenRouter, DeepSeek, or another OpenAI-compatible service.</string>
+    <string name="custom_service_help">Enter the HTTPS address, model name, and key provided by your service. These details are used only for text enhancement.</string>
+    <string name="custom_service_url">Service API URL</string>
+    <string name="custom_service_model">Model name</string>
+    <string name="custom_service_key">API key for this service</string>
+    <string name="api_key_hint">API key</string>
+    <string name="openrouter_url_placeholder">https://openrouter.ai/api/v1</string>
+    <string name="cleanup_service_groq_ready">Groq (recommended)</string>
+    <string name="cleanup_service_groq_setup">Groq (recommended) · Add your Groq key in Settings</string>
+    <string name="cleanup_service_custom_ready">Custom service · Configured</string>
+    <string name="cleanup_service_custom_setup">Custom service · Add its key</string>
+    <string name="clear_cleanup_key">Clear custom service key</string>
+    <string name="cleanup_api_key_cleared">Custom service key cleared</string>
+    <string name="invalid_cleanup_url">Enter a valid HTTPS service URL.</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

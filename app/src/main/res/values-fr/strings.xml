@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenWispr</string>
+    <string name="accessibility_description">Dictée : enregistre l’audio, le transcrit et insère le texte dans le champ actif.</string>
+    <string name="notification_channel_name">Service OpenWispr en arrière-plan</string>
+    <string name="notification_channel_description">Maintient la fenêtre de dictée active en arrière-plan</string>
+    <string name="notification_content_title">OpenWispr est en cours d’exécution</string>
+    <string name="notification_content_text">Touchez le micro flottant pour dicter</string>
+    <string name="text_enhancement">Amélioration du texte</string>
+    <string name="text_enhancement_help">Après la dictée, cette option corrige les erreurs de transcription, la ponctuation et la mise en forme à l’aide du service de correction sélectionné.</string>
+    <string name="cleanup_transcript">Améliorer le texte</string>
+    <string name="cleanup_service">Service de correction</string>
+    <string name="cleanup_provider_title">Service de correction</string>
+    <string name="groq_recommended">Groq (recommandé)</string>
+    <string name="custom_service">Service personnalisé</string>
+    <string name="choose_cleanup_provider">Groq est recommandé par défaut et utilise la clé enregistrée dans les paramètres. Choisissez Service personnalisé pour utiliser OpenRouter, DeepSeek ou un autre service compatible avec l’API OpenAI.</string>
+    <string name="custom_service_help">Saisissez l’adresse HTTPS, le nom du modèle et la clé fournis par votre service. Ces paramètres servent uniquement à l’amélioration du texte.</string>
+    <string name="custom_service_url">URL API du service</string>
+    <string name="custom_service_model">Nom du modèle</string>
+    <string name="custom_service_key">Clé API de ce service</string>
+    <string name="api_key_hint">Clé API</string>
+    <string name="openrouter_url_placeholder">https://openrouter.ai/api/v1</string>
+    <string name="cleanup_service_groq_ready">Groq (recommandé)</string>
+    <string name="cleanup_service_groq_setup">Groq (recommandé) · Ajoutez votre clé Groq dans les paramètres</string>
+    <string name="cleanup_service_custom_ready">Service personnalisé · Configuré</string>
+    <string name="cleanup_service_custom_setup">Service personnalisé · Ajoutez sa clé</string>
+    <string name="clear_cleanup_key">Supprimer la clé du service personnalisé</string>
+    <string name="cleanup_api_key_cleared">Clé du service personnalisé supprimée</string>
+    <string name="invalid_cleanup_url">Saisissez une URL de service HTTPS valide.</string>
+    <string name="save">Enregistrer</string>
+    <string name="cancel">Annuler</string>
+</resources>
