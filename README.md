@@ -42,7 +42,7 @@ That codebase was [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisp
 
 ### Easiest: download the APK
 
-Grab the latest debug APK from the [Releases page](https://github.com/EdiBianco/OpenWhispr/releases) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`.
+Grab the latest debug APK from the [latest release](https://github.com/EdiBianco/OpenWhispr/releases/latest) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`.
 
 Open it on your phone, install it, then launch the app once to finish setup.
 
@@ -198,6 +198,7 @@ Thanks to everyone who has contributed to OpenWispr:
 
 - [@vgkeeper](https://github.com/vgkeeper) (Gaëtan): custom dictionary for transcription and cleanup ([#3](https://github.com/EdiBianco/OpenWhispr/pull/3)), French localization ([#4](https://github.com/EdiBianco/OpenWhispr/pull/4)), resizable dictation bubble ([#5](https://github.com/EdiBianco/OpenWhispr/pull/5)), and keyboard-friendly custom instructions dialog ([#7](https://github.com/EdiBianco/OpenWhispr/pull/7))
 - [@MrASrivastava](https://github.com/MrASrivastava): UI polish, launch splash, voice-reactive overlay, clipboard and privacy fixes, and opt-in checksum-verified update checks ([#1](https://github.com/EdiBianco/OpenWhispr/pull/1))
+- [@kafkasl](https://github.com/kafkasl) (Pol Alvarez): logo and README branding, adaptive launcher icon, LICENSE, and privacy contact
 
 ## License
 
