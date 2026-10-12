@@ -176,4 +176,14 @@ Vous pouvez combiner des commandes : %1$s, traduis en italien puis transforme le
     <string name="bubble_larger_accessibility">plus grande que la taille standard</string>
     <string name="percent_unit">pour cent</string>
     <string name="saved_securely">Enregistrée de façon sécurisée</string>
+
+    <!-- Dictionary strings (PR 3) -->
+    <string name="process_text_label">Ajouter au dictionnaire OpenWhispr</string>
+    <string name="dictionary_no_text">Aucun texte sélectionné à ajouter</string>
+    <string name="dictionary_added">Ajouté au dictionnaire</string>
+    <string name="dictionary_title">Dictionnaire personnalisé</string>
+    <string name="dictionary_summary">Aider à reconnaître et écrire les noms propres, acronymes et termes spécialisés pendant la dictée et la correction</string>
+    <string name="dictionary_word_count">%1$d mots</string>
+    <string name="dictionary_input_hint">Une entrée par ligne. Exemple : OpenWhispr | open whisper, open wisper</string>
+    <string name="dictionary_saved_local_message">Le dictionnaire aide à reconnaître et écrire les noms propres, acronymes et termes spécialisés pendant la dictée et la correction. La forme avant | est l’orthographe finale ; les variantes après | sont uniquement des indices de prononciation et de reconnaissance. Le dictionnaire reste actif avec des consignes personnalisées. Les anciennes lignes avec un seul terme restent valides. Exemple : OpenWhispr | open whisper, open wisper.</string>
 </resources>

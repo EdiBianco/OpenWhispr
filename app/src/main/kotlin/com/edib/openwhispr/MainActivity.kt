@@ -281,6 +281,13 @@ class MainActivity : AppCompatActivity() {
         // ================= Settings tab =================
 
         settingsContainer.addView(sectionHeader(getString(R.string.tab_settings)))
+        settingsContainer.addView(settingsRow(
+            getString(R.string.dictionary_title),
+            Dictionary.load(prefs()).let {
+                if (it.isEmpty()) getString(R.string.dictionary_summary)
+                else getString(R.string.dictionary_word_count, it.size)
+            },
+        ) { promptDictionary() })
 
         val keyRow = settingsRow(getString(R.string.groq_api_key), getString(R.string.tap_to_set)) { promptApiKey() }
         keyRowSub = keyRow.findViewWithTag("subtitle")
@@ -774,6 +781,26 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun promptDictionary() {
+        val input = EditText(this).apply {
+            hint = getString(R.string.dictionary_input_hint)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            minLines = 6
+            setText(Dictionary.load(prefs()).joinToString("\n"))
+        }
+        val dialog = android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.dictionary_title)
+            .setMessage(R.string.dictionary_saved_local_message)
+            .setView(input)
+            .setPositiveButton(R.string.save) { _, _ ->
+                Dictionary.save(prefs(), Dictionary.parse(input.text.toString()))
+                WhisperAccessibilityService.instance?.reloadModel()
+                toast(getString(R.string.dictionary_added))
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+        dialog.show()
+    }
 
     private fun promptApiKey() {
         val link = TextView(this).apply {

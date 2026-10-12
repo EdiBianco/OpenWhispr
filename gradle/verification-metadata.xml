@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<verification-metadata xmlns="https://schema.gradle.org/dependency-verification">
+    <configuration>
+        <verify-metadata>false</verify-metadata>
+        <verify-signatures>false</verify-signatures>
+        <trusted-artifacts>
+            <trust group=".*" name="(?!sherpa-onnx$).*" regex="true" reason="Only the separately pinned Sherpa release artifact has a verified checksum in this repository." />
+        </trusted-artifacts>
+    </configuration>
+    <components>
+        <component group="com.k2fsa" name="sherpa-onnx" version="1.13.8">
+            <artifact name="sherpa-onnx-1.13.8.aar">
+                <sha256 value="633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96" />
+            </artifact>
+        </component>
+    </components>
+</verification-metadata>

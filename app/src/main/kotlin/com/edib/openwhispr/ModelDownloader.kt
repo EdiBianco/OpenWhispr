@@ -8,23 +8,27 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import java.io.*
 import java.util.concurrent.TimeUnit
 
+enum class ModelArchitecture { NEMO_CTC, WHISPER, NEMO_TRANSDUCER, MOONSHINE }
+
 data class Model(
     val name: String,
     val archive: String,
     val sizeMb: Int,
     val qualityResId: Int,
+    val architecture: ModelArchitecture,
+    val hotwordModelingUnit: String? = null,
     val recommended: Boolean = false,
 )
 
 val MODEL_CATALOG = listOf(
     Model("Parakeet 110M", "sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8",
-        100, R.string.model_quality_best_value, recommended = true),
+        100, R.string.model_quality_best_value, ModelArchitecture.NEMO_CTC, recommended = true),
     Model("Whisper Base", "sherpa-onnx-whisper-base.en",
-        199, R.string.model_quality_stars),
+        199, R.string.model_quality_stars, ModelArchitecture.WHISPER),
     Model("Parakeet 0.6B", "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
-        465, R.string.model_quality_best),
+        465, R.string.model_quality_best, ModelArchitecture.NEMO_TRANSDUCER, hotwordModelingUnit = "cjkchar"),
     Model("Moonshine Tiny", "sherpa-onnx-moonshine-tiny-en-int8",
-        103, R.string.model_quality_fast),
+        103, R.string.model_quality_fast, ModelArchitecture.MOONSHINE),
 )
 
 sealed class DownloadState {

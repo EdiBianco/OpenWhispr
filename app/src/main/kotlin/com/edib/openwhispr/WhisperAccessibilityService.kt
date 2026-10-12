@@ -711,7 +711,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         val apiKey = SecureKeyStorage.groqApiKey(this)
         if (apiKey.isBlank()) { reset(getString(R.string.set_groq_key)); return }
 
-        TranscriberClient.transcribe(wav, apiKey) { result ->
+        TranscriberClient.transcribe(wav, apiKey, Dictionary.load(prefs())) { result ->
             if (result.text != null && result.text.isNotBlank()) {
                 handleTranscriptionResult(result.text)
             } else {
@@ -763,7 +763,8 @@ class WhisperAccessibilityService : AccessibilityService() {
             }
 
             val customInstructions = prefs().getString("custom_instructions", "") ?: ""
-            val prompt = PostProcessor.effectivePrompt(customInstructions)
+            val vocabulary = Dictionary.load(prefs())
+            val prompt = PostProcessor.effectivePrompt(customInstructions, vocabulary)
 
             PostProcessor.process(text, prompt, apiKey, cleanupConfig) { result ->
                 handler.post {
