@@ -1,6 +1,7 @@
 package com.edib.openwhispr
 
 import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
