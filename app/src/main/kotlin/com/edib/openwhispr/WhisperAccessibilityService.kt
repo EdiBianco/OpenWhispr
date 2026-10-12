@@ -61,6 +61,10 @@ class WhisperAccessibilityService : AccessibilityService() {
         // app never fires a focus-related accessibility event at all.
         private const val FOCUS_POLL_MS = 500L
 
+        // Peak 16-bit amplitude below which a recording is treated as silence.
+        // Whisper invents text such as "Thank you." for silent audio.
+        private const val SILENCE_PEAK = 500
+
         private const val NOTIF_CHANNEL_ID = "openwhispr_service"
         private const val NOTIF_ID = 1
 
@@ -766,7 +770,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         val pcm = pcmStream?.toByteArray() ?: ByteArray(0)
         pcmStream = null
 
-        if (pcm.isEmpty()) { reset(getString(R.string.no_audio_captured)); return }
+        if (pcm.isEmpty() || peakAmplitude(pcm) < SILENCE_PEAK) { reset(getString(R.string.no_audio_captured)); return }
 
         val useLocal = prefs().getBoolean("use_local", true)
         val local = localTranscriber
@@ -781,6 +785,18 @@ class WhisperAccessibilityService : AccessibilityService() {
         } else {
             transcribeApi(pcm)
         }
+    }
+
+    /** Peak absolute 16-bit little-endian sample in [pcm]. */
+    private fun peakAmplitude(pcm: ByteArray): Int {
+        var peak = 0
+        var i = 0
+        while (i + 1 < pcm.size) {
+            val sample = ((pcm[i + 1].toInt() shl 8) or (pcm[i].toInt() and 0xFF)).toShort().toInt()
+            peak = maxOf(peak, abs(sample))
+            i += 2
+        }
+        return peak
     }
 
     private fun transcribeLocal(pcm: ByteArray, transcriber: LocalTranscriber) {
