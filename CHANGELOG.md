@@ -9,6 +9,9 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.11.5
+- Silent recordings are no longer sent for transcription, so the app no longer inserts made-up text such as "Thank you." when you didn't speak
+
 ## 3.11.4
 - Fixed the floating button not appearing in some apps (such as the Claude app's Code tab) even with the keyboard open: it now also shows whenever a text field is ready for typing or the keyboard is on screen
 - The floating button shows the microphone while recording and transcribing, and the app logo when idle
