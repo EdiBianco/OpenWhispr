@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PersistableBundle
-import android.text.InputType
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -30,7 +29,6 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityWindowInfo
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
@@ -274,11 +272,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         try {
             val root = rootInActiveWindow
             val focused = root?.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
-            // The foreground app's own tree is only one witness: web-based
-            // composers (the Claude app's Code tab) often don't report an
-            // editable focus at all. The other two come from the system.
-            accessibilityFocusSignal = (focused != null && isEditableTextField(focused)) ||
-                hasActiveTextInput() || isKeyboardWindowShown()
+            accessibilityFocusSignal = focused != null && isEditableTextField(focused)
             focused?.recycle()
             root?.recycle()
         } catch (e: Exception) {
@@ -292,25 +286,6 @@ class WhisperAccessibilityService : AccessibilityService() {
         val className = node.className?.toString().orEmpty()
         return node.isEditable || className.contains("EditText")
     }
-
-    /** Android 13+: a text field has an open input connection to this
-     * service (flagInputMethodEditor), the same one injectText types
-     * through. True whatever the app's accessibility tree says. */
-    private fun hasActiveTextInput(): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
-        val method = inputMethod ?: return false
-        val inputType = method.currentInputEditorInfo?.inputType ?: return false
-        return method.currentInputStarted && inputType != InputType.TYPE_NULL
-    }
-
-    /** The keyboard's own window is on screen. Needs
-     * flagRetrieveInteractiveWindows; without it the list is empty. */
-    private fun isKeyboardWindowShown(): Boolean =
-        try {
-            windows?.any { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD } == true
-        } catch (e: Exception) {
-            false
-        }
 
     /** Fed by the overlay view's WindowInsets listener -- catches apps whose
      * custom composers (WhatsApp, Telegram, ...) never fire accessibility
@@ -609,15 +584,12 @@ class WhisperAccessibilityService : AccessibilityService() {
         setColor(color)
     }
 
-    /** [ui] The overlay always shows the app's bar logo on the dark
-     * button. Recording tints the bars soft red with a thin red outline
-     * (and onAudioLevel makes the button follow your voice); otherwise
-     * white bars and the original hairline. Replaces the old red button
-     * with a blinking white mic glyph. */
+    /** [ui] Recording tints the button's icon soft red with a thin red
+     * outline (and onAudioLevel makes the button follow your voice);
+     * otherwise the original hairline. The icon itself is set by setIcon. */
     private fun setRecordingLook(recording: Boolean) {
         handler.post {
             val b = button ?: return@post
-            b.setImageResource(R.drawable.ic_app_logo)
             b.background = if (recording) circle(COLOR_IDLE, COLOR_REC_ACCENT, (1.5f * dp).toInt())
                            else circle(COLOR_IDLE)
             b.imageTintList = if (recording) ColorStateList.valueOf(COLOR_REC_ACCENT) else null
@@ -625,6 +597,12 @@ class WhisperAccessibilityService : AccessibilityService() {
             b.animate().cancel()
             b.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
         }
+    }
+
+    /** Swaps the overlay's icon: the app logo while idle, the mic glyph
+     * while recording/transcribing. */
+    private fun setIcon(res: Int) {
+        handler.post { button?.setImageResource(res) }
     }
 
     private fun setBusy(visible: Boolean) {
@@ -723,6 +701,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         state = State.RECORDING
         setBusy(false)
         setRecordingLook(true) // [ui]
+        setIcon(R.drawable.ic_mic)
         setOpacity(active = true)
         updateOverlayVisibility()
 
@@ -751,6 +730,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     private fun stopAndTranscribe() {
         state = State.TRANSCRIBING
         setRecordingLook(false) // [ui] white bars + the existing spinner ring
+        setIcon(R.drawable.ic_mic)
         setBusy(true)
         updateOverlayVisibility()
 
@@ -1013,6 +993,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         state = State.IDLE
         setBusy(false)
         setRecordingLook(false) // [ui]
+        setIcon(R.drawable.ic_app_logo)
         setOpacity(active = false)
         updateOverlayVisibility()
     }
