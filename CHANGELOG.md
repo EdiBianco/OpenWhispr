@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.11.4
+- Fixed the floating button not appearing in some apps (such as the Claude app's Code tab) even with the keyboard open: it now also shows whenever a text field is ready for typing or the keyboard is on screen
+- The floating button shows the microphone while recording and transcribing, and the app logo when idle
+
 ## 3.11.3
 - The floating button shows the microphone while recording and transcribing again, and the app logo when idle
 - The button no longer stays on screen in every app: the 3.11.2 keyboard detection is reverted
