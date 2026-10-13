@@ -73,7 +73,7 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           name: OpenWispr v${{ steps.version.outputs.version }}
           body: |
-            Free, open-source push-to-talk dictation for Android. Debug build from commit `${{ github.sha }}`.
+            Free, open-source push-to-talk dictation for Android. Build from commit `${{ github.sha }}`.
             Transcription + cleanup via Groq (`whisper-large-v3` + `openai/gpt-oss-120b`) with your own API key, or fully on-device with no key or internet needed.
 
             **What's new:**
