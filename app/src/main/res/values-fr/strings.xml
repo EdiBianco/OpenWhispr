@@ -7,7 +7,7 @@
     <string name="notification_content_title">OpenWispr est en cours d’exécution</string>
     <string name="notification_content_text">Touchez le micro flottant pour dicter</string>
     <string name="language">Langue</string>
-    <string name="language_summary">Choisir la langue de l’appareil, l’anglais ou le français</string>
+    <string name="language_summary">Choisir la langue de l’application</string>
     <string name="english">Anglais</string>
     <string name="french">Français</string>
     <string name="cancel">Annuler</string>

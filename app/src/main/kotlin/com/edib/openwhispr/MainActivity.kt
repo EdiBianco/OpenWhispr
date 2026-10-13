@@ -407,25 +407,29 @@ class MainActivity : AppCompatActivity() {
         settingsContainer.addView(sectionHeader(getString(R.string.about)))
         val aboutGroup = group()
         aboutGroup.addView(settingsRow(getString(R.string.language), getString(R.string.language_summary)) {
-            val languages = arrayOf(
-                getString(R.string.system_default),
-                getString(R.string.english),
-                getString(R.string.french)
+            // Native names for the new locales; "" follows the system.
+            val options = listOf(
+                getString(R.string.system_default) to "",
+                getString(R.string.english) to "en",
+                getString(R.string.french) to "fr",
+                "Italiano" to "it",
+                "Español" to "es",
+                "Русский" to "ru",
+                "日本語" to "ja",
+                "Português (Brasil)" to "pt-BR",
+                "中文 (简体)" to "zh-CN",
             )
-            val appLocales = AppCompatDelegate.getApplicationLocales()
-            val selected = when {
-                appLocales.isEmpty -> 0
-                appLocales.get(0)?.language == "fr" -> 2
-                else -> 1
-            }
+            val appTag = AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag()
+            val selected = options.indexOfFirst { (_, tag) ->
+                if (tag.isEmpty()) appTag == null
+                else appTag == tag || appTag?.substringBefore('-') == tag.substringBefore('-')
+            }.coerceAtLeast(0)
             android.app.AlertDialog.Builder(this)
                 .setTitle(R.string.language)
-                .setSingleChoiceItems(languages, selected) { dialog, which ->
-                    val locales = when (which) {
-                        0 -> LocaleListCompat.getEmptyLocaleList()
-                        1 -> LocaleListCompat.forLanguageTags("en")
-                        else -> LocaleListCompat.forLanguageTags("fr")
-                    }
+                .setSingleChoiceItems(options.map { it.first }.toTypedArray(), selected) { dialog, which ->
+                    val tag = options[which].second
+                    val locales = if (tag.isEmpty()) LocaleListCompat.getEmptyLocaleList()
+                        else LocaleListCompat.forLanguageTags(tag)
                     AppCompatDelegate.setApplicationLocales(locales)
                     dialog.dismiss()
                 }

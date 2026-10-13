@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="setup_steps_ready">
+        <item quantity="one">Выполнен %1$d из 3 шагов настройки</item>
+        <item quantity="few">Выполнено %1$d из 3 шагов настройки</item>
+        <item quantity="many">Выполнено %1$d из 3 шагов настройки</item>
+        <item quantity="other">Выполнено %1$d из 3 шагов настройки</item>
+    </plurals>
+</resources>

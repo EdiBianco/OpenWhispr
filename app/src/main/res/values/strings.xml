@@ -7,7 +7,7 @@
     <string name="notification_content_title">OpenWispr is running</string>
     <string name="notification_content_text">Tap the floating mic to dictate</string>
     <string name="language">Language</string>
-    <string name="language_summary">Choose the device language, English, or French</string>
+    <string name="language_summary">Choose the app language</string>
     <string name="english">English</string>
     <string name="french">French</string>
     <string name="cancel">Cancel</string>

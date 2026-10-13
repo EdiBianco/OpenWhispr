@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="setup_steps_ready">
+        <item quantity="one">已完成 %1$d/3 个设置步骤</item>
+        <item quantity="other">已完成 %1$d/3 个设置步骤</item>
+    </plurals>
+</resources>

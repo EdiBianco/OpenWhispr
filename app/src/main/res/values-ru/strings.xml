@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenWispr</string>
+    <string name="accessibility_description">Диктовка: записывает аудио, расшифровывает его и вставляет текст в активные поля.</string>
+    <string name="notification_channel_name">Фоновая служба OpenWispr</string>
+    <string name="notification_channel_description">Поддерживает плавающую кнопку диктовки в фоновом режиме</string>
+    <string name="notification_content_title">OpenWispr работает</string>
+    <string name="notification_content_text">Нажмите плавающий микрофон, чтобы диктовать</string>
+    <string name="language">Язык</string>
+    <string name="language_summary">Выберите язык приложения</string>
+    <string name="english">Английский</string>
+    <string name="french">Французский</string>
+    <string name="cancel">Отмена</string>
+
+    <string name="tab_status">Статус</string>
+    <string name="tab_dictation">Диктовка</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="checking">Проверка…</string>
+    <string name="audio_permission">Доступ к аудио</string>
+    <string name="accessibility_service">Служба специальных возможностей</string>
+    <string name="battery_optimization">Оптимизация батареи</string>
+    <string name="background_service">Фоновая служба</string>
+    <string name="background_service_summary">Приостанавливает плавающий микрофон, не отключая специальные возможности</string>
+    <string name="local_models">Локальные модели</string>
+    <string name="cloud_transcription">Использовать облачную расшифровку</string>
+    <string name="requires_groq_key">Требуется ключ API Groq</string>
+    <string name="post_processing">Постобработка</string>
+    <string name="cleanup_transcript">Очистка расшифровки</string>
+    <string name="cleanup_transcript_summary">Использует чат-API Groq для исправления грамматики и пунктуации</string>
+    <string name="voice_commands">Голосовые команды</string>
+
+    <string name="about">О приложении</string>
+    <string name="version">Версия</string>
+    <string name="check_updates">Проверить обновления</string>
+    <string name="tap_check_now">Нажмите, чтобы проверить сейчас</string>
+    <string name="download_starting">Начинаю загрузку…</string>
+    <string name="extracting">Распаковка…</string>
+    <string name="granted">Разрешено</string>
+    <string name="enabled">Включено</string>
+    <string name="tap_grant_permission">Нажмите, чтобы разрешить доступ</string>
+    <string name="tap_enable_settings">Нажмите, чтобы включить в настройках</string>
+    <string name="setup_required">Требуется настройка</string>
+    <string name="save">Сохранить</string>
+    <string name="transcription_languages">Предпочитаемые языки</string>
+    <string name="transcription_languages_auto">Автоопределение</string>
+    <string name="transcription_languages_search">Поиск языков</string>
+    <string name="delete">Удалить</string>
+    <string name="delete_model">Удалить %1$s</string>
+    <string name="delete_model_title">Удалить %1$s?</string>
+    <string name="delete_model_message">Вы сможете скачать его снова позже.</string>
+    <string name="model_covers_languages">Поддерживает ваши языки</string>
+    <string name="model_missing_languages">Не хватает: %1$s</string>
+    <string name="language_switch_title">Сменить локальную модель?</string>
+    <string name="language_switch_message">%1$s поддерживает %2$s. Переключиться на неё?</string>
+    <string name="language_switch_action">Сменить</string>
+    <string name="language_no_model_title">Нет локальной модели для этих языков</string>
+    <string name="language_no_model_message">%1$s поддерживает %2$s. Скачайте её, используйте облачную расшифровку или оставьте текущую модель.</string>
+    <string name="language_download_model">Скачать %1$s</string>
+    <string name="language_use_cloud">Использовать облако</string>
+    <string name="language_keep_current">Оставить текущую</string>
+    <string name="later">Позже</string>
+    <string name="update">Обновить</string>
+    <string name="command_examples">Примеры команд</string>
+    <string name="system_default">Системный</string>
+    <string name="unknown_version">Неизвестно</string>
+    <string name="add_custom_instructions">Свои инструкции</string>
+
+    <string name="setup">Настройка</string>
+    <string name="accessibility_help">Позволяет OpenWispr находить активное текстовое поле и вставлять в него расшифрованный текст.</string>
+    <string name="engine">Движок</string>
+    <string name="tap_add_refinements">Нажмите, чтобы добавить уточнения</string>
+    <string name="voice_commands_summary">Скажите фразу-триггер, чтобы перевести, сократить и не только</string>
+    <string name="trigger_phrase">Фраза-триггер</string>
+    <string name="tap_to_change">Нажмите, чтобы изменить</string>
+    <string name="see_what_you_can_say">Посмотреть, что можно сказать</string>
+    <string name="groq_api_key">Ключ API Groq</string>
+    <string name="tap_to_set">Нажмите, чтобы задать</string>
+    <string name="github">GitHub</string>
+    <string name="github_summary">Исходный код и релизы</string>
+    <string name="open_browser_failed">Не удалось открыть браузер: %1$s</string>
+    <string name="download_model">Скачать %1$s</string>
+    <string name="downloading_model">Скачивание %1$s</string>
+    <string name="model_quality_best_value">★★★ Лучшее соотношение</string>
+    <string name="model_quality_stars">★★★</string>
+    <string name="model_quality_best">★★★★ Лучшее качество</string>
+    <string name="model_quality_fast">★★☆ Быстрая</string>
+    <string name="model_specs">%1$s · %2$d МБ</string>
+    <string name="download_progress">Скачивание: %1$d%%</string>
+    <string name="model_downloaded_tap_to_activate">Модель %1$s скачана. Нажмите, чтобы включить.</string>
+    <string name="model_download_error">Ошибка загрузки: %1$s</string>
+    <string name="unknown_error">Неизвестная ошибка</string>
+    <string name="empty_download_response">Загрузка не вернула данных.</string>
+    <string name="battery_unrestricted">Без ограничений: фоновая работа не будет остановлена для экономии батареи</string>
+    <string name="battery_restriction_hint">Нажмите, чтобы разрешить фоновую работу (рекомендуется)</string>
+    <string name="tap_to_collapse">Нажмите, чтобы свернуть</string>
+    <string name="tap_to_review">Нажмите, чтобы проверить</string>
+    <string name="trigger_phrase_display">«%1$s»</string>
+    <string name="masked_api_key">gsk_…%1$s</string>
+    <string name="masked_api_key_short">gsk_…••••</string>
+
+    <string name="status_ready">Готово — нажмите плавающий микрофон, чтобы диктовать</string>
+    <string name="restricted_settings_title">Дополнительный шаг в Android 13 и новее</string>
+    <string name="restricted_settings_message">Android может ограничивать службы специальных возможностей, установленные не из Google Play. Если переключатель OpenWispr выключен:
+
+1. Нажмите и удерживайте значок OpenWispr и откройте «Сведения о приложении».
+2. Откройте меню в правом верхнем углу и выберите «Разрешить ограниченные настройки».
+3. Вернитесь сюда и включите службу специальных возможностей.</string>
+    <string name="open_accessibility_settings">Открыть настройки специальных возможностей</string>
+    <string name="already_unrestricted">Фоновая работа уже без ограничений.</string>
+    <string name="open_settings_failed">Не удалось открыть настройки: %1$s</string>
+    <string name="open_battery_settings_failed">Не удалось открыть настройки батареи: %1$s</string>
+    <string name="update_available">Доступно обновление</string>
+    <string name="update_available_message">Доступна OpenWispr %1$s. Сейчас вы используете версию %2$s.</string>
+    <string name="whats_new">Что нового</string>
+    <string name="up_to_date">Вы используете последнюю версию (%1$s)</string>
+    <string name="allow_install_updates">Разрешить установку обновлений</string>
+    <string name="allow_install_updates_message">Чтобы установить обновления OpenWispr, разрешите установку неизвестных приложений на следующем экране. Затем вернитесь сюда и снова нажмите «Обновить».</string>
+    <string name="continue_button">Продолжить</string>
+    <string name="downloading_update">Загрузка обновления…</string>
+    <string name="download_failed">Ошибка загрузки: %1$s</string>
+    <string name="installer_start_failed">Не удалось запустить установщик: %1$s</string>
+    <string name="keep_dictation_running">Не останавливать диктовку</string>
+    <string name="battery_warning_message">Управление батареей в Android и некоторые производители могут останавливать фоновые приложения для экономии энергии. Это может прервать диктовку, пока OpenWispr не на экране.
+
+Разрешите фоновую работу без ограничений, чтобы служба диктовки продолжала работать. Эту настройку можно изменить позже в настройках Android.</string>
+    <string name="disable_restrictions">Разрешить фоновую работу</string>
+    <string name="groq_key_help_html">Нужен ключ API Groq? Получите его бесплатно на &lt;a href="https://console.groq.com/keys"&gt;console.groq.com/keys&lt;/a&gt;.</string>
+    <string name="groq_api_key_hint">gsk_…</string>
+    <string name="custom_instructions_hint">Например: всегда писать NASA полностью</string>
+    <string name="custom_instructions_help">Эти инструкции добавляются к встроенным правилам очистки OpenWispr. Они не могут отменить его правила безопасности, форматирования или самоисправления.</string>
+    <string name="default_trigger_phrase">Whisper Command</string>
+    <string name="command_mode_help">Скажите эту фразу в начале записи, чтобы перейти в режим команд вместо обычной диктовки.</string>
+    <string name="command_examples_body">Скажите %1$s и одну из этих команд. Они применяются к тексту, уже находящемуся в поле, или к тексту, надиктованному сразу после команды:
+
+• %1$s, сократи это до двух предложений
+• %1$s, улучши связность
+• %1$s, переведи на английский
+• %1$s, сделай это более официальным
+• %1$s, преобразуй это в список
+
+Команды можно объединять: %1$s, переведи на английский и преобразуй в список. Они применяются в этом порядке.</string>
+    <string name="got_it">Понятно</string>
+    <string name="overlay_content_description">Микрофон диктовки. Дважды нажмите, чтобы начать или остановить запись.</string>
+    <string name="grant_audio_permission">Разрешите доступ к микрофону в настройках OpenWispr.</string>
+    <string name="audio_permission_denied">Доступ к микрофону запрещён.</string>
+    <string name="no_audio_captured">Аудио не записано.</string>
+    <string name="local_transcription_error">Локальная расшифровка не удалась: %1$s</string>
+    <string name="set_groq_key">Добавьте ключ API Groq в настройках OpenWispr.</string>
+    <string name="transcription_error">Расшифровка не удалась: %1$s</string>
+    <string name="empty_transcript">Служба расшифровки не вернула текст.</string>
+    <string name="no_speech_detected">Речь не обнаружена.</string>
+    <string name="cleanup_needs_key">Очистка текста требует ключ API. Будет использована исходная расшифровка.</string>
+    <string name="cleanup_failed_clipboard">Очистка не удалась; исходный текст скопирован в буфер обмена.</string>
+    <string name="voice_commands_need_key">Для голосовых команд нужен ключ API Groq.</string>
+    <string name="no_command_after_trigger">После фразы-триггера команда не обнаружена.</string>
+    <string name="command_failed">Команда не выполнена: %1$s</string>
+    <string name="empty_response">Служба вернула пустой ответ.</string>
+    <string name="command_not_recognized">Команда не распознана. Попробуйте: сократить, перевести, изменить тон или составить список.</string>
+    <string name="command_applied">Команда применена.</string>
+    <string name="replace_failed_clipboard">Не удалось заменить текст в поле; текст скопирован в буфер обмена.</string>
+    <string name="copied_to_clipboard">Скопировано в буфер обмена.</string>
+
+    <string name="text_enhancement">Улучшение текста</string>
+    <string name="text_enhancement_help">После диктовки эта необязательная функция исправляет ошибки расшифровки, пунктуацию и форматирование с помощью выбранной службы очистки.</string>
+    <string name="cleanup_service">Служба очистки</string>
+    <string name="cleanup_provider_title">Служба очистки</string>
+    <string name="groq_recommended">Groq (рекомендуется)</string>
+    <string name="custom_service">Своя служба</string>
+    <string name="choose_cleanup_provider">Groq — рекомендуемый вариант по умолчанию, он использует ключ из настроек. Выберите «Своя служба», чтобы использовать OpenRouter, DeepSeek или другую службу, совместимую с OpenAI.</string>
+    <string name="custom_service_help">Укажите HTTPS-адрес, название модели и ключ, предоставленные вашей службой. Эти данные используются только для улучшения текста.</string>
+    <string name="custom_service_url">URL API службы</string>
+    <string name="custom_service_model">Название модели</string>
+    <string name="custom_service_key">Ключ API этой службы</string>
+    <string name="api_key_hint">Ключ API</string>
+    <string name="openrouter_url_placeholder">https://openrouter.ai/api/v1</string>
+    <string name="cleanup_service_groq_ready">Groq (рекомендуется)</string>
+    <string name="cleanup_service_groq_setup">Groq (рекомендуется) · Добавьте ключ Groq в настройках</string>
+    <string name="cleanup_service_custom_ready">Своя служба · Настроена</string>
+    <string name="cleanup_service_custom_setup">Своя служба · Добавьте ключ</string>
+    <string name="clear_cleanup_key">Очистить ключ своей службы</string>
+    <string name="cleanup_api_key_cleared">Ключ своей службы очищен</string>
+    <string name="invalid_cleanup_url">Введите корректный HTTPS-адрес.</string>
+    <string name="bubble_size_section">Плавающая кнопка диктовки</string>
+    <string name="bubble_size">Размер кнопки</string>
+    <string name="bubble_size_accessibility">Размер плавающей кнопки диктовки</string>
+    <string name="bubble_size_help">От %1$d%% (минимум) до %2$d%% (максимум); %3$d%% — стандартный. Изменения применяются сразу.</string>
+    <string name="bubble_standard">стандартный</string>
+    <string name="bubble_smaller">меньше</string>
+    <string name="bubble_larger">больше</string>
+    <string name="bubble_standard_accessibility">стандартный размер</string>
+    <string name="bubble_smaller_accessibility">меньше стандартного</string>
+    <string name="bubble_larger_accessibility">больше стандартного</string>
+    <string name="percent_unit">процентов</string>
+    <string name="saved_securely">Надёжно сохранено</string>
+
+    <string name="process_text_label">Добавить в словарь OpenWispr</string>
+    <string name="dictionary_no_text">Нет выделенного текста для добавления</string>
+    <string name="dictionary_added">Добавлено в словарь</string>
+    <string name="dictionary_title">Свой словарь</string>
+    <string name="dictionary_summary">Помогает распознавать и правильно писать имена, аббревиатуры и специальные термины при диктовке и очистке</string>
+    <string name="dictionary_word_count">Слов: %1$d</string>
+    <string name="dictionary_input_hint">Одна запись в строке. Пример: OpenWispr | open whisper, open wisper</string>
+    <string name="dictionary_saved_local_message">Словарь помогает распознавать и правильно писать имена, аббревиатуры и специальные термины при диктовке и очистке. Форма до символа | — итоговое написание; варианты после | — только подсказки для произношения и распознавания. Словарь остаётся активным вместе с собственными инструкциями. Старые записи из одного термина тоже работают. Пример: OpenWispr | open whisper, open wisper.</string>
+
+    <string name="about_current_version">Вы используете версию %1$s · нажмите для проверки</string>
+    <string name="key_needed_hint">Не задан — нужен для облака и очистки</string>
+    <string name="status_missing_audio">Разрешите доступ к аудио</string>
+    <string name="status_missing_accessibility">Включите службу специальных возможностей</string>
+    <string name="status_missing_model">Скачайте локальную модель — вкладка «Диктовка»</string>
+    <string name="status_missing_key">Добавьте ключ API Groq — вкладка «Настройки»</string>
+    <string name="status_missing_cleanup_key">Для очистки нужен ключ API — вкладка «Настройки»</string>
+    <string name="status_ready_mode">Готово · %1$s — нажмите плавающую точку, чтобы диктовать</string>
+    <string name="mode_on_device">на устройстве</string>
+    <string name="mode_cloud">облако</string>
+    <string name="mode_cleanup_suffix"> + очистка</string>
+    <string name="view_on_github">Открыть на GitHub</string>
+    <string name="no_release_notes">Для этой версии не опубликованы заметки о выпуске.</string>
+    <string name="update_not_installed_title">Обновление не установлено</string>
+    <string name="update_not_installed_message">Не удалось скачать или проверить обновление, поэтому оно не установлено.
+
+Причина: %1$s</string>
+    <string name="close_dialog">Закрыть</string>
+    <string name="cleanup_skipped_kept_words">Очистка пропущена — сохранены ваши точные слова</string>
+    <string name="cleanup_failed_inserted_raw">Очистка не удалась — вставлен необработанный текст</string>
+</resources>

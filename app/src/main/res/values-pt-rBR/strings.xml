@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenWispr</string>
+    <string name="accessibility_description">Ditado: grava áudio, transcreve e insere o texto nos campos em foco.</string>
+    <string name="notification_channel_name">Serviço em segundo plano do OpenWispr</string>
+    <string name="notification_channel_description">Mantém o botão flutuante de ditado ativo em segundo plano</string>
+    <string name="notification_content_title">O OpenWispr está em execução</string>
+    <string name="notification_content_text">Toque no microfone flutuante para ditar</string>
+    <string name="language">Idioma</string>
+    <string name="language_summary">Escolha o idioma do app</string>
+    <string name="english">Inglês</string>
+    <string name="french">Francês</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="tab_status">Status</string>
+    <string name="tab_dictation">Ditado</string>
+    <string name="tab_settings">Configurações</string>
+    <string name="checking">Verificando…</string>
+    <string name="audio_permission">Permissão de áudio</string>
+    <string name="accessibility_service">Serviço de acessibilidade</string>
+    <string name="battery_optimization">Otimização de bateria</string>
+    <string name="background_service">Serviço em segundo plano</string>
+    <string name="background_service_summary">Pausa o microfone flutuante sem desativar a acessibilidade</string>
+    <string name="local_models">Modelos locais</string>
+    <string name="cloud_transcription">Usar transcrição na nuvem</string>
+    <string name="requires_groq_key">Requer uma chave de API da Groq</string>
+    <string name="post_processing">Pós-processamento</string>
+    <string name="cleanup_transcript">Limpeza da transcrição</string>
+    <string name="cleanup_transcript_summary">Usa a API de chat da Groq para corrigir gramática e pontuação</string>
+    <string name="voice_commands">Comandos de voz</string>
+
+    <string name="about">Sobre</string>
+    <string name="version">Versão</string>
+    <string name="check_updates">Verificar atualizações</string>
+    <string name="tap_check_now">Toque para verificar agora</string>
+    <string name="download_starting">Iniciando o download…</string>
+    <string name="extracting">Extraindo…</string>
+    <string name="granted">Concedida</string>
+    <string name="enabled">Ativado</string>
+    <string name="tap_grant_permission">Toque para conceder a permissão</string>
+    <string name="tap_enable_settings">Toque para ativar nas configurações</string>
+    <string name="setup_required">Configuração necessária</string>
+    <string name="save">Salvar</string>
+    <string name="transcription_languages">Idiomas preferidos</string>
+    <string name="transcription_languages_auto">Detecção automática</string>
+    <string name="transcription_languages_search">Pesquisar idiomas</string>
+    <string name="delete">Excluir</string>
+    <string name="delete_model">Excluir %1$s</string>
+    <string name="delete_model_title">Excluir %1$s?</string>
+    <string name="delete_model_message">Você poderá baixá-lo novamente depois.</string>
+    <string name="model_covers_languages">Cobre seus idiomas</string>
+    <string name="model_missing_languages">Faltando: %1$s</string>
+    <string name="language_switch_title">Trocar o modelo local?</string>
+    <string name="language_switch_message">%1$s cobre %2$s. Trocar para este modelo?</string>
+    <string name="language_switch_action">Trocar</string>
+    <string name="language_no_model_title">Nenhum modelo local para estes idiomas</string>
+    <string name="language_no_model_message">%1$s cobre %2$s. Baixe-o, use a transcrição na nuvem ou mantenha o modelo atual.</string>
+    <string name="language_download_model">Baixar %1$s</string>
+    <string name="language_use_cloud">Usar a nuvem</string>
+    <string name="language_keep_current">Manter o atual</string>
+    <string name="later">Depois</string>
+    <string name="update">Atualizar</string>
+    <string name="command_examples">Exemplos de comandos</string>
+    <string name="system_default">Padrão do sistema</string>
+    <string name="unknown_version">Desconhecida</string>
+    <string name="add_custom_instructions">Instruções personalizadas</string>
+
+    <string name="setup">Configuração</string>
+    <string name="accessibility_help">Permite que o OpenWispr detecte o campo de texto em foco e insira o texto transcrito.</string>
+    <string name="engine">Mecanismo</string>
+    <string name="tap_add_refinements">Toque para adicionar mais ajustes</string>
+    <string name="voice_commands_summary">Diga uma frase de ativação para traduzir, resumir e muito mais</string>
+    <string name="trigger_phrase">Frase de ativação</string>
+    <string name="tap_to_change">Toque para alterar</string>
+    <string name="see_what_you_can_say">Veja o que você pode dizer</string>
+    <string name="groq_api_key">Chave de API da Groq</string>
+    <string name="tap_to_set">Toque para definir</string>
+    <string name="github">GitHub</string>
+    <string name="github_summary">Ver o código-fonte e as versões</string>
+    <string name="open_browser_failed">Não foi possível abrir o navegador: %1$s</string>
+    <string name="download_model">Baixar %1$s</string>
+    <string name="downloading_model">Baixando %1$s</string>
+    <string name="model_quality_best_value">★★★ Melhor custo-benefício</string>
+    <string name="model_quality_stars">★★★</string>
+    <string name="model_quality_best">★★★★ Melhor qualidade</string>
+    <string name="model_quality_fast">★★☆ Rápido</string>
+    <string name="model_specs">%1$s · %2$d MB</string>
+    <string name="download_progress">Baixando: %1$d%%</string>
+    <string name="model_downloaded_tap_to_activate">Modelo %1$s baixado. Toque para ativar.</string>
+    <string name="model_download_error">Erro de download: %1$s</string>
+    <string name="unknown_error">Erro desconhecido</string>
+    <string name="empty_download_response">O download não retornou dados.</string>
+    <string name="battery_unrestricted">Sem restrições: a atividade em segundo plano não será interrompida para economizar bateria</string>
+    <string name="battery_restriction_hint">Toque para permitir a atividade em segundo plano (recomendado)</string>
+    <string name="tap_to_collapse">Toque para recolher</string>
+    <string name="tap_to_review">Toque para revisar</string>
+    <string name="trigger_phrase_display">“%1$s”</string>
+    <string name="masked_api_key">gsk_…%1$s</string>
+    <string name="masked_api_key_short">gsk_…••••</string>
+
+    <string name="status_ready">Pronto — toque no microfone flutuante para ditar</string>
+    <string name="restricted_settings_title">Um passo extra no Android 13 ou superior</string>
+    <string name="restricted_settings_message">O Android pode restringir serviços de acessibilidade instalados fora da Google Play. Se a opção do OpenWispr estiver desativada:
+
+1. Pressione e segure o ícone do OpenWispr e abra as Informações do app.
+2. Abra o menu no canto superior direito e escolha Permitir configurações restritas.
+3. Volte aqui e ative o serviço de acessibilidade.</string>
+    <string name="open_accessibility_settings">Abrir configurações de acessibilidade</string>
+    <string name="already_unrestricted">A atividade em segundo plano já está sem restrições.</string>
+    <string name="open_settings_failed">Não foi possível abrir as configurações: %1$s</string>
+    <string name="open_battery_settings_failed">Não foi possível abrir as configurações de bateria: %1$s</string>
+    <string name="update_available">Atualização disponível</string>
+    <string name="update_available_message">O OpenWispr %1$s está disponível. Você está usando a versão %2$s.</string>
+    <string name="whats_new">Novidades</string>
+    <string name="up_to_date">Você está usando a versão mais recente (%1$s)</string>
+    <string name="allow_install_updates">Permitir instalar atualizações</string>
+    <string name="allow_install_updates_message">Para instalar atualizações do OpenWispr, permita a instalação de apps desconhecidos na próxima tela. Depois volte aqui e toque em Atualizar novamente.</string>
+    <string name="continue_button">Continuar</string>
+    <string name="downloading_update">Baixando a atualização…</string>
+    <string name="download_failed">Falha no download: %1$s</string>
+    <string name="installer_start_failed">Não foi possível iniciar o instalador: %1$s</string>
+    <string name="keep_dictation_running">Manter o ditado funcionando</string>
+    <string name="battery_warning_message">O gerenciamento de bateria do Android ou alguns fabricantes podem parar apps em segundo plano para economizar energia. Isso pode interromper o ditado enquanto o OpenWispr não estiver na tela.
+
+Permita a atividade em segundo plano sem restrições para que o serviço de ditado continue funcionando. Você pode alterar essa configuração depois nas configurações do Android.</string>
+    <string name="disable_restrictions">Permitir atividade em segundo plano</string>
+    <string name="groq_key_help_html">Precisa de uma chave de API da Groq? Gere uma gratuitamente em &lt;a href="https://console.groq.com/keys"&gt;console.groq.com/keys&lt;/a&gt;.</string>
+    <string name="groq_api_key_hint">gsk_…</string>
+    <string name="custom_instructions_hint">Por exemplo: escreva sempre NASA por extenso</string>
+    <string name="custom_instructions_help">Estas instruções são somadas às regras de limpeza integradas do OpenWispr. Elas não podem substituir a segurança, a formatação ou a autocorreção do app.</string>
+    <string name="default_trigger_phrase">Whisper Command</string>
+    <string name="command_mode_help">Diga esta frase no início de uma gravação para entrar no modo de comando, em vez do ditado normal.</string>
+    <string name="command_examples_body">Diga %1$s, seguido de um destes comandos. Eles se aplicam ao texto que já está no campo ou ao texto ditado logo após o comando:
+
+• %1$s, resuma isto em duas frases
+• %1$s, melhore o fluxo
+• %1$s, traduza para o inglês
+• %1$s, deixe isto mais formal
+• %1$s, transforme isto em uma lista
+
+Você pode combinar comandos: %1$s, traduza para o inglês e transforme em uma lista. Eles são aplicados nessa ordem.</string>
+    <string name="got_it">Entendi</string>
+    <string name="overlay_content_description">Microfone de ditado. Toque duas vezes para iniciar ou parar a gravação.</string>
+    <string name="grant_audio_permission">Permita o acesso ao microfone nas configurações do OpenWispr.</string>
+    <string name="audio_permission_denied">Permissão de microfone negada.</string>
+    <string name="no_audio_captured">Nenhum áudio foi capturado.</string>
+    <string name="local_transcription_error">Falha na transcrição local: %1$s</string>
+    <string name="set_groq_key">Adicione sua chave de API da Groq nas configurações do OpenWispr.</string>
+    <string name="transcription_error">Falha na transcrição: %1$s</string>
+    <string name="empty_transcript">O serviço de transcrição não retornou texto.</string>
+    <string name="no_speech_detected">Nenhuma fala detectada.</string>
+    <string name="cleanup_needs_key">A limpeza de texto requer uma chave de API. A transcrição original será usada.</string>
+    <string name="cleanup_failed_clipboard">A limpeza falhou; o texto original foi copiado para a área de transferência.</string>
+    <string name="voice_commands_need_key">Os comandos de voz requerem uma chave de API da Groq.</string>
+    <string name="no_command_after_trigger">Nenhum comando foi detectado após a frase de ativação.</string>
+    <string name="command_failed">Falha no comando: %1$s</string>
+    <string name="empty_response">O serviço retornou uma resposta vazia.</string>
+    <string name="command_not_recognized">Comando não reconhecido. Tente resumir, traduzir, mudar o tom ou criar uma lista.</string>
+    <string name="command_applied">Comando aplicado.</string>
+    <string name="replace_failed_clipboard">Não foi possível substituir o campo; o texto foi copiado para a área de transferência.</string>
+    <string name="copied_to_clipboard">Copiado para a área de transferência.</string>
+
+    <string name="text_enhancement">Aprimoramento de texto</string>
+    <string name="text_enhancement_help">Depois de ditar, este recurso opcional corrige erros de transcrição, pontuação e formatação usando o serviço de limpeza selecionado.</string>
+    <string name="cleanup_service">Serviço de limpeza</string>
+    <string name="cleanup_provider_title">Serviço de limpeza</string>
+    <string name="groq_recommended">Groq (recomendado)</string>
+    <string name="custom_service">Serviço personalizado</string>
+    <string name="choose_cleanup_provider">A Groq é a opção padrão recomendada e usa a chave salva nas Configurações. Escolha Serviço personalizado para usar o OpenRouter, o DeepSeek ou outro serviço compatível com a OpenAI.</string>
+    <string name="custom_service_help">Informe o endereço HTTPS, o nome do modelo e a chave fornecidos pelo seu serviço. Esses dados são usados apenas no aprimoramento de texto.</string>
+    <string name="custom_service_url">URL da API do serviço</string>
+    <string name="custom_service_model">Nome do modelo</string>
+    <string name="custom_service_key">Chave de API deste serviço</string>
+    <string name="api_key_hint">Chave de API</string>
+    <string name="openrouter_url_placeholder">https://openrouter.ai/api/v1</string>
+    <string name="cleanup_service_groq_ready">Groq (recomendado)</string>
+    <string name="cleanup_service_groq_setup">Groq (recomendado) · Adicione sua chave da Groq nas Configurações</string>
+    <string name="cleanup_service_custom_ready">Serviço personalizado · Configurado</string>
+    <string name="cleanup_service_custom_setup">Serviço personalizado · Adicione a chave</string>
+    <string name="clear_cleanup_key">Limpar a chave do serviço personalizado</string>
+    <string name="cleanup_api_key_cleared">Chave do serviço personalizado limpa</string>
+    <string name="invalid_cleanup_url">Informe uma URL HTTPS válida.</string>
+    <string name="bubble_size_section">Botão flutuante de ditado</string>
+    <string name="bubble_size">Tamanho do botão</string>
+    <string name="bubble_size_accessibility">Tamanho do botão flutuante de ditado</string>
+    <string name="bubble_size_help">De %1$d%% (menor) a %2$d%% (maior); %3$d%% é o padrão. As mudanças são aplicadas na hora.</string>
+    <string name="bubble_standard">padrão</string>
+    <string name="bubble_smaller">menor</string>
+    <string name="bubble_larger">maior</string>
+    <string name="bubble_standard_accessibility">tamanho padrão</string>
+    <string name="bubble_smaller_accessibility">menor que o padrão</string>
+    <string name="bubble_larger_accessibility">maior que o padrão</string>
+    <string name="percent_unit">por cento</string>
+    <string name="saved_securely">Salvo com segurança</string>
+
+    <string name="process_text_label">Adicionar ao dicionário do OpenWispr</string>
+    <string name="dictionary_no_text">Nenhum texto selecionado para adicionar</string>
+    <string name="dictionary_added">Adicionado ao dicionário</string>
+    <string name="dictionary_title">Dicionário personalizado</string>
+    <string name="dictionary_summary">Ajuda a reconhecer e escrever nomes, siglas e termos especializados durante o ditado e a limpeza</string>
+    <string name="dictionary_word_count">%1$d palavras</string>
+    <string name="dictionary_input_hint">Uma entrada por linha. Exemplo: OpenWispr | open whisper, open wisper</string>
+    <string name="dictionary_saved_local_message">O dicionário ajuda a reconhecer e escrever nomes, siglas e termos especializados durante o ditado e a limpeza. A forma antes de | é a grafia final; as variantes depois de | são apenas dicas de pronúncia e reconhecimento. O dicionário continua ativo com as instruções personalizadas. Linhas antigas com um único termo ainda funcionam. Exemplo: OpenWispr | open whisper, open wisper.</string>
+
+    <string name="about_current_version">Você está na versão %1$s · toque para verificar</string>
+    <string name="key_needed_hint">Não definida — necessária para a nuvem e a limpeza</string>
+    <string name="status_missing_audio">Conceda a permissão de áudio</string>
+    <string name="status_missing_accessibility">Ative o serviço de acessibilidade</string>
+    <string name="status_missing_model">Baixe um modelo local — aba Ditado</string>
+    <string name="status_missing_key">Adicione sua chave da API da Groq — aba Configurações</string>
+    <string name="status_missing_cleanup_key">A limpeza precisa de uma chave de API — aba Configurações</string>
+    <string name="status_ready_mode">Pronto · %1$s — toque no ponto flutuante para ditar</string>
+    <string name="mode_on_device">no dispositivo</string>
+    <string name="mode_cloud">nuvem</string>
+    <string name="mode_cleanup_suffix"> + limpeza</string>
+    <string name="view_on_github">Ver no GitHub</string>
+    <string name="no_release_notes">Nenhuma nota de versão foi publicada para esta versão.</string>
+    <string name="update_not_installed_title">Atualização não instalada</string>
+    <string name="update_not_installed_message">Não foi possível baixar ou verificar a atualização, então ela não foi instalada.
+
+Motivo: %1$s</string>
+    <string name="close_dialog">Fechar</string>
+    <string name="cleanup_skipped_kept_words">Limpeza ignorada — suas palavras exatas foram mantidas</string>
+    <string name="cleanup_failed_inserted_raw">A limpeza falhou — o texto bruto foi inserido</string>
+</resources>
