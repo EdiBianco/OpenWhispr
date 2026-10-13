@@ -25,6 +25,7 @@ It supports:
 - **Free Groq API key**: the settings screen asks for a free [Groq API key](https://console.groq.com/keys) (`gsk_...`), with a direct link to get one
 - **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation — see [Voice commands](#voice-commands) below
 - **Multilingual**: works across languages for both transcription and cleanup
+- **Experimental multiple-language support**: pick preferred languages in the Dictation tab; the app suggests a local model that covers them. Translations of the app interface (Italian, Spanish, Russian, Japanese, Portuguese (Brasil), Chinese (Simplified)) are machine-drafted and still being reviewed by native speakers. Quality varies by language and model, so please report problems
 - **Smart overlay visibility**: the mic overlay shows only while a text field is focused, fading in/out, using three redundant signals (accessibility focus events, a periodic focus poll, and system keyboard visibility) so it still shows up in apps with non-standard text composers (e.g. WhatsApp, Telegram)
 - **Stability**: hardened against crashes and killed background services, with a toggle to pause dictation without touching the Accessibility permission
 - **Recording beep**: a short beep signals the change from recording to transcription, after the microphone closes, in both cloud and local modes. It uses Android's notification audio stream, so device sound settings can mute it

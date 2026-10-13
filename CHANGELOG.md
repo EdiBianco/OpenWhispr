@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.12.1
+- Experimental multiple-language support: the app interface is now available in Italian, Spanish, Russian, Japanese, Portuguese (Brasil), and Chinese (Simplified). Translations are machine-drafted and still being reviewed
+- Language picker in Settings shows each language in its own name
+
 ## 3.12.0
 - New "Preferred languages" setting in the Dictation tab. Default is Auto-detect. Pick one language to force it, or several to tell the transcriber which languages to expect
 - Local mode: when your languages aren't covered by the active model, the app offers to switch to a downloaded model, download one, or use cloud transcription
