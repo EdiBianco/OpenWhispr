@@ -45,7 +45,7 @@ jobs:
       - name: Rename APK with version
         run: |
           mkdir -p dist
-          cp app/build/outputs/apk/debug/*.apk "dist/openwispr-v${{ steps.version.outputs.version }}-debug.apk"
+          cp app/build/outputs/apk/debug/*.apk "dist/openwispr-v${{ steps.version.outputs.version }}.apk"
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
