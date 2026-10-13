@@ -41,6 +41,9 @@
     <string name="tap_enable_settings">Touchez pour activer dans les paramètres</string>
     <string name="setup_required">Configuration requise</string>
     <string name="save">Enregistrer</string>
+    <string name="transcription_languages">Langues préférées</string>
+    <string name="transcription_languages_auto">Détection automatique</string>
+    <string name="transcription_languages_search">Rechercher une langue</string>
     <string name="later">Plus tard</string>
     <string name="update">Mettre à jour</string>
     <string name="command_examples">Exemples de commandes</string>

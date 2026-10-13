@@ -55,6 +55,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var customInstructionsRowSub: TextView
     private lateinit var customInstructionsRow: LinearLayout
     private lateinit var cleanupProviderRow: LinearLayout
+    private lateinit var languageRowSub: TextView
+    private lateinit var languageRow: LinearLayout
     private lateinit var modelContainer: LinearLayout
     private lateinit var voiceCommandsDetailContainer: LinearLayout
     private lateinit var triggerPhraseRowSub: TextView
@@ -259,6 +261,12 @@ class MainActivity : AppCompatActivity() {
         for (m in MODEL_CATALOG) modelGroup.addView(buildModelRow(m))
         modelContainer.addView(modelGroup)
         dictationContainer.addView(modelContainer)
+
+        languageRow = settingsRow(getString(R.string.transcription_languages), "") {
+            promptTranscriptionLanguages()
+        }
+        languageRowSub = languageRow.findViewWithTag("subtitle")
+        dictationContainer.addView(group().apply { addView(languageRow) })
 
         dictationContainer.addView(sectionHeader(getString(R.string.text_enhancement)))
         val postGroup = group()
@@ -655,6 +663,8 @@ class MainActivity : AppCompatActivity() {
         batteryDot.background = dotDrawable(if (unrestricted) DOT_GREEN else DOT_RED)
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
+        languageRow.visibility = if (useLocal) View.GONE else View.VISIBLE
+        languageRowSub.text = languageSummary()
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
         cleanupProviderRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
         cleanupProviderRowSub.text = cleanupProviderSummary()
@@ -940,6 +950,65 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton(getString(R.string.cancel), null)
             .show()
+    }
+
+    private fun languageSummary(): String {
+        val selected = TranscriptionLanguages.saved(prefs())
+        if (selected.isEmpty()) return getString(R.string.transcription_languages_auto)
+        return TranscriptionLanguages.ordered(selected)
+            .filter { it in selected }
+            .joinToString(", ") { TranscriptionLanguages.displayName(it) }
+    }
+
+    /** Searchable checklist; selected languages stay on top. Save with no
+     * selection (or the Auto button) returns to auto-detect. */
+    private fun promptTranscriptionLanguages() {
+        val working = TranscriptionLanguages.saved(prefs()).toMutableSet()
+        val search = EditText(this).apply {
+            hint = getString(R.string.transcription_languages_search)
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+        val list = vertical(0)
+        fun renderList(query: String) {
+            list.removeAllViews()
+            val q = query.trim()
+            TranscriptionLanguages.ordered(working)
+                .filter { q.isEmpty() || TranscriptionLanguages.displayName(it).contains(q, ignoreCase = true) || it.contains(q, ignoreCase = true) }
+                .forEach { code ->
+                    list.addView(CheckBox(this).apply {
+                        text = "${TranscriptionLanguages.displayName(code)} ($code)"
+                        isChecked = code in working
+                        setOnCheckedChangeListener { _, checked ->
+                            if (checked) working.add(code) else working.remove(code)
+                        }
+                    })
+                }
+        }
+        search.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: android.text.Editable?) = renderList(s?.toString().orEmpty())
+        })
+        renderList("")
+        val container = vertical(dp(24), dp(8)).apply {
+            addView(search)
+            addView(ScrollView(this@MainActivity).apply {
+                addView(list)
+                layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(360))
+            })
+        }
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.transcription_languages)
+            .setView(container)
+            .setPositiveButton(R.string.save) { _, _ -> saveTranscriptionLanguages(working) }
+            .setNeutralButton(R.string.transcription_languages_auto) { _, _ -> saveTranscriptionLanguages(emptySet()) }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun saveTranscriptionLanguages(selected: Set<String>) {
+        prefs().edit().putStringSet(TranscriptionLanguages.PREF_KEY, selected.toSet()).apply()
+        refresh()
     }
 
     private fun promptCleanupProvider() {

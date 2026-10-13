@@ -45,12 +45,30 @@ object TranscriberClient {
         return if (selected.isEmpty()) "" else prompt
     }
 
-    internal fun transcriptionRequest(wavData: ByteArray, apiKey: String, vocabulary: List<String>): Request {
+    /** Whisper takes one language per request, so one selected language is
+     * forced; several are only described in the prompt; none means auto-detect. */
+    internal fun languageHint(languages: Set<String>): String? {
+        if (languages.size < 2) return null
+        val names = TranscriptionLanguages.ordered(languages)
+            .filter { it in languages }
+            .map { TranscriptionLanguages.displayName(it, java.util.Locale.ENGLISH) }
+        return "The speaker uses these languages: ${names.joinToString(", ")}."
+    }
+
+    internal fun transcriptionRequest(
+        wavData: ByteArray,
+        apiKey: String,
+        vocabulary: List<String>,
+        languages: Set<String> = emptySet(),
+    ): Request {
         val multipart = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("model", TRANSCRIPTION_MODEL)
             .addFormDataPart("file", "audio.wav", wavData.toRequestBody("audio/wav".toMediaType()))
-        dictionaryPrompt(vocabulary).takeIf(String::isNotEmpty)?.let { multipart.addFormDataPart("prompt", it) }
+        languages.singleOrNull()?.let { multipart.addFormDataPart("language", it) }
+        listOfNotNull(languageHint(languages), dictionaryPrompt(vocabulary).takeIf(String::isNotEmpty))
+            .takeIf { it.isNotEmpty() }
+            ?.let { multipart.addFormDataPart("prompt", it.joinToString(" ")) }
         return Request.Builder()
             .url(TRANSCRIPTION_URL)
             .header("Authorization", "Bearer $apiKey")
@@ -62,9 +80,10 @@ object TranscriberClient {
         wavData: ByteArray,
         apiKey: String,
         vocabulary: List<String> = emptyList(),
+        languages: Set<String> = emptySet(),
         callback: (Result) -> Unit,
     ) {
-        client.newCall(transcriptionRequest(wavData, apiKey, vocabulary)).enqueue(object : Callback {
+        client.newCall(transcriptionRequest(wavData, apiKey, vocabulary, languages)).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) = callback(Result(null, e.message))
             override fun onResponse(call: Call, response: Response) =
                 callback(parseResponse(response.body?.string() ?: ""))
