@@ -18,7 +18,16 @@ data class Model(
     val architecture: ModelArchitecture,
     val hotwordModelingUnit: String? = null,
     val recommended: Boolean = false,
+    /** Language codes the model transcribes. English-only models list just "en". */
+    val languages: Set<String> = setOf("en"),
 )
+
+private val PARAKEET_V3_LANGUAGES = setOf(
+    "bg", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "de", "el", "hu", "it", "lv", "lt",
+    "mt", "pl", "pt", "ro", "sk", "sl", "es", "sv", "ru", "uk",
+)
+
+private val WHISPER_LANGUAGES = TranscriptionLanguages.CODES.toSet()
 
 val MODEL_CATALOG = listOf(
     Model("Parakeet 110M", "sherpa-onnx-nemo-parakeet_tdt_ctc_110m-en-36000-int8",
@@ -26,9 +35,14 @@ val MODEL_CATALOG = listOf(
     Model("Whisper Base", "sherpa-onnx-whisper-base.en",
         199, R.string.model_quality_stars, ModelArchitecture.WHISPER),
     Model("Parakeet 0.6B", "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
-        465, R.string.model_quality_best, ModelArchitecture.NEMO_TRANSDUCER, hotwordModelingUnit = "cjkchar"),
+        465, R.string.model_quality_best, ModelArchitecture.NEMO_TRANSDUCER, hotwordModelingUnit = "cjkchar",
+        languages = PARAKEET_V3_LANGUAGES),
     Model("Moonshine Tiny", "sherpa-onnx-moonshine-tiny-en-int8",
         103, R.string.model_quality_fast, ModelArchitecture.MOONSHINE),
+    Model("Whisper Base (multilingual)", "sherpa-onnx-whisper-base",
+        207, R.string.model_quality_stars, ModelArchitecture.WHISPER, languages = WHISPER_LANGUAGES),
+    Model("Whisper Small (multilingual)", "sherpa-onnx-whisper-small",
+        639, R.string.model_quality_best, ModelArchitecture.WHISPER, languages = WHISPER_LANGUAGES),
 )
 
 sealed class DownloadState {

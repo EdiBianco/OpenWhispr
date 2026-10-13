@@ -73,7 +73,8 @@ class MainActivity : AppCompatActivity() {
         val radio: MaterialRadioButton,
         val progress: LinearProgressIndicator,
         val subtitle: TextView,
-        val dlBtn: MaterialButton
+        val dlBtn: MaterialButton,
+        val delBtn: MaterialButton,
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -517,6 +518,15 @@ class MainActivity : AppCompatActivity() {
             setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary))
         }
 
+        val delBtn = MaterialButton(this, null, com.google.android.material.R.attr.materialIconButtonStyle).apply {
+            text = "✕"
+            contentDescription = getString(R.string.delete_model, model.name)
+            textSize = 16f
+            setTextColor(attrColor(android.R.attr.textColorSecondary))
+            visibility = View.GONE
+            setOnClickListener { confirmDeleteModel(model) }
+        }
+
         val progress = LinearProgressIndicator(this).apply {
             visibility = View.GONE
             layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(4)).apply {
@@ -527,6 +537,7 @@ class MainActivity : AppCompatActivity() {
         val rightContainer = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
+            addView(delBtn)
             addView(dlBtn)
             addView(radio)
         }
@@ -543,7 +554,7 @@ class MainActivity : AppCompatActivity() {
         textContainer.addView(progress)
 
         modelRows[model.archive] = ModelRowViews(
-            radio, progress, textContainer.findViewWithTag("subtitle"), dlBtn
+            radio, progress, textContainer.findViewWithTag("subtitle"), dlBtn, delBtn
         )
         refreshCard(model)
 
@@ -609,10 +620,31 @@ class MainActivity : AppCompatActivity() {
         views.radio.isChecked = active
         views.radio.visibility = if (installed) View.VISIBLE else View.GONE
         views.dlBtn.visibility = if (installed) View.GONE else View.VISIBLE
+        views.delBtn.visibility = if (installed && !active) View.VISIBLE else View.GONE
 
         if (views.progress.visibility == View.GONE) {
-            views.subtitle.text = getString(R.string.model_specs, getString(model.qualityResId), model.sizeMb)
+            val specs = getString(R.string.model_specs, getString(model.qualityResId), model.sizeMb)
+            val needed = TranscriptionLanguages.saved(prefs())
+            views.subtitle.text = if (needed.isEmpty()) specs else {
+                val missing = needed - model.languages
+                val coverage = if (missing.isEmpty()) getString(R.string.model_covers_languages)
+                    else getString(R.string.model_missing_languages, missing.joinToString { TranscriptionLanguages.displayName(it) })
+                "$specs\n$coverage"
+            }
         }
+    }
+
+    private fun confirmDeleteModel(model: Model) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle(getString(R.string.delete_model_title, model.name))
+            .setMessage(R.string.delete_model_message)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                ModelDownloader.delete(this, model)
+                refreshAllCards()
+                refresh()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun refreshAllCards() = MODEL_CATALOG.forEach { refreshCard(it) }
@@ -663,7 +695,6 @@ class MainActivity : AppCompatActivity() {
         batteryDot.background = dotDrawable(if (unrestricted) DOT_GREEN else DOT_RED)
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
-        languageRow.visibility = if (useLocal) View.GONE else View.VISIBLE
         languageRowSub.text = languageSummary()
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
         cleanupProviderRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
@@ -1009,6 +1040,41 @@ class MainActivity : AppCompatActivity() {
     private fun saveTranscriptionLanguages(selected: Set<String>) {
         prefs().edit().putStringSet(TranscriptionLanguages.PREF_KEY, selected.toSet()).apply()
         refresh()
+        if (prefs().getBoolean("use_local", true)) WhisperAccessibilityService.instance?.reloadModel()
+        suggestModelForLanguages(selected)
+    }
+
+    /** Offers a local model that covers [needed] when the current one doesn't.
+     * Cloud transcription already covers every Whisper language, so no prompt there. */
+    private fun suggestModelForLanguages(needed: Set<String>) {
+        if (needed.isEmpty() || !prefs().getBoolean("use_local", true)) return
+        val current = MODEL_CATALOG.firstOrNull { it.archive == prefs().getString("model_name", "") }
+        if (current?.languages?.containsAll(needed) == true) return
+
+        val fits = MODEL_CATALOG.filter { it.languages.containsAll(needed) }
+        val names = needed.joinToString { TranscriptionLanguages.displayName(it) }
+        val installedFit = fits.filter { ModelDownloader.isInstalled(this, it) }
+        if (installedFit.isNotEmpty()) {
+            val target = installedFit.sortedByDescending { it.sizeMb }.first()
+            android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.language_switch_title)
+                .setMessage(getString(R.string.language_switch_message, target.name, names))
+                .setPositiveButton(R.string.language_switch_action) { _, _ -> selectModel(target.archive) }
+                .setNegativeButton(R.string.language_keep_current, null)
+                .show()
+        } else {
+            val best = fits.sortedByDescending { it.sizeMb }.first()
+            android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.language_no_model_title)
+                .setMessage(getString(R.string.language_no_model_message, best.name, names))
+                .setPositiveButton(getString(R.string.language_download_model, best.name)) { _, _ -> onModelAction(best) }
+                .setNeutralButton(R.string.language_use_cloud) { _, _ ->
+                    prefs().edit().putBoolean("use_local", false).apply()
+                    refresh()
+                }
+                .setNegativeButton(R.string.language_keep_current, null)
+                .show()
+        }
     }
 
     private fun promptCleanupProvider() {

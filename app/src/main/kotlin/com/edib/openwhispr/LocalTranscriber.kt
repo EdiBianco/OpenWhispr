@@ -49,7 +49,8 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
             return modelsDir.listFiles()?.filter { it.isDirectory }?.map { it.name } ?: emptyList()
         }
 
-        fun create(ctx: Context, modelName: String): LocalTranscriber? {
+        /** [language] is a Whisper code for multilingual models; "" auto-detects. */
+        fun create(ctx: Context, modelName: String, language: String = ""): LocalTranscriber? {
             val modelDir = File(ctx.filesDir, "models/$modelName")
             if (!modelDir.exists()) {
                 Log.e(TAG, "Model directory is missing: $modelName")
@@ -59,7 +60,7 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
             val vocabulary = Dictionary.load(ctx.getSharedPreferences("openwhispr", Context.MODE_PRIVATE))
             val hotwordsFile = File(ctx.filesDir, "dictionary/hotwords.txt")
             val config = try {
-                buildRecognizerConfig(modelDir, vocabulary, hotwordsFile)
+                buildRecognizerConfig(modelDir, vocabulary, hotwordsFile, language)
             } catch (e: HotwordConfigurationException) {
                 hotwordsFile.delete()
                 Log.e(TAG, "Hotword configuration failed: model=$modelName, cause=${e.message}")
@@ -108,9 +109,14 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
             dir: File,
             vocabulary: List<String>,
             hotwordsFile: File,
+            language: String = "",
         ): OfflineRecognizerConfig? {
             val detected = detectModelConfig(dir) ?: return null
             val model = MODEL_CATALOG.firstOrNull { it.archive == dir.name }
+            // English-only Whisper (.en) keeps its built-in language.
+            if (detected.architecture == ModelArchitecture.WHISPER && model != null && model.languages.size > 1) {
+                detected.config.modelConfig.whisper.language = language
+            }
             return configureHotwords(detected.config, detected.architecture, model, vocabulary, hotwordsFile)
         }
 

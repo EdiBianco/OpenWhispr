@@ -10,7 +10,10 @@ etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
 ## 3.12.0
-- New "Preferred languages" setting in the Dictation tab (cloud transcription). Default is Auto-detect. Pick one language to force it, or several to tell the transcriber which languages to expect
+- New "Preferred languages" setting in the Dictation tab. Default is Auto-detect. Pick one language to force it, or several to tell the transcriber which languages to expect
+- Local mode: when your languages aren't covered by the active model, the app offers to switch to a downloaded model, download one, or use cloud transcription
+- New local models: Whisper Base and Whisper Small (multilingual)
+- Downloaded local models that aren't in use can be deleted from the model list
 
 ## 3.11.5
 - Silent recordings are no longer sent for transcription, so the app no longer inserts made-up text such as "Thank you." when you didn't speak

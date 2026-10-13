@@ -24,6 +24,10 @@ object TranscriptionLanguages {
     fun saved(prefs: SharedPreferences): Set<String> =
         prefs.getStringSet(PREF_KEY, emptySet()).orEmpty().filter { it in CODES }.toSet()
 
+    /** Language a local multilingual Whisper is loaded with: the single
+     * selection, or "" for auto-detect (several or none). */
+    fun localWhisperLanguage(prefs: SharedPreferences): String = saved(prefs).singleOrNull().orEmpty()
+
     /** Selected languages first, then the rest; each group sorted by name. */
     fun ordered(selected: Set<String>): List<String> =
         CODES.sortedWith(compareBy<String> { it !in selected }.thenBy { displayName(it) })

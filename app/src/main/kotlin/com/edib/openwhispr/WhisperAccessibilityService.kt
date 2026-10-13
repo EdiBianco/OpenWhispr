@@ -239,11 +239,11 @@ class WhisperAccessibilityService : AccessibilityService() {
                 if (models.isNotEmpty()) {
                     Log.i(TAG, "Auto-detected model: ${models.first()}")
                     attempted = true
-                    localTranscriber = LocalTranscriber.create(this, models.first())
+                    localTranscriber = LocalTranscriber.create(this, models.first(), TranscriptionLanguages.localWhisperLanguage(prefs()))
                 }
             } else {
                 attempted = true
-                localTranscriber = LocalTranscriber.create(this, modelName)
+                localTranscriber = LocalTranscriber.create(this, modelName, TranscriptionLanguages.localWhisperLanguage(prefs()))
             }
             if (localTranscriber != null) {
                 Log.i(TAG, "Local transcription ready")
