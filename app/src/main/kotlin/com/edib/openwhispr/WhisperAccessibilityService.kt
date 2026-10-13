@@ -328,7 +328,12 @@ class WhisperAccessibilityService : AccessibilityService() {
     private fun updateOverlayVisibility() {
         val shouldShow = masterEnabled() &&
             (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
-        if (shouldShow == overlayShown) return
+        if (shouldShow == overlayShown) {
+            // Self-heal: the view can drift from overlayShown (e.g. after an app
+            // switch), leaving it hidden while it should show. Re-show it here.
+            if (shouldShow && overlayView?.visibility != View.VISIBLE) animateOverlayIn()
+            return
+        }
         overlayShown = shouldShow
         if (shouldShow) animateOverlayIn() else animateOverlayOut()
     }
