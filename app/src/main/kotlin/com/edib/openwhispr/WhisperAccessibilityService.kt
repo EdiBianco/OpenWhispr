@@ -888,6 +888,11 @@ class WhisperAccessibilityService : AccessibilityService() {
                 handleVoiceCommand(instruction)
                 return
             }
+            val trailing = CommandProcessor.extractTrailingCommand(text, trigger)
+            if (trailing != null) {
+                handleVoiceCommand(trailing.instruction, trailing.content)
+                return
+            }
         }
 
         val usePostProcessing = prefs().getBoolean("use_post_processing", false)
@@ -950,8 +955,10 @@ class WhisperAccessibilityService : AccessibilityService() {
     /** Handles a "Whisper Command" voice command: reads whatever's in the
      * focused field (if anything), sends it plus the spoken instruction to
      * CommandProcessor's whitelisted-transformation prompt, and replaces the
-     * field's entire content with the result. */
-    private fun handleVoiceCommand(instruction: String) {
+     * field's entire content with the result. With [dictated] (text spoken
+     * before the trigger phrase) the command runs on that text instead, and
+     * the result is inserted like normal dictation. */
+    private fun handleVoiceCommand(instruction: String, dictated: String? = null) {
         val apiKey = SecureKeyStorage.groqApiKey(this)
         if (apiKey.isBlank()) {
             handler.post {
@@ -968,7 +975,7 @@ class WhisperAccessibilityService : AccessibilityService() {
             return
         }
 
-        val fieldText = currentFieldText()
+        val fieldText = dictated ?: currentFieldText()
 
         CommandProcessor.process(fieldText, instruction, apiKey) { result ->
             handler.post {
@@ -978,6 +985,8 @@ class WhisperAccessibilityService : AccessibilityService() {
                         toast(getString(R.string.command_failed, result.error ?: getString(R.string.empty_response)))
                     out == CommandProcessor.UNSUPPORTED ->
                         toast(getString(R.string.command_not_recognized))
+                    dictated != null ->
+                        if (injectText(out)) showFeedback(getString(R.string.command_applied), 2000)
                     else -> replaceFieldText(out)
                 }
                 goIdle()

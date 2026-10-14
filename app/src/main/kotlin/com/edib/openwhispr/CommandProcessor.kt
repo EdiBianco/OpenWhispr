@@ -20,7 +20,7 @@ object CommandProcessor {
 
     const val UNSUPPORTED = "UNSUPPORTED_COMMAND"
 
-    const val COMMAND_PROMPT = """You are a voice-command text editor. The app has already detected and removed the user's configured spoken trigger phrase. You receive CURRENT_TEXT (whatever is already in the user's text field, may be empty) and an INSTRUCTION spoken after that phrase.
+    const val COMMAND_PROMPT = """You are a voice-command text editor. The app has already detected and removed the user's configured spoken trigger phrase. You receive CURRENT_TEXT (whatever is already in the user's text field, or the text the user dictated just before the trigger phrase; may be empty) and an INSTRUCTION spoken after that phrase, possibly in any language.
 Hard contract:
 - Return only the final transformed text.
 - No explanations, no markdown, no quotes around the result, no restating the instruction.
@@ -48,6 +48,35 @@ Hard contract:
         if (!trimmed.startsWith(trigger, ignoreCase = true)) return null
         return trimmed.substring(trigger.length).trimStart(',', '.', ':', ';', '-', ' ')
     }
+
+    /** Dictated text followed by a command: [content] is what was said before
+     * the trigger phrase, [instruction] what follows it. */
+    data class TrailingCommand(val content: String, val instruction: String)
+
+    /** Finds a trigger phrase that starts a sentence after some dictated text
+     * ("Hello there. Whisper command, translate to English."). Returns null if
+     * the transcript has no such trigger, or nothing follows it. A trigger at
+     * the very start is handled by [extractCommand]. */
+    fun extractTrailingCommand(transcript: String, triggerPhrase: String): TrailingCommand? {
+        val text = transcript.trim()
+        val trigger = triggerPhrase.trim()
+        if (trigger.isBlank()) return null
+        var from = text.lastIndex
+        while (from > 0) {
+            val index = text.lastIndexOf(trigger, from, ignoreCase = true)
+            if (index <= 0) return null
+            val before = text.substring(0, index).trimEnd(' ', '\t')
+            if (before.isNotEmpty() && before.last() in SENTENCE_END) {
+                val instruction = text.substring(index + trigger.length).trimStart(',', '.', ':', ';', '-', ' ')
+                val content = before.trim()
+                return if (instruction.isBlank() || content.isBlank()) null else TrailingCommand(content, instruction)
+            }
+            from = index - 1
+        }
+        return null
+    }
+
+    private const val SENTENCE_END = ".!?…\n\r"
 
     fun process(fieldText: String, instruction: String, apiKey: String, callback: (Result) -> Unit) {
         val userContent = "CURRENT_TEXT:\n$fieldText\n\nINSTRUCTION:\n$instruction"
