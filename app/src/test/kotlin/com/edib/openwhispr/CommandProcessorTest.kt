@@ -15,8 +15,14 @@ class CommandProcessorTest {
         assertEquals("traducilo in inglese.", r?.instruction)
     }
 
-    @Test fun `trailing command needs a sentence boundary before the trigger`() {
-        assertNull(CommandProcessor.extractTrailingCommand("Ciao come stai whisper command traduci", trigger))
+    @Test fun `trailing command works without punctuation before the trigger`() {
+        val r = CommandProcessor.extractTrailingCommand("Ciao come stai whisper command traduci", trigger)
+        assertEquals("Ciao come stai", r?.content)
+        assertEquals("traduci", r?.instruction)
+    }
+
+    @Test fun `trailing command ignores the trigger inside a longer word`() {
+        assertNull(CommandProcessor.extractTrailingCommand("Ciao whisper commander traduci", trigger))
     }
 
     @Test fun `trailing command ignores a leading trigger`() {

@@ -53,9 +53,10 @@ Hard contract:
      * the trigger phrase, [instruction] what follows it. */
     data class TrailingCommand(val content: String, val instruction: String)
 
-    /** Finds a trigger phrase that starts a sentence after some dictated text
-     * ("Hello there. Whisper command, translate to English."). Returns null if
-     * the transcript has no such trigger, or nothing follows it. A trigger at
+    /** Finds the last trigger phrase after some dictated text ("Hello there.
+     * Whisper command, translate to English."). The trigger is the break, with
+     * or without punctuation around it, but it must be a whole phrase, not
+     * part of a longer word. Returns null if nothing follows it. A trigger at
      * the very start is handled by [extractCommand]. */
     fun extractTrailingCommand(transcript: String, triggerPhrase: String): TrailingCommand? {
         val text = transcript.trim()
@@ -65,18 +66,16 @@ Hard contract:
         while (from > 0) {
             val index = text.lastIndexOf(trigger, from, ignoreCase = true)
             if (index <= 0) return null
-            val before = text.substring(0, index).trimEnd(' ', '\t')
-            if (before.isNotEmpty() && before.last() in SENTENCE_END) {
-                val instruction = text.substring(index + trigger.length).trimStart(',', '.', ':', ';', '-', ' ')
-                val content = before.trim()
-                return if (instruction.isBlank() || content.isBlank()) null else TrailingCommand(content, instruction)
+            val end = index + trigger.length
+            val insideWord = text[index - 1].isLetterOrDigit() || (end < text.length && text[end].isLetterOrDigit())
+            if (!insideWord) {
+                val instruction = text.substring(end).trimStart(',', '.', ':', ';', '-', ' ')
+                return if (instruction.isBlank()) null else TrailingCommand(text.substring(0, index).trim(), instruction)
             }
             from = index - 1
         }
         return null
     }
-
-    private const val SENTENCE_END = ".!?…\n\r"
 
     fun process(fieldText: String, instruction: String, apiKey: String, callback: (Result) -> Unit) {
         val userContent = "CURRENT_TEXT:\n$fieldText\n\nINSTRUCTION:\n$instruction"

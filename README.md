@@ -80,7 +80,7 @@ make adb-install
 
 ## Voice commands
 
-Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content). You can also dictate first and command last: speak your text, then start a new sentence with the trigger phrase and the action ("Hello team, the meeting moved to five. Whisper Command, translate to Italian"). The text before the trigger is what the command works on, and the result is inserted like normal dictation:
+Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content). You can also dictate first and command last: speak your text, then say the trigger phrase and the action. The trigger phrase is the break, with or without a pause ("Hello team, the meeting moved to five. Whisper Command, translate to Italian"). The text before the trigger is what the command works on, and the result is inserted like normal dictation:
 
 - `"Whisper Command, summarize this in two sentences"` -- summarize, with an optional length or limit
 - `"Whisper Command, enhance the flow"` -- rewrite for smoother, more natural flow without changing meaning
