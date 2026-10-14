@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.20.0
+- Voice commands now work at the end of a dictation: say your text, then your trigger phrase and the action (for example "…the meeting moved to five. Whisper Command, translate to Italian"). Your trigger phrase is the break between the text and the action, with or without a pause, and it works with a custom trigger phrase too. The result is inserted like normal dictation
+- Turkish app interface
+
 ## 3.12.2
 - Fixed the floating button sometimes staying invisible after switching apps
 - The floating button no longer flickers when focus changes quickly between apps
