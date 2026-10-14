@@ -32,7 +32,6 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import android.view.animation.AccelerateInterpolator
-import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -54,12 +53,14 @@ class WhisperAccessibilityService : AccessibilityService() {
         private const val ALPHA_IDLE = 0.7f
         private const val ALPHA_ACTIVE = 1.0f
         private const val ALPHA_FADE_MS = 150L
-        private const val FADE_IN_MS = 160L
         private const val FADE_OUT_MS = 140L
 
         // How often we re-check the focused node as a failsafe, in case an
         // app never fires a focus-related accessibility event at all.
         private const val FOCUS_POLL_MS = 500L
+
+        // A focus/keyboard change must hold this long before the overlay shows or hides.
+        private const val OVERLAY_DEBOUNCE_MS = 300L
 
         // Peak 16-bit amplitude below which a recording is treated as silence.
         // Whisper invents text such as "Thank you." for silent audio.
@@ -165,6 +166,7 @@ class WhisperAccessibilityService : AccessibilityService() {
         instance = null
         stopTone?.release()
         stopTone = null
+        handler.removeCallbacks(overlayVisibilityDebounce)
         handler.removeCallbacks(focusPoller)
         try {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -325,15 +327,28 @@ class WhisperAccessibilityService : AccessibilityService() {
         updateOverlayVisibility()
     }
 
+    private fun wantsOverlay(): Boolean =
+        masterEnabled() && (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
+
     private fun updateOverlayVisibility() {
-        val shouldShow = masterEnabled() &&
-            (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
+        val shouldShow = wantsOverlay()
+        handler.removeCallbacks(overlayVisibilityDebounce)
         if (shouldShow == overlayShown) {
             // Self-heal: the view can drift from overlayShown (e.g. after an app
             // switch), leaving it hidden while it should show. Re-show it here.
             if (shouldShow && overlayView?.visibility != View.VISIBLE) animateOverlayIn()
             return
         }
+        // Only act once the new state has held for OVERLAY_DEBOUNCE_MS, so rapid
+        // focus flapping between apps doesn't restart the fades.
+        handler.postDelayed(overlayVisibilityDebounce, OVERLAY_DEBOUNCE_MS)
+    }
+
+    private val overlayVisibilityDebounce = Runnable { applyOverlayVisibility() }
+
+    private fun applyOverlayVisibility() {
+        val shouldShow = wantsOverlay()
+        if (shouldShow == overlayShown) return
         overlayShown = shouldShow
         if (shouldShow) animateOverlayIn() else animateOverlayOut()
     }
@@ -347,21 +362,15 @@ class WhisperAccessibilityService : AccessibilityService() {
         handler.post { updateOverlayVisibility() }
     }
 
+    /** Shows the overlay at its target alpha immediately. No fade-in: an
+     * animation on a window the system hasn't drawn yet can stall at alpha 0. */
     private fun animateOverlayIn() {
         handler.post {
             val view = overlayView ?: return@post
             view.animate().cancel()
-            if (view.visibility != View.VISIBLE) {
-                view.visibility = View.VISIBLE
-                view.alpha = 0f
-            }
+            view.visibility = View.VISIBLE
             setTouchable(true)
-            val target = if (state == State.IDLE) ALPHA_IDLE else ALPHA_ACTIVE
-            view.animate()
-                .alpha(target)
-                .setDuration(FADE_IN_MS)
-                .setInterpolator(DecelerateInterpolator())
-                .start()
+            view.alpha = if (state == State.IDLE) ALPHA_IDLE else ALPHA_ACTIVE
         }
     }
 

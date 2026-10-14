@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.12.2
+- Fixed the floating button sometimes staying invisible after switching apps
+- The floating button no longer flickers when focus changes quickly between apps
+
 ## 3.12.1
 - Experimental multiple-language support: the app interface is now available in Italian, Spanish, Russian, Japanese, Portuguese (Brasil), and Chinese (Simplified). Translations are machine-drafted and still being reviewed
 - Language picker in Settings shows each language in its own name
