@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="setup_steps_ready">
+        <item quantity="one">3 kurulum adımından %1$d tanesi tamamlandı</item>
+        <item quantity="other">3 kurulum adımından %1$d tanesi tamamlandı</item>
+    </plurals>
+</resources>

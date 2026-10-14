@@ -418,6 +418,7 @@ class MainActivity : AppCompatActivity() {
                 "日本語" to "ja",
                 "Português (Brasil)" to "pt-BR",
                 "中文 (简体)" to "zh-CN",
+                "Türkçe" to "tr",
             )
             val appTag = AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag()
             val selected = options.indexOfFirst { (_, tag) ->
