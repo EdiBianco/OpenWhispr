@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.21.0
+- Choose where the floating button sits: a new height slider and a left/right switch in Settings. A circle previews the spot while you move the slider, and the button always stays fully on screen
+- The status note next to the button now appears on its right when the button is on the left
+
 ## 3.20.0
 - Voice commands now work at the end of a dictation: say your text, then your trigger phrase and the action (for example "…the meeting moved to five. Whisper Command, translate to Italian"). Your trigger phrase is the break between the text and the action, with or without a pause, and it works with a custom trigger phrase too. The result is inserted like normal dictation
 - Turkish app interface
