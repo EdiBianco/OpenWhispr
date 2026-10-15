@@ -333,8 +333,8 @@ class WhisperAccessibilityService : AccessibilityService() {
         updateOverlayVisibility()
     }
 
-        private fun wantsOverlay(): Boolean =
-        masterEnabled() && (imeVisibleSignal || state != State.IDLE)
+    private fun wantsOverlay(): Boolean =
+        masterEnabled() && (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
 
     private fun updateOverlayVisibility() {
         val shouldShow = wantsOverlay()
