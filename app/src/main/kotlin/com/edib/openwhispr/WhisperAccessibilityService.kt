@@ -57,10 +57,10 @@ class WhisperAccessibilityService : AccessibilityService() {
 
         // How often we re-check the focused node as a failsafe, in case an
         // app never fires a focus-related accessibility event at all.
-        private const val FOCUS_POLL_MS = 250L
+        private const val FOCUS_POLL_MS = 150L
 
         // A focus/keyboard change must hold this long before the overlay shows or hides.
-        private const val OVERLAY_DEBOUNCE_MS = 100L
+        private const val OVERLAY_DEBOUNCE_MS = 50L
 
         // Placeholder circle shown by Settings while choosing the bubble position.
         private const val PREVIEW_FILL = 0x552F80ED
@@ -333,8 +333,8 @@ class WhisperAccessibilityService : AccessibilityService() {
         updateOverlayVisibility()
     }
 
-    private fun wantsOverlay(): Boolean =
-        masterEnabled() && (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
+        private fun wantsOverlay(): Boolean =
+        masterEnabled() && (imeVisibleSignal || state != State.IDLE)
 
     private fun updateOverlayVisibility() {
         val shouldShow = wantsOverlay()
