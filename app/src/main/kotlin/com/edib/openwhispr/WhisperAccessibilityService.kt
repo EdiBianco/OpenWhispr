@@ -62,6 +62,11 @@ class WhisperAccessibilityService : AccessibilityService() {
         // A focus/keyboard change must hold this long before the overlay shows or hides.
         private const val OVERLAY_DEBOUNCE_MS = 300L
 
+        // Placeholder circle shown by Settings while choosing the bubble position.
+        private const val PREVIEW_FILL = 0x552F80ED
+        private const val PREVIEW_STROKE = 0xFF2F80ED.toInt()
+        private const val PREVIEW_HIDE_MS = 1500L
+
         // Peak 16-bit amplitude below which a recording is treated as silence.
         // Whisper invents text such as "Thank you." for silent audio.
         private const val SILENCE_PEAK = 500
@@ -164,6 +169,7 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         instance = null
+        removePositionPreview()
         stopTone?.release()
         stopTone = null
         handler.removeCallbacks(overlayVisibilityDebounce)
@@ -455,6 +461,92 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
     }
 
+    /** The bubble's home position from the Settings slider and side switch. */
+    private fun savedHomePosition(ringSize: Int): BubbleSize.Position = BubbleSize.positionFor(
+        prefs().getInt(BubbleSize.POSITION_PERCENT_KEY, BubbleSize.DEFAULT_POSITION_PERCENT),
+        prefs().getBoolean(BubbleSize.ON_LEFT_KEY, false),
+        screenW, screenH, ringSize, (MARGIN_DP * dp).toInt()
+    )
+
+    /** Moves the bubble to its saved home position and drops the preview. */
+    fun refreshPosition() {
+        handler.post {
+            try {
+                val view = overlayView ?: return@post
+                val lp = layoutParams ?: return@post
+                val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+                val position = savedHomePosition(lp.width)
+                lp.x = position.x
+                lp.y = position.y
+                wm.updateViewLayout(view, lp)
+                feedbackLayoutParams?.let { feedbackParams ->
+                    positionFeedback(feedbackParams, lp)
+                    feedbackView?.let { wm.updateViewLayout(it, feedbackParams) }
+                }
+                removePositionPreview()
+            } catch (e: Exception) {
+                Log.e(TAG, "refreshPosition failed", e)
+            }
+        }
+    }
+
+    private var previewView: View? = null
+    private var previewParams: WindowManager.LayoutParams? = null
+    private val hidePositionPreview = Runnable { removePositionPreview() }
+
+    /** Shows a placeholder circle where the bubble would sit for [percent] and
+     * [onLeft], so Settings can preview a position before it is applied. It
+     * disappears on its own a moment after the last call. */
+    fun previewPosition(percent: Int, onLeft: Boolean) {
+        handler.post {
+            try {
+                val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+                val size = layoutParams?.width
+                    ?: (BubbleSize.dimensions(currentBubbleSizePercent()).ringDp * dp).toInt()
+                val position = BubbleSize.positionFor(
+                    percent, onLeft, screenW, screenH, size, (MARGIN_DP * dp).toInt()
+                )
+                val existing = previewView
+                val params = previewParams ?: WindowManager.LayoutParams(
+                    size, size,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    PixelFormat.TRANSLUCENT
+                ).apply { gravity = Gravity.TOP or Gravity.START }
+                params.width = size
+                params.height = size
+                params.x = position.x
+                params.y = position.y
+                if (existing == null) {
+                    val circle = View(this).apply {
+                        background = circle(PREVIEW_FILL, PREVIEW_STROKE, (2 * dp).toInt())
+                    }
+                    wm.addView(circle, params)
+                    previewView = circle
+                    previewParams = params
+                } else {
+                    wm.updateViewLayout(existing, params)
+                }
+                handler.removeCallbacks(hidePositionPreview)
+                handler.postDelayed(hidePositionPreview, PREVIEW_HIDE_MS)
+            } catch (e: Exception) {
+                Log.e(TAG, "previewPosition failed", e)
+            }
+        }
+    }
+
+    private fun removePositionPreview() {
+        handler.removeCallbacks(hidePositionPreview)
+        val view = previewView ?: return
+        try {
+            (getSystemService(WINDOW_SERVICE) as WindowManager).removeView(view)
+        } catch (e: Exception) {
+            Log.e(TAG, "removePositionPreview failed", e)
+        }
+        previewView = null
+        previewParams = null
+    }
+
     private fun currentBubbleSizePercent(): Int = BubbleSize.preferencePercent(
         try {
             prefs().getInt(BubbleSize.PREFERENCE_KEY, BubbleSize.DEFAULT_PERCENT)
@@ -512,8 +604,9 @@ class WhisperAccessibilityService : AccessibilityService() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = screenW - ringSize - margin
-            y = screenH / 2 - ringSize / 2
+            val home = savedHomePosition(ringSize)
+            x = home.x
+            y = home.y
         }
 
         var startX = 0; var startY = 0
@@ -670,7 +763,10 @@ class WhisperAccessibilityService : AccessibilityService() {
     ) {
         val margin = (MARGIN_DP * dp).toInt()
         val offset = (BubbleSize.dimensions(currentBubbleSizePercent()).feedbackOffsetDp * dp).toInt()
-        feedbackParams.x = maxOf(margin, bubbleParams.x - offset)
+        // Bubble on the left half: the note goes to its right instead of off-screen.
+        val onLeftHalf = bubbleParams.x + bubbleParams.width / 2 < screenW / 2
+        feedbackParams.x = if (onLeftHalf) bubbleParams.x + bubbleParams.width + margin
+            else maxOf(margin, bubbleParams.x - offset)
         feedbackParams.y = maxOf(margin, bubbleParams.y - margin)
     }
 

@@ -222,4 +222,11 @@
     <string name="close_dialog">关闭</string>
     <string name="cleanup_skipped_kept_words">已跳过优化 — 保留了您的原话</string>
     <string name="cleanup_failed_inserted_raw">优化失败 — 已插入原始文字</string>
+
+    <string name="overlay_position">按钮高度</string>
+    <string name="overlay_position_value">距顶部 %1$d%%</string>
+    <string name="overlay_position_accessibility">悬浮按钮高度</string>
+    <string name="overlay_position_help">滑动以选择高度。圆圈显示按钮将出现的位置。</string>
+    <string name="overlay_side_left">显示在左侧</string>
+    <string name="overlay_side_left_summary">将按钮放在左边缘而不是右边缘</string>
 </resources>

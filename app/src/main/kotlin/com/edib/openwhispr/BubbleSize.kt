@@ -93,4 +93,27 @@ object BubbleSize {
         val maxX = maxOf(margin, screenWidth - ringSize - margin)
         return if (x + ringSize / 2 > screenWidth / 2) maxX else margin
     }
+
+    const val POSITION_PERCENT_KEY = "overlay_position_percent"
+    const val ON_LEFT_KEY = "overlay_on_left"
+    const val DEFAULT_POSITION_PERCENT = 50
+
+    fun positionPercent(value: Int?): Int = (value ?: DEFAULT_POSITION_PERCENT).coerceIn(0, 100)
+
+    /** Where the bubble sits for a saved setting: [percent] is the share of the
+     * available height (0 = top edge, 100 = bottom edge, margins included), so
+     * the whole ring always stays on screen. */
+    fun positionFor(
+        percent: Int,
+        onLeft: Boolean,
+        screenWidth: Int,
+        screenHeight: Int,
+        ringSize: Int,
+        margin: Int
+    ): Position {
+        val maxY = maxOf(margin, screenHeight - ringSize - margin)
+        val y = margin + ((maxY - margin) * positionPercent(percent) / 100f).roundToInt()
+        val x = if (onLeft) margin else screenWidth - ringSize - margin
+        return clampPosition(x, y, screenWidth, screenHeight, ringSize, margin)
+    }
 }

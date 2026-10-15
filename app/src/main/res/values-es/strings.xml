@@ -222,4 +222,11 @@ Motivo: %1$s</string>
     <string name="close_dialog">Cerrar</string>
     <string name="cleanup_skipped_kept_words">Limpieza omitida — se mantuvieron tus palabras exactas</string>
     <string name="cleanup_failed_inserted_raw">La limpieza falló — se insertó el texto sin procesar</string>
+
+    <string name="overlay_position">Altura del botón</string>
+    <string name="overlay_position_value">%1$d%% desde arriba</string>
+    <string name="overlay_position_accessibility">Altura del botón flotante</string>
+    <string name="overlay_position_help">Desliza para elegir la altura. Un círculo muestra dónde estará el botón.</string>
+    <string name="overlay_side_left">Mostrar a la izquierda</string>
+    <string name="overlay_side_left_summary">Coloca el botón en el borde izquierdo en lugar del derecho</string>
 </resources>

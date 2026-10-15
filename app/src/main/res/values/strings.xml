@@ -225,4 +225,11 @@ Reason: %1$s</string>
     <string name="close_dialog">Close</string>
     <string name="cleanup_skipped_kept_words">Cleanup skipped — kept your exact words</string>
     <string name="cleanup_failed_inserted_raw">Cleanup failed — inserted raw text</string>
+
+    <string name="overlay_position">Button height</string>
+    <string name="overlay_position_value">%1$d%% from the top</string>
+    <string name="overlay_position_accessibility">Floating button height</string>
+    <string name="overlay_position_help">Slide to choose the height. A circle shows where the button will be.</string>
+    <string name="overlay_side_left">Show on the left</string>
+    <string name="overlay_side_left_summary">Place the button on the left edge instead of the right</string>
 </resources>

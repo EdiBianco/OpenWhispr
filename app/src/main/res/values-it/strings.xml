@@ -222,4 +222,11 @@ Motivo: %1$s</string>
     <string name="close_dialog">Chiudi</string>
     <string name="cleanup_skipped_kept_words">Pulizia saltata — mantenute le tue parole esatte</string>
     <string name="cleanup_failed_inserted_raw">Pulizia non riuscita — inserito il testo grezzo</string>
+
+    <string name="overlay_position">Altezza del pulsante</string>
+    <string name="overlay_position_value">%1$d%% dall\'alto</string>
+    <string name="overlay_position_accessibility">Altezza del pulsante mobile</string>
+    <string name="overlay_position_help">Trascina per scegliere l\'altezza. Un cerchio mostra dove sarà il pulsante.</string>
+    <string name="overlay_side_left">Mostra a sinistra</string>
+    <string name="overlay_side_left_summary">Posiziona il pulsante sul bordo sinistro invece che su quello destro</string>
 </resources>

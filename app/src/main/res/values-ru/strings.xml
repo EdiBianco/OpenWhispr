@@ -222,4 +222,11 @@
     <string name="close_dialog">Закрыть</string>
     <string name="cleanup_skipped_kept_words">Очистка пропущена — сохранены ваши точные слова</string>
     <string name="cleanup_failed_inserted_raw">Очистка не удалась — вставлен необработанный текст</string>
+
+    <string name="overlay_position">Высота кнопки</string>
+    <string name="overlay_position_value">%1$d%% от верха</string>
+    <string name="overlay_position_accessibility">Высота плавающей кнопки</string>
+    <string name="overlay_position_help">Сдвиньте ползунок, чтобы выбрать высоту. Круг показывает, где будет кнопка.</string>
+    <string name="overlay_side_left">Показывать слева</string>
+    <string name="overlay_side_left_summary">Разместить кнопку у левого края вместо правого</string>
 </resources>

@@ -222,4 +222,11 @@ Motivo: %1$s</string>
     <string name="close_dialog">Fechar</string>
     <string name="cleanup_skipped_kept_words">Limpeza ignorada — suas palavras exatas foram mantidas</string>
     <string name="cleanup_failed_inserted_raw">A limpeza falhou — o texto bruto foi inserido</string>
+
+    <string name="overlay_position">Altura do botão</string>
+    <string name="overlay_position_value">%1$d%% a partir do topo</string>
+    <string name="overlay_position_accessibility">Altura do botão flutuante</string>
+    <string name="overlay_position_help">Deslize para escolher a altura. Um círculo mostra onde o botão ficará.</string>
+    <string name="overlay_side_left">Mostrar à esquerda</string>
+    <string name="overlay_side_left_summary">Coloca o botão na borda esquerda em vez da direita</string>
 </resources>

@@ -222,4 +222,11 @@
     <string name="close_dialog">閉じる</string>
     <string name="cleanup_skipped_kept_words">整形をスキップしました — 話した言葉をそのまま残しました</string>
     <string name="cleanup_failed_inserted_raw">整形に失敗しました — 生のテキストを挿入しました</string>
+
+    <string name="overlay_position">ボタンの高さ</string>
+    <string name="overlay_position_value">上から %1$d%%</string>
+    <string name="overlay_position_accessibility">フローティングボタンの高さ</string>
+    <string name="overlay_position_help">スライダーで高さを選びます。円がボタンの位置を示します。</string>
+    <string name="overlay_side_left">左側に表示</string>
+    <string name="overlay_side_left_summary">ボタンを右端ではなく左端に配置します</string>
 </resources>

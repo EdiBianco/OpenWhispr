@@ -225,4 +225,11 @@ Raison : %1$s</string>
     <string name="close_dialog">Fermer</string>
     <string name="cleanup_skipped_kept_words">Correction ignorée — vos mots exacts ont été conservés</string>
     <string name="cleanup_failed_inserted_raw">Échec de la correction — texte brut inséré</string>
+
+    <string name="overlay_position">Hauteur du bouton</string>
+    <string name="overlay_position_value">%1$d %% depuis le haut</string>
+    <string name="overlay_position_accessibility">Hauteur du bouton flottant</string>
+    <string name="overlay_position_help">Faites glisser pour choisir la hauteur. Un cercle montre où se placera le bouton.</string>
+    <string name="overlay_side_left">Afficher à gauche</string>
+    <string name="overlay_side_left_summary">Placer le bouton sur le bord gauche plutôt que sur le droit</string>
 </resources>

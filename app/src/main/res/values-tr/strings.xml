@@ -222,4 +222,11 @@ Neden: %1$s</string>
     <string name="close_dialog">Kapat</string>
     <string name="cleanup_skipped_kept_words">Düzenleme atlandı — tam sözleriniz korundu</string>
     <string name="cleanup_failed_inserted_raw">Düzenleme başarısız — ham metin eklendi</string>
+
+    <string name="overlay_position">Düğme yüksekliği</string>
+    <string name="overlay_position_value">Üstten %%%1$d</string>
+    <string name="overlay_position_accessibility">Kayan düğme yüksekliği</string>
+    <string name="overlay_position_help">Yüksekliği seçmek için kaydırın. Bir daire düğmenin nerede olacağını gösterir.</string>
+    <string name="overlay_side_left">Solda göster</string>
+    <string name="overlay_side_left_summary">Düğmeyi sağ kenar yerine sol kenara yerleştir</string>
 </resources>
