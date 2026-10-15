@@ -57,7 +57,7 @@ class WhisperAccessibilityService : AccessibilityService() {
 
         // How often we re-check the focused node as a failsafe, in case an
         // app never fires a focus-related accessibility event at all.
-        private const val FOCUS_POLL_MS = 500L
+        private const val FOCUS_POLL_MS = 250L
 
         // A focus/keyboard change must hold this long before the overlay shows or hides.
         private const val OVERLAY_DEBOUNCE_MS = 300L
@@ -347,7 +347,11 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
         // Only act once the new state has held for OVERLAY_DEBOUNCE_MS, so rapid
         // focus flapping between apps doesn't restart the fades.
-        handler.postDelayed(overlayVisibilityDebounce, OVERLAY_DEBOUNCE_MS)
+        if (shouldShow) {
+    applyOverlayVisibility()
+} else {
+    handler.postDelayed(overlayVisibilityDebounce, OVERLAY_DEBOUNCE_MS)
+}
     }
 
     private val overlayVisibilityDebounce = Runnable { applyOverlayVisibility() }
