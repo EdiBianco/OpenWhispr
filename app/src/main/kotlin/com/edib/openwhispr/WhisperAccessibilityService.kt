@@ -336,26 +336,23 @@ class WhisperAccessibilityService : AccessibilityService() {
     private fun wantsOverlay(): Boolean =
         masterEnabled() && (accessibilityFocusSignal || imeVisibleSignal || state != State.IDLE)
 
-    private fun updateOverlayVisibility() {
+        private fun updateOverlayVisibility() {
         val shouldShow = wantsOverlay()
+        handler.removeCallbacks(overlayVisibilityDebounce)
         if (shouldShow == overlayShown) {
-            // State went back to what is already displayed: cancel any pending change.
-            handler.removeCallbacks(overlayVisibilityDebounce)
             // Self-heal: the view can drift from overlayShown (e.g. after an app
             // switch), leaving it hidden while it should show. Re-show it here.
             if (shouldShow && overlayView?.visibility != View.VISIBLE) animateOverlayIn()
             return
         }
         if (shouldShow) {
-            // Show immediately so the button appears together with the keyboard.
-            handler.removeCallbacks(overlayVisibilityDebounce)
+            // Show right away so the button appears together with the keyboard.
             applyOverlayVisibility()
-        } else if (!handler.hasCallbacks(overlayVisibilityDebounce)) {
-            // Debounce only hiding, and don't restart the timer on every event.
+        } else {
+            // Only debounce hiding, so rapid focus flapping doesn't restart the fades.
             handler.postDelayed(overlayVisibilityDebounce, OVERLAY_DEBOUNCE_MS)
         }
     }
-
     private val overlayVisibilityDebounce = Runnable { applyOverlayVisibility() }
 
     private fun applyOverlayVisibility() {
