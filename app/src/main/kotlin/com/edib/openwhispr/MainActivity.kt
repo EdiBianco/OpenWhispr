@@ -1038,22 +1038,25 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun saveApkToDownloads(file: java.io.File, name: String): Boolean = try {
-        val values = android.content.ContentValues().apply {
-            put(android.provider.MediaStore.Downloads.DISPLAY_NAME, name)
-            put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
-            put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
+    private fun saveApkToDownloads(file: java.io.File, name: String): Boolean {
+        return try {
+            val values = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, name)
+                put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
+                put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
+            }
+            val uri = contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            val copied = uri != null && contentResolver.openOutputStream(uri)?.use { out ->
+                file.inputStream().use { it.copyTo(out) }
+            } != null
+            if (uri == null || !copied) return false
+            values.clear()
+            values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
+            contentResolver.update(uri, values, null, null)
+            true
+        } catch (e: Exception) {
+            false
         }
-        val uri = contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-            ?: return false
-        contentResolver.openOutputStream(uri)?.use { out -> file.inputStream().use { it.copyTo(out) } }
-            ?: return false
-        values.clear()
-        values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
-        contentResolver.update(uri, values, null, null)
-        true
-    } catch (e: Exception) {
-        false
     }
 
     private fun installApk(file: java.io.File) {
