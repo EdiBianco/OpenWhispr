@@ -261,4 +261,10 @@ Neden: %1$s</string>
     <string name="watchdog_channel_name">Dikte hizmeti durumu</string>
     <string name="watchdog_title">OpenWispr dikte durdu</string>
     <string name="watchdog_text">Erişilebilirlik açık, ancak hizmet çalışmıyor. Yeniden açmak için dokunun.</string>
+
+    <string name="migration_title">OpenWispr 4\'e geç</string>
+    <string name="migration_message_saved">OpenWispr 4 yeni bir anahtarla imzalandığı için 3. sürümün üzerine yüklenemez. Adımlar: 1) Aşağıdaki düğmeyle ayarlarınızı yedekleyin. 2) OpenWispr 3\'ü kaldırın. 3) Dosyalar uygulamasında İndirilenler\'i açın ve yüklemek için %1$s dosyasına dokunun. 4) İlk açılışta yedeği geri yükleyin.</string>
+    <string name="migration_message_not_saved">OpenWispr 4 yeni bir anahtarla imzalandığı için 3. sürümün üzerine yüklenemez. Adımlar: 1) Aşağıdaki düğmeyle ayarlarınızı yedekleyin. 2) OpenWispr 3\'ü kaldırın. 3) %1$s dosyasını GitHub sürüm sayfasından indirip açarak yükleyin. 4) İlk açılışta yedeği geri yükleyin.</string>
+    <string name="migration_uninstall">OpenWispr 3\'ü kaldır</string>
+    <string name="migration_back_up_first">Önce yedekle</string>
 </resources>

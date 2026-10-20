@@ -261,4 +261,10 @@ Motivo: %1$s</string>
     <string name="watchdog_channel_name">Stato del servizio di dettatura</string>
     <string name="watchdog_title">La dettatura di OpenWispr si è fermata</string>
     <string name="watchdog_text">L\'accessibilità è attiva, ma il servizio non è in esecuzione. Tocca per riattivarla.</string>
+
+    <string name="migration_title">Passa a OpenWispr 4</string>
+    <string name="migration_message_saved">OpenWispr 4 è firmato con una nuova chiave, quindi non può essere installato sopra la versione 3. Passaggi: 1) Esegui il backup delle impostazioni con il pulsante qui sotto. 2) Disinstalla OpenWispr 3. 3) Apri Download nell\'app File e tocca %1$s per installarlo. 4) Al primo avvio, ripristina il backup.</string>
+    <string name="migration_message_not_saved">OpenWispr 4 è firmato con una nuova chiave, quindi non può essere installato sopra la versione 3. Passaggi: 1) Esegui il backup delle impostazioni con il pulsante qui sotto. 2) Disinstalla OpenWispr 3. 3) Scarica %1$s dalla pagina delle release su GitHub e aprilo per installarlo. 4) Al primo avvio, ripristina il backup.</string>
+    <string name="migration_uninstall">Disinstalla OpenWispr 3</string>
+    <string name="migration_back_up_first">Prima fai un backup</string>
 </resources>

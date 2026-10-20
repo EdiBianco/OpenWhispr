@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.23.0
+- Upgrade path to OpenWispr 4: when 4.0.0 is available, the app saves it to Downloads and walks you through backing up, uninstalling version 3, installing 4.0.0, and restoring your backup
+- The Status tab shows when the accessibility service is switched on but not running, and a notification reminds you to turn it back on
+
 ## 3.22.0
 - Backup: export your settings and API keys to a file you save on your phone, protected by a passphrase you choose. Pick everything or individual items
 - Restore from a backup, from Settings or on first launch of a fresh install. Pick everything or individual items; the rest of your setup is left as it is

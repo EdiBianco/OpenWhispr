@@ -261,4 +261,10 @@ Motivo: %1$s</string>
     <string name="watchdog_channel_name">Estado del servicio de dictado</string>
     <string name="watchdog_title">El dictado de OpenWispr se ha detenido</string>
     <string name="watchdog_text">La accesibilidad está activada, pero el servicio no se ejecuta. Toca para volver a activarla.</string>
+
+    <string name="migration_title">Actualizar a OpenWispr 4</string>
+    <string name="migration_message_saved">OpenWispr 4 está firmado con una clave nueva, así que no se puede instalar sobre la versión 3. Pasos: 1) Haz una copia de tus ajustes con el botón de abajo. 2) Desinstala OpenWispr 3. 3) Abre Descargas en la app Archivos y toca %1$s para instalarlo. 4) En el primer inicio, restaura la copia.</string>
+    <string name="migration_message_not_saved">OpenWispr 4 está firmado con una clave nueva, así que no se puede instalar sobre la versión 3. Pasos: 1) Haz una copia de tus ajustes con el botón de abajo. 2) Desinstala OpenWispr 3. 3) Descarga %1$s desde la página de versiones de GitHub y ábrelo para instalarlo. 4) En el primer inicio, restaura la copia.</string>
+    <string name="migration_uninstall">Desinstalar OpenWispr 3</string>
+    <string name="migration_back_up_first">Hacer copia primero</string>
 </resources>

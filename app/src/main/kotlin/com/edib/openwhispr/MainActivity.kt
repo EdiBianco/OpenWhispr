@@ -1000,7 +1000,7 @@ class MainActivity : AppCompatActivity() {
                         .show()
                     return@runOnUiThread
                 }
-                installApk(file)
+                if (isMajorVersion4(info.version)) showMigrationToV4(info, file) else installApk(file)
             }
         }
     }
@@ -1011,6 +1011,49 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             toast("Couldn't open browser: ${e.message}")
         }
+    }
+
+    private fun isMajorVersion4(version: String): Boolean =
+        version.removePrefix("v").substringBefore('.').toIntOrNull()?.let { it >= 4 } == true
+
+    /** 4.0.0 is signed with a new key, so Android won't install it over 3.x. The APK is
+     * saved to Downloads first, because uninstalling wipes the app's cache. Then the
+     * user backs up, uninstalls 3.x, installs the saved APK, and restores the backup. */
+    private fun showMigrationToV4(info: UpdateChecker.UpdateInfo, file: java.io.File) {
+        val name = "openwispr-v${info.version.removePrefix("v")}.apk"
+        val saved = saveApkToDownloads(file, name)
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.migration_title)
+            .setMessage(
+                getString(
+                    if (saved) R.string.migration_message_saved else R.string.migration_message_not_saved,
+                    name,
+                )
+            )
+            .setPositiveButton(R.string.migration_uninstall) { _, _ ->
+                startActivity(Intent(Intent.ACTION_DELETE, Uri.parse("package:$packageName")))
+            }
+            .setNeutralButton(R.string.migration_back_up_first) { _, _ -> exportBackup() }
+            .setNegativeButton(R.string.later, null)
+            .show()
+    }
+
+    private fun saveApkToDownloads(file: java.io.File, name: String): Boolean = try {
+        val values = android.content.ContentValues().apply {
+            put(android.provider.MediaStore.Downloads.DISPLAY_NAME, name)
+            put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
+            put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
+        }
+        val uri = contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            ?: return false
+        contentResolver.openOutputStream(uri)?.use { out -> file.inputStream().use { it.copyTo(out) } }
+            ?: return false
+        values.clear()
+        values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
+        contentResolver.update(uri, values, null, null)
+        true
+    } catch (e: Exception) {
+        false
     }
 
     private fun installApk(file: java.io.File) {

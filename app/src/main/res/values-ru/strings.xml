@@ -261,4 +261,10 @@
     <string name="watchdog_channel_name">Состояние службы диктовки</string>
     <string name="watchdog_title">Диктовка OpenWispr остановлена</string>
     <string name="watchdog_text">Специальные возможности включены, но служба не работает. Нажмите, чтобы включить снова.</string>
+
+    <string name="migration_title">Переход на OpenWispr 4</string>
+    <string name="migration_message_saved">OpenWispr 4 подписан новым ключом, поэтому он не может быть установлен поверх версии 3. Шаги: 1) Сохраните настройки кнопкой ниже. 2) Удалите OpenWispr 3. 3) Откройте «Загрузки» в приложении «Файлы» и нажмите %1$s, чтобы установить. 4) При первом запуске восстановите копию.</string>
+    <string name="migration_message_not_saved">OpenWispr 4 подписан новым ключом, поэтому он не может быть установлен поверх версии 3. Шаги: 1) Сохраните настройки кнопкой ниже. 2) Удалите OpenWispr 3. 3) Скачайте %1$s со страницы релизов GitHub и откройте его для установки. 4) При первом запуске восстановите копию.</string>
+    <string name="migration_uninstall">Удалить OpenWispr 3</string>
+    <string name="migration_back_up_first">Сначала сохранить</string>
 </resources>

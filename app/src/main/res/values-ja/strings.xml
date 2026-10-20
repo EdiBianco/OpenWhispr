@@ -261,4 +261,10 @@
     <string name="watchdog_channel_name">ディクテーションサービスの状態</string>
     <string name="watchdog_title">OpenWispr のディクテーションが停止しました</string>
     <string name="watchdog_text">ユーザー補助はオンですが、サービスが動作していません。タップしてオンに戻してください。</string>
+
+    <string name="migration_title">OpenWispr 4 へ移行</string>
+    <string name="migration_message_saved">OpenWispr 4 は新しい鍵で署名されているため、バージョン 3 の上にはインストールできません。手順：1) 下のボタンで設定をバックアップします。2) OpenWispr 3 をアンインストールします。3) ファイルアプリでダウンロードを開き、%1$s をタップしてインストールします。4) 初回起動時にバックアップを復元します。</string>
+    <string name="migration_message_not_saved">OpenWispr 4 は新しい鍵で署名されているため、バージョン 3 の上にはインストールできません。手順：1) 下のボタンで設定をバックアップします。2) OpenWispr 3 をアンインストールします。3) GitHub のリリースページから %1$s をダウンロードして開き、インストールします。4) 初回起動時にバックアップを復元します。</string>
+    <string name="migration_uninstall">OpenWispr 3 をアンインストール</string>
+    <string name="migration_back_up_first">先にバックアップ</string>
 </resources>

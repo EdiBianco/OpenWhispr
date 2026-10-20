@@ -264,4 +264,10 @@ Raison : %1$s</string>
     <string name="watchdog_channel_name">État du service de dictée</string>
     <string name="watchdog_title">La dictée OpenWispr s\'est arrêtée</string>
     <string name="watchdog_text">L\'accessibilité est activée, mais le service ne tourne pas. Touchez pour la réactiver.</string>
+
+    <string name="migration_title">Passer à OpenWispr 4</string>
+    <string name="migration_message_saved">OpenWispr 4 est signé avec une nouvelle clé, il ne peut donc pas être installé par-dessus la version 3. Étapes : 1) Sauvegardez vos réglages avec le bouton ci-dessous. 2) Désinstallez OpenWispr 3. 3) Ouvrez Téléchargements dans l\'application Fichiers et touchez %1$s pour l\'installer. 4) Au premier lancement, restaurez votre sauvegarde.</string>
+    <string name="migration_message_not_saved">OpenWispr 4 est signé avec une nouvelle clé, il ne peut donc pas être installé par-dessus la version 3. Étapes : 1) Sauvegardez vos réglages avec le bouton ci-dessous. 2) Désinstallez OpenWispr 3. 3) Téléchargez %1$s depuis la page des versions GitHub et ouvrez-le pour l\'installer. 4) Au premier lancement, restaurez votre sauvegarde.</string>
+    <string name="migration_uninstall">Désinstaller OpenWispr 3</string>
+    <string name="migration_back_up_first">Sauvegarder d\'abord</string>
 </resources>

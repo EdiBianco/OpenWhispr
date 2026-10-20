@@ -261,4 +261,10 @@
     <string name="watchdog_channel_name">听写服务状态</string>
     <string name="watchdog_title">OpenWispr 听写已停止</string>
     <string name="watchdog_text">无障碍已开启，但服务未运行。点击以重新开启。</string>
+
+    <string name="migration_title">升级到 OpenWispr 4</string>
+    <string name="migration_message_saved">OpenWispr 4 使用新密钥签名，因此无法覆盖安装在版本 3 上。步骤：1) 用下方按钮备份设置。2) 卸载 OpenWispr 3。3) 在“文件”应用的“下载”中点击 %1$s 进行安装。4) 首次启动时恢复备份。</string>
+    <string name="migration_message_not_saved">OpenWispr 4 使用新密钥签名，因此无法覆盖安装在版本 3 上。步骤：1) 用下方按钮备份设置。2) 卸载 OpenWispr 3。3) 从 GitHub 发布页面下载 %1$s 并打开安装。4) 首次启动时恢复备份。</string>
+    <string name="migration_uninstall">卸载 OpenWispr 3</string>
+    <string name="migration_back_up_first">先备份</string>
 </resources>

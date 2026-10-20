@@ -264,4 +264,10 @@ Reason: %1$s</string>
     <string name="watchdog_channel_name">Dictation service status</string>
     <string name="watchdog_title">OpenWispr dictation has stopped</string>
     <string name="watchdog_text">Accessibility is on, but the service isn\'t running. Tap to turn it back on.</string>
+
+    <string name="migration_title">Upgrade to OpenWispr 4</string>
+    <string name="migration_message_saved">OpenWispr 4 is signed with a new key, so it can\'t be installed over version 3. Steps: 1) Back up your settings with the button below. 2) Uninstall OpenWispr 3. 3) Open Downloads in the Files app and tap %1$s to install it. 4) On first launch, restore your backup.</string>
+    <string name="migration_message_not_saved">OpenWispr 4 is signed with a new key, so it can\'t be installed over version 3. Steps: 1) Back up your settings with the button below. 2) Uninstall OpenWispr 3. 3) Download %1$s from the GitHub release page and open it to install. 4) On first launch, restore your backup.</string>
+    <string name="migration_uninstall">Uninstall OpenWispr 3</string>
+    <string name="migration_back_up_first">Back up first</string>
 </resources>
