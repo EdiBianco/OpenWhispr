@@ -229,4 +229,31 @@ Motivo: %1$s</string>
     <string name="overlay_position_help">Trascina per scegliere l\'altezza. Un cerchio mostra dove sarà il pulsante.</string>
     <string name="overlay_side_left">Mostra a sinistra</string>
     <string name="overlay_side_left_summary">Posiziona il pulsante sul bordo sinistro invece che su quello destro</string>
+
+    <string name="backup_section">Backup</string>
+    <string name="backup_export_title">Esporta impostazioni e chiavi</string>
+    <string name="backup_export_summary">Salva le impostazioni e le chiavi API scelte in un file protetto da passphrase</string>
+    <string name="backup_restore_title">Ripristina da backup</string>
+    <string name="backup_restore_summary">Carica un file di backup e scegli cosa ripristinare</string>
+    <string name="backup_choose_export">Scegli cosa salvare</string>
+    <string name="backup_choose_restore">Scegli cosa ripristinare</string>
+    <string name="backup_select_all">Seleziona tutto</string>
+    <string name="backup_nothing_selected">Seleziona almeno un elemento</string>
+    <string name="backup_nothing_to_choose">Niente da scegliere</string>
+    <string name="backup_item_groq_key">Chiave API di Groq</string>
+    <string name="backup_item_cleanup_key">Chiave API del servizio personalizzato</string>
+    <string name="backup_passphrase_title_export">Scegli una passphrase</string>
+    <string name="backup_passphrase_title_restore">Inserisci la passphrase del backup</string>
+    <string name="backup_passphrase_hint">Passphrase (almeno 8 caratteri)</string>
+    <string name="backup_passphrase_confirm_hint">Ripeti la passphrase</string>
+    <string name="backup_passphrase_mismatch">Le passphrase non coincidono</string>
+    <string name="backup_passphrase_short">Usa almeno 8 caratteri</string>
+    <string name="backup_export_done">Backup salvato. La passphrase non può essere recuperata, conservala al sicuro.</string>
+    <string name="backup_export_failed">Impossibile salvare il backup: %1$s</string>
+    <string name="backup_restore_done">Impostazioni e chiavi ripristinate</string>
+    <string name="backup_restore_failed">Impossibile ripristinare: passphrase errata o file danneggiato</string>
+    <string name="welcome_title">Benvenuto in OpenWispr</string>
+    <string name="welcome_message">Ripristina impostazioni e chiavi da un backup, oppure inizia da zero.</string>
+    <string name="welcome_restore">Ripristina backup</string>
+    <string name="welcome_start_fresh">Inizia da zero</string>
 </resources>

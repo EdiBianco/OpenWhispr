@@ -229,4 +229,31 @@
     <string name="overlay_position_help">スライダーで高さを選びます。円がボタンの位置を示します。</string>
     <string name="overlay_side_left">左側に表示</string>
     <string name="overlay_side_left_summary">ボタンを右端ではなく左端に配置します</string>
+
+    <string name="backup_section">バックアップ</string>
+    <string name="backup_export_title">設定とキーを書き出す</string>
+    <string name="backup_export_summary">選んだ設定と API キーを、パスフレーズで保護したファイルに保存します</string>
+    <string name="backup_restore_title">バックアップから復元</string>
+    <string name="backup_restore_summary">バックアップファイルを読み込み、復元する項目を選びます</string>
+    <string name="backup_choose_export">保存する項目を選択</string>
+    <string name="backup_choose_restore">復元する項目を選択</string>
+    <string name="backup_select_all">すべて選択</string>
+    <string name="backup_nothing_selected">少なくとも 1 つ選択してください</string>
+    <string name="backup_nothing_to_choose">選択できる項目がありません</string>
+    <string name="backup_item_groq_key">Groq API キー</string>
+    <string name="backup_item_cleanup_key">カスタムサービスの API キー</string>
+    <string name="backup_passphrase_title_export">パスフレーズを設定</string>
+    <string name="backup_passphrase_title_restore">バックアップのパスフレーズを入力</string>
+    <string name="backup_passphrase_hint">パスフレーズ（8 文字以上）</string>
+    <string name="backup_passphrase_confirm_hint">パスフレーズを再入力</string>
+    <string name="backup_passphrase_mismatch">パスフレーズが一致しません</string>
+    <string name="backup_passphrase_short">8 文字以上にしてください</string>
+    <string name="backup_export_done">バックアップを保存しました。パスフレーズは復元できないので大切に保管してください。</string>
+    <string name="backup_export_failed">バックアップを保存できませんでした: %1$s</string>
+    <string name="backup_restore_done">設定とキーを復元しました</string>
+    <string name="backup_restore_failed">復元できませんでした: パスフレーズが違うか、ファイルが壊れています</string>
+    <string name="welcome_title">OpenWispr へようこそ</string>
+    <string name="welcome_message">バックアップから設定とキーを復元するか、最初から始めます。</string>
+    <string name="welcome_restore">バックアップから復元</string>
+    <string name="welcome_start_fresh">最初から始める</string>
 </resources>

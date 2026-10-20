@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 3.22.0
+- Backup: export your settings and API keys to a file you save on your phone, protected by a passphrase you choose. Pick everything or individual items
+- Restore from a backup, from Settings or on first launch of a fresh install. Pick everything or individual items; the rest of your setup is left as it is
+
 ## 3.21.0
 - Choose where the floating button sits: a new height slider and a left/right switch in Settings. A circle previews the spot while you move the slider, and the button always stays fully on screen
 - The status note next to the button now appears on its right when the button is on the left

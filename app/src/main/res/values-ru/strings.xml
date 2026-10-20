@@ -229,4 +229,31 @@
     <string name="overlay_position_help">Сдвиньте ползунок, чтобы выбрать высоту. Круг показывает, где будет кнопка.</string>
     <string name="overlay_side_left">Показывать слева</string>
     <string name="overlay_side_left_summary">Разместить кнопку у левого края вместо правого</string>
+
+    <string name="backup_section">Резервная копия</string>
+    <string name="backup_export_title">Экспорт настроек и ключей</string>
+    <string name="backup_export_summary">Сохранить выбранные настройки и ключи API в файл, защищённый паролем</string>
+    <string name="backup_restore_title">Восстановить из копии</string>
+    <string name="backup_restore_summary">Загрузить файл копии и выбрать, что восстановить</string>
+    <string name="backup_choose_export">Выберите, что сохранить</string>
+    <string name="backup_choose_restore">Выберите, что восстановить</string>
+    <string name="backup_select_all">Выбрать всё</string>
+    <string name="backup_nothing_selected">Выберите хотя бы один пункт</string>
+    <string name="backup_nothing_to_choose">Нечего выбирать</string>
+    <string name="backup_item_groq_key">Ключ API Groq</string>
+    <string name="backup_item_cleanup_key">Ключ API своей службы</string>
+    <string name="backup_passphrase_title_export">Придумайте пароль</string>
+    <string name="backup_passphrase_title_restore">Введите пароль копии</string>
+    <string name="backup_passphrase_hint">Пароль (не менее 8 символов)</string>
+    <string name="backup_passphrase_confirm_hint">Повторите пароль</string>
+    <string name="backup_passphrase_mismatch">Пароли не совпадают</string>
+    <string name="backup_passphrase_short">Используйте не менее 8 символов</string>
+    <string name="backup_export_done">Копия сохранена. Пароль нельзя восстановить, храните его надёжно.</string>
+    <string name="backup_export_failed">Не удалось сохранить копию: %1$s</string>
+    <string name="backup_restore_done">Настройки и ключи восстановлены</string>
+    <string name="backup_restore_failed">Не удалось восстановить: неверный пароль или повреждённый файл</string>
+    <string name="welcome_title">Добро пожаловать в OpenWispr</string>
+    <string name="welcome_message">Восстановите настройки и ключи из копии или начните с нуля.</string>
+    <string name="welcome_restore">Восстановить копию</string>
+    <string name="welcome_start_fresh">Начать с нуля</string>
 </resources>

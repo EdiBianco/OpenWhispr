@@ -229,4 +229,31 @@
     <string name="overlay_position_help">滑动以选择高度。圆圈显示按钮将出现的位置。</string>
     <string name="overlay_side_left">显示在左侧</string>
     <string name="overlay_side_left_summary">将按钮放在左边缘而不是右边缘</string>
+
+    <string name="backup_section">备份</string>
+    <string name="backup_export_title">导出设置和密钥</string>
+    <string name="backup_export_summary">将所选设置和 API 密钥保存到受密码保护的文件中</string>
+    <string name="backup_restore_title">从备份恢复</string>
+    <string name="backup_restore_summary">加载备份文件并选择要恢复的内容</string>
+    <string name="backup_choose_export">选择要保存的内容</string>
+    <string name="backup_choose_restore">选择要恢复的内容</string>
+    <string name="backup_select_all">全选</string>
+    <string name="backup_nothing_selected">请至少选择一项</string>
+    <string name="backup_nothing_to_choose">没有可选择的内容</string>
+    <string name="backup_item_groq_key">Groq API 密钥</string>
+    <string name="backup_item_cleanup_key">自定义服务 API 密钥</string>
+    <string name="backup_passphrase_title_export">设置密码</string>
+    <string name="backup_passphrase_title_restore">输入备份密码</string>
+    <string name="backup_passphrase_hint">密码（至少 8 个字符）</string>
+    <string name="backup_passphrase_confirm_hint">再次输入密码</string>
+    <string name="backup_passphrase_mismatch">两次输入的密码不一致</string>
+    <string name="backup_passphrase_short">请至少使用 8 个字符</string>
+    <string name="backup_export_done">备份已保存。密码无法找回，请妥善保管。</string>
+    <string name="backup_export_failed">无法保存备份：%1$s</string>
+    <string name="backup_restore_done">设置和密钥已恢复</string>
+    <string name="backup_restore_failed">无法恢复：密码错误或文件已损坏</string>
+    <string name="welcome_title">欢迎使用 OpenWispr</string>
+    <string name="welcome_message">从备份恢复设置和密钥，或从头开始。</string>
+    <string name="welcome_restore">从备份恢复</string>
+    <string name="welcome_start_fresh">从头开始</string>
 </resources>

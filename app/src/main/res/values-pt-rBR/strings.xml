@@ -229,4 +229,31 @@ Motivo: %1$s</string>
     <string name="overlay_position_help">Deslize para escolher a altura. Um círculo mostra onde o botão ficará.</string>
     <string name="overlay_side_left">Mostrar à esquerda</string>
     <string name="overlay_side_left_summary">Coloca o botão na borda esquerda em vez da direita</string>
+
+    <string name="backup_section">Backup</string>
+    <string name="backup_export_title">Exportar configurações e chaves</string>
+    <string name="backup_export_summary">Salvar as configurações e chaves de API escolhidas em um arquivo protegido por senha</string>
+    <string name="backup_restore_title">Restaurar backup</string>
+    <string name="backup_restore_summary">Carregar um arquivo de backup e escolher o que restaurar</string>
+    <string name="backup_choose_export">Escolha o que salvar</string>
+    <string name="backup_choose_restore">Escolha o que restaurar</string>
+    <string name="backup_select_all">Selecionar tudo</string>
+    <string name="backup_nothing_selected">Selecione pelo menos um item</string>
+    <string name="backup_nothing_to_choose">Nada para escolher</string>
+    <string name="backup_item_groq_key">Chave de API da Groq</string>
+    <string name="backup_item_cleanup_key">Chave de API do serviço personalizado</string>
+    <string name="backup_passphrase_title_export">Escolha uma senha</string>
+    <string name="backup_passphrase_title_restore">Digite a senha do backup</string>
+    <string name="backup_passphrase_hint">Senha (8 caracteres ou mais)</string>
+    <string name="backup_passphrase_confirm_hint">Repita a senha</string>
+    <string name="backup_passphrase_mismatch">As senhas não coincidem</string>
+    <string name="backup_passphrase_short">Use pelo menos 8 caracteres</string>
+    <string name="backup_export_done">Backup salvo. A senha não pode ser recuperada, guarde-a bem.</string>
+    <string name="backup_export_failed">Não foi possível salvar o backup: %1$s</string>
+    <string name="backup_restore_done">Configurações e chaves restauradas</string>
+    <string name="backup_restore_failed">Não foi possível restaurar: senha incorreta ou arquivo danificado</string>
+    <string name="welcome_title">Bem-vindo ao OpenWispr</string>
+    <string name="welcome_message">Restaure suas configurações e chaves de um backup ou comece do zero.</string>
+    <string name="welcome_restore">Restaurar backup</string>
+    <string name="welcome_start_fresh">Começar do zero</string>
 </resources>

@@ -229,4 +229,31 @@ Motivo: %1$s</string>
     <string name="overlay_position_help">Desliza para elegir la altura. Un círculo muestra dónde estará el botón.</string>
     <string name="overlay_side_left">Mostrar a la izquierda</string>
     <string name="overlay_side_left_summary">Coloca el botón en el borde izquierdo en lugar del derecho</string>
+
+    <string name="backup_section">Copia de seguridad</string>
+    <string name="backup_export_title">Exportar ajustes y claves</string>
+    <string name="backup_export_summary">Guarda los ajustes y claves API elegidos en un archivo protegido con contraseña</string>
+    <string name="backup_restore_title">Restaurar copia de seguridad</string>
+    <string name="backup_restore_summary">Carga un archivo de copia y elige qué restaurar</string>
+    <string name="backup_choose_export">Elige qué guardar</string>
+    <string name="backup_choose_restore">Elige qué restaurar</string>
+    <string name="backup_select_all">Seleccionar todo</string>
+    <string name="backup_nothing_selected">Selecciona al menos un elemento</string>
+    <string name="backup_nothing_to_choose">Nada que elegir</string>
+    <string name="backup_item_groq_key">Clave API de Groq</string>
+    <string name="backup_item_cleanup_key">Clave API del servicio personalizado</string>
+    <string name="backup_passphrase_title_export">Elige una contraseña</string>
+    <string name="backup_passphrase_title_restore">Introduce la contraseña de la copia</string>
+    <string name="backup_passphrase_hint">Contraseña (8 caracteres o más)</string>
+    <string name="backup_passphrase_confirm_hint">Repite la contraseña</string>
+    <string name="backup_passphrase_mismatch">Las contraseñas no coinciden</string>
+    <string name="backup_passphrase_short">Usa al menos 8 caracteres</string>
+    <string name="backup_export_done">Copia guardada. La contraseña no se puede recuperar, guárdala bien.</string>
+    <string name="backup_export_failed">No se pudo guardar la copia: %1$s</string>
+    <string name="backup_restore_done">Ajustes y claves restaurados</string>
+    <string name="backup_restore_failed">No se pudo restaurar: contraseña incorrecta o archivo dañado</string>
+    <string name="welcome_title">Bienvenido a OpenWispr</string>
+    <string name="welcome_message">Restaura tus ajustes y claves desde una copia, o empieza desde cero.</string>
+    <string name="welcome_restore">Restaurar copia</string>
+    <string name="welcome_start_fresh">Empezar desde cero</string>
 </resources>

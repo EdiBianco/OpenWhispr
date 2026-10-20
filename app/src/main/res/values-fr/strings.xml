@@ -232,4 +232,31 @@ Raison : %1$s</string>
     <string name="overlay_position_help">Faites glisser pour choisir la hauteur. Un cercle montre où se placera le bouton.</string>
     <string name="overlay_side_left">Afficher à gauche</string>
     <string name="overlay_side_left_summary">Placer le bouton sur le bord gauche plutôt que sur le droit</string>
+
+    <string name="backup_section">Sauvegarde</string>
+    <string name="backup_export_title">Exporter les réglages et clés</string>
+    <string name="backup_export_summary">Enregistrer les réglages et clés choisis dans un fichier protégé par mot de passe</string>
+    <string name="backup_restore_title">Restaurer une sauvegarde</string>
+    <string name="backup_restore_summary">Charger un fichier de sauvegarde et choisir quoi restaurer</string>
+    <string name="backup_choose_export">Choisir quoi enregistrer</string>
+    <string name="backup_choose_restore">Choisir quoi restaurer</string>
+    <string name="backup_select_all">Tout sélectionner</string>
+    <string name="backup_nothing_selected">Sélectionnez au moins un élément</string>
+    <string name="backup_nothing_to_choose">Rien à choisir</string>
+    <string name="backup_item_groq_key">Clé API Groq</string>
+    <string name="backup_item_cleanup_key">Clé API du service personnalisé</string>
+    <string name="backup_passphrase_title_export">Choisissez un mot de passe</string>
+    <string name="backup_passphrase_title_restore">Saisissez le mot de passe de la sauvegarde</string>
+    <string name="backup_passphrase_hint">Mot de passe (8 caractères ou plus)</string>
+    <string name="backup_passphrase_confirm_hint">Répétez le mot de passe</string>
+    <string name="backup_passphrase_mismatch">Les mots de passe ne correspondent pas</string>
+    <string name="backup_passphrase_short">Utilisez au moins 8 caractères</string>
+    <string name="backup_export_done">Sauvegarde enregistrée. Le mot de passe ne peut pas être récupéré, gardez-le en lieu sûr.</string>
+    <string name="backup_export_failed">Impossible d\'enregistrer la sauvegarde : %1$s</string>
+    <string name="backup_restore_done">Réglages et clés restaurés</string>
+    <string name="backup_restore_failed">Restauration impossible : mot de passe incorrect ou fichier endommagé</string>
+    <string name="welcome_title">Bienvenue dans OpenWispr</string>
+    <string name="welcome_message">Restaurez vos réglages et clés depuis une sauvegarde, ou commencez à zéro.</string>
+    <string name="welcome_restore">Restaurer une sauvegarde</string>
+    <string name="welcome_start_fresh">Commencer à zéro</string>
 </resources>

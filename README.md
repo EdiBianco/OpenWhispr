@@ -32,6 +32,7 @@ It supports:
 - **Battery-aware**: detects when Android might shut the background service down to save power and offers a one-tap fix, so the overlay stays available
 - **In-app updates**: tap "Check for updates" in Settings (or opt in to checking automatically on open) and the app checks this repo's GitHub Releases, then installs updates entirely in-app — it downloads the .apk itself and hands it straight to the system installer, no browser involved, with a short "what's new" summary for each release (see [CHANGELOG.md](CHANGELOG.md)). The downloaded .apk is checked against GitHub's published SHA-256 checksum and not installed if it doesn't match
 - **Organized settings**: Status / Dictation / Settings tabs, with a collapsible setup checklist (Audio, Accessibility, Battery) that folds away once everything's green
+- **Backup and restore**: export settings and API keys to a passphrase-protected file on your phone, and restore it on a fresh install. Downloaded models are not included, so download them again after restoring
 - **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation — the app walks you through unlocking it before sending you to the system screen
 
 ## Why I built this

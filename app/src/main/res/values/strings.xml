@@ -232,4 +232,31 @@ Reason: %1$s</string>
     <string name="overlay_position_help">Slide to choose the height. A circle shows where the button will be.</string>
     <string name="overlay_side_left">Show on the left</string>
     <string name="overlay_side_left_summary">Place the button on the left edge instead of the right</string>
+
+    <string name="backup_section">Backup</string>
+    <string name="backup_export_title">Export settings and keys</string>
+    <string name="backup_export_summary">Save chosen settings and API keys to a passphrase-protected file</string>
+    <string name="backup_restore_title">Restore from backup</string>
+    <string name="backup_restore_summary">Load a backup file and choose what to restore</string>
+    <string name="backup_choose_export">Choose what to save</string>
+    <string name="backup_choose_restore">Choose what to restore</string>
+    <string name="backup_select_all">Select all</string>
+    <string name="backup_nothing_selected">Select at least one item</string>
+    <string name="backup_nothing_to_choose">Nothing to choose</string>
+    <string name="backup_item_groq_key">Groq API key</string>
+    <string name="backup_item_cleanup_key">Custom service API key</string>
+    <string name="backup_passphrase_title_export">Choose a passphrase</string>
+    <string name="backup_passphrase_title_restore">Enter the backup passphrase</string>
+    <string name="backup_passphrase_hint">Passphrase (8+ characters)</string>
+    <string name="backup_passphrase_confirm_hint">Repeat passphrase</string>
+    <string name="backup_passphrase_mismatch">Passphrases don\'t match</string>
+    <string name="backup_passphrase_short">Use at least 8 characters</string>
+    <string name="backup_export_done">Backup saved. The passphrase cannot be recovered, keep it safe.</string>
+    <string name="backup_export_failed">Could not save the backup: %1$s</string>
+    <string name="backup_restore_done">Settings and keys restored</string>
+    <string name="backup_restore_failed">Could not restore: wrong passphrase or damaged file</string>
+    <string name="welcome_title">Welcome to OpenWispr</string>
+    <string name="welcome_message">Restore your settings and keys from a backup, or start fresh.</string>
+    <string name="welcome_restore">Restore backup</string>
+    <string name="welcome_start_fresh">Start fresh</string>
 </resources>

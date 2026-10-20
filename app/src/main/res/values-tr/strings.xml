@@ -229,4 +229,31 @@ Neden: %1$s</string>
     <string name="overlay_position_help">Yüksekliği seçmek için kaydırın. Bir daire düğmenin nerede olacağını gösterir.</string>
     <string name="overlay_side_left">Solda göster</string>
     <string name="overlay_side_left_summary">Düğmeyi sağ kenar yerine sol kenara yerleştir</string>
+
+    <string name="backup_section">Yedekleme</string>
+    <string name="backup_export_title">Ayarları ve anahtarları dışa aktar</string>
+    <string name="backup_export_summary">Seçilen ayarları ve API anahtarlarını parolayla korunan bir dosyaya kaydet</string>
+    <string name="backup_restore_title">Yedekten geri yükle</string>
+    <string name="backup_restore_summary">Bir yedek dosyası yükle ve geri yüklenecekleri seç</string>
+    <string name="backup_choose_export">Kaydedilecekleri seç</string>
+    <string name="backup_choose_restore">Geri yüklenecekleri seç</string>
+    <string name="backup_select_all">Tümünü seç</string>
+    <string name="backup_nothing_selected">En az bir öğe seçin</string>
+    <string name="backup_nothing_to_choose">Seçilecek bir şey yok</string>
+    <string name="backup_item_groq_key">Groq API anahtarı</string>
+    <string name="backup_item_cleanup_key">Özel hizmet API anahtarı</string>
+    <string name="backup_passphrase_title_export">Bir parola seçin</string>
+    <string name="backup_passphrase_title_restore">Yedek parolasını girin</string>
+    <string name="backup_passphrase_hint">Parola (en az 8 karakter)</string>
+    <string name="backup_passphrase_confirm_hint">Parolayı tekrar girin</string>
+    <string name="backup_passphrase_mismatch">Parolalar eşleşmiyor</string>
+    <string name="backup_passphrase_short">En az 8 karakter kullanın</string>
+    <string name="backup_export_done">Yedek kaydedildi. Parola kurtarılamaz, güvenli tutun.</string>
+    <string name="backup_export_failed">Yedek kaydedilemedi: %1$s</string>
+    <string name="backup_restore_done">Ayarlar ve anahtarlar geri yüklendi</string>
+    <string name="backup_restore_failed">Geri yüklenemedi: parola yanlış veya dosya bozuk</string>
+    <string name="welcome_title">OpenWispr\'a hoş geldiniz</string>
+    <string name="welcome_message">Ayarlarınızı ve anahtarlarınızı bir yedekten geri yükleyin ya da sıfırdan başlayın.</string>
+    <string name="welcome_restore">Yedekten geri yükle</string>
+    <string name="welcome_start_fresh">Sıfırdan başla</string>
 </resources>
