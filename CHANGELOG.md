@@ -9,6 +9,9 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.0.0
+- Release builds are now signed with a private key. Before updating, make a backup in Settings > Backup. Then uninstall the 3.x app and install this version: Android won't update an app signed with a different key, and this is the one-time switch. Restore your backup on first launch
+
 ## 3.23.0
 - Upgrade path to OpenWispr 4: when 4.0.0 is available, the app saves it to Downloads and walks you through backing up, uninstalling version 3, installing 4.0.0, and restoring your backup
 - The Status tab shows when the accessibility service is switched on but not running, and a notification reminds you to turn it back on

@@ -12,8 +12,8 @@ keywords = ["gsk_"]
 
 [[rules]]
 id = "signing-password"
-description = "Android signing password assigned in source"
-regex = '''(storePassword|keyPassword)\s*=\s*[^\s"<k][^\s]{3,}'''
+description = "Android signing password literal in source"
+regex = '''(storePassword|keyPassword)\s*=\s*"[^"\s]{4,}"'''
 keywords = ["storepassword", "keypassword"]
 
 [allowlist]

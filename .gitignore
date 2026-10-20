@@ -6,3 +6,9 @@ local.properties
 *.apk
 app/src/main/jniLibs/
 .DS_Store
+
+# Release signing: keystore and its passwords stay local, never in git.
+keystore.properties
+*.jks
+*.keystore
+*.p12

@@ -1,6 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+// Release signing comes from keystore.properties (gitignored locally; CI writes it
+// from GitHub secrets). Without it, release builds are left unsigned.
+val releaseProps = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -8,15 +17,13 @@ android {
     compileSdk = 35
 
     signingConfigs {
-        getByName("debug") {
-            // Checked-in debug key so every build (local or CI) signs with the
-            // same certificate. Without this, each machine/CI run generates
-            // its own throwaway debug key, and Android refuses to install an
-            // "update" whose signature doesn't match what's already there.
-            storeFile = file("../keystore/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+        create("release") {
+            if (releaseProps.isNotEmpty()) {
+                storeFile = rootProject.file(releaseProps.getProperty("storeFile"))
+                storePassword = releaseProps.getProperty("storePassword")
+                keyAlias = releaseProps.getProperty("keyAlias")
+                keyPassword = releaseProps.getProperty("keyPassword")
+            }
         }
     }
 
@@ -24,15 +31,15 @@ android {
         applicationId = "com.edib.openwhispr"
         minSdk = 30
         targetSdk = 35
-        versionCode = 39
-        versionName = "3.23.0"
+        versionCode = 40
+        versionName = "4.0.0"
 
         ndk { abiFilters += "arm64-v8a" }
     }
 
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("debug")
+        release {
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
