@@ -256,4 +256,9 @@
     <string name="welcome_message">Восстановите настройки и ключи из копии или начните с нуля.</string>
     <string name="welcome_restore">Восстановить копию</string>
     <string name="welcome_start_fresh">Начать с нуля</string>
+
+    <string name="accessibility_enabled_not_running">Включено, но не работает. Нажмите, чтобы выключить и снова включить.</string>
+    <string name="watchdog_channel_name">Состояние службы диктовки</string>
+    <string name="watchdog_title">Диктовка OpenWispr остановлена</string>
+    <string name="watchdog_text">Специальные возможности включены, но служба не работает. Нажмите, чтобы включить снова.</string>
 </resources>

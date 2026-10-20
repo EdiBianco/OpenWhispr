@@ -90,6 +90,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ServiceWatchdog.schedule(this)
 
         // First launch on a fresh install (no saved settings yet): offer to restore a backup.
         if (!prefs().contains("welcome_done") && prefs().all.isEmpty()) {
@@ -208,7 +209,10 @@ class MainActivity : AppCompatActivity() {
         accDot = statusDot()
         accRow = settingsRow(getString(R.string.accessibility_service), getString(R.string.checking), leading = accDot) {
             val alreadyEnabled = WhisperAccessibilityService.instance != null
-            if (!alreadyEnabled && android.os.Build.VERSION.SDK_INT >= 33) {
+            // The restricted-settings help is for a toggle that can't be switched on yet;
+            // an enabled-but-stopped service just needs the toggle cycled.
+            if (!alreadyEnabled && android.os.Build.VERSION.SDK_INT >= 33 &&
+                !ServiceWatchdog.isEnabledInSettings(this)) {
                 showRestrictedSettingsHelp()
             } else {
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -768,7 +772,12 @@ class MainActivity : AppCompatActivity() {
         val unrestricted = isIgnoringBatteryOptimizations()
 
         audioRowSub.text = if (audio) getString(R.string.granted) else getString(R.string.tap_grant_permission)
-        accRowSub.text = if (acc) getString(R.string.enabled) else getString(R.string.tap_enable_settings)
+        // Three states: running, switched on but not connected (killed or frozen), or off.
+        accRowSub.text = when {
+            acc -> getString(R.string.enabled)
+            ServiceWatchdog.isEnabledInSettings(this) -> getString(R.string.accessibility_enabled_not_running)
+            else -> getString(R.string.tap_enable_settings)
+        }
         batteryRowSub.text = if (unrestricted)
             getString(R.string.battery_unrestricted)
         else

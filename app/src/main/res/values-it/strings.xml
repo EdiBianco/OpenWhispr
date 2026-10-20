@@ -256,4 +256,9 @@ Motivo: %1$s</string>
     <string name="welcome_message">Ripristina impostazioni e chiavi da un backup, oppure inizia da zero.</string>
     <string name="welcome_restore">Ripristina backup</string>
     <string name="welcome_start_fresh">Inizia da zero</string>
+
+    <string name="accessibility_enabled_not_running">Attivo ma non in esecuzione. Tocca per disattivarlo e riattivarlo.</string>
+    <string name="watchdog_channel_name">Stato del servizio di dettatura</string>
+    <string name="watchdog_title">La dettatura di OpenWispr si è fermata</string>
+    <string name="watchdog_text">L\'accessibilità è attiva, ma il servizio non è in esecuzione. Tocca per riattivarla.</string>
 </resources>

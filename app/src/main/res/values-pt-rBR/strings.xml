@@ -256,4 +256,9 @@ Motivo: %1$s</string>
     <string name="welcome_message">Restaure suas configurações e chaves de um backup ou comece do zero.</string>
     <string name="welcome_restore">Restaurar backup</string>
     <string name="welcome_start_fresh">Começar do zero</string>
+
+    <string name="accessibility_enabled_not_running">Ativado, mas não está em execução. Toque para desativar e ativar novamente.</string>
+    <string name="watchdog_channel_name">Status do serviço de ditado</string>
+    <string name="watchdog_title">O ditado do OpenWispr parou</string>
+    <string name="watchdog_text">A acessibilidade está ativada, mas o serviço não está em execução. Toque para ativá-la novamente.</string>
 </resources>

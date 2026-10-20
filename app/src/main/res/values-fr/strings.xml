@@ -259,4 +259,9 @@ Raison : %1$s</string>
     <string name="welcome_message">Restaurez vos réglages et clés depuis une sauvegarde, ou commencez à zéro.</string>
     <string name="welcome_restore">Restaurer une sauvegarde</string>
     <string name="welcome_start_fresh">Commencer à zéro</string>
+
+    <string name="accessibility_enabled_not_running">Activé mais inactif. Touchez pour le désactiver puis le réactiver.</string>
+    <string name="watchdog_channel_name">État du service de dictée</string>
+    <string name="watchdog_title">La dictée OpenWispr s\'est arrêtée</string>
+    <string name="watchdog_text">L\'accessibilité est activée, mais le service ne tourne pas. Touchez pour la réactiver.</string>
 </resources>

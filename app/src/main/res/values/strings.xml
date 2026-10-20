@@ -259,4 +259,9 @@ Reason: %1$s</string>
     <string name="welcome_message">Restore your settings and keys from a backup, or start fresh.</string>
     <string name="welcome_restore">Restore backup</string>
     <string name="welcome_start_fresh">Start fresh</string>
+
+    <string name="accessibility_enabled_not_running">Enabled but not running. Tap to turn it off and on.</string>
+    <string name="watchdog_channel_name">Dictation service status</string>
+    <string name="watchdog_title">OpenWispr dictation has stopped</string>
+    <string name="watchdog_text">Accessibility is on, but the service isn\'t running. Tap to turn it back on.</string>
 </resources>

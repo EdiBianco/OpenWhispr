@@ -52,6 +52,7 @@ dependencies {
     implementation("com.k2fsa:sherpa-onnx:1.13.8@aar")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.work:work-runtime:2.9.1")
     implementation("com.google.android.material:material:1.14.0")
     implementation("org.apache.commons:commons-compress:1.27.1")
 

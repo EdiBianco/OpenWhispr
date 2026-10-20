@@ -256,4 +256,9 @@ Motivo: %1$s</string>
     <string name="welcome_message">Restaura tus ajustes y claves desde una copia, o empieza desde cero.</string>
     <string name="welcome_restore">Restaurar copia</string>
     <string name="welcome_start_fresh">Empezar desde cero</string>
+
+    <string name="accessibility_enabled_not_running">Activado pero no en ejecución. Toca para desactivarlo y volver a activarlo.</string>
+    <string name="watchdog_channel_name">Estado del servicio de dictado</string>
+    <string name="watchdog_title">El dictado de OpenWispr se ha detenido</string>
+    <string name="watchdog_text">La accesibilidad está activada, pero el servicio no se ejecuta. Toca para volver a activarla.</string>
 </resources>

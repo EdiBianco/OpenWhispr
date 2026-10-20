@@ -256,4 +256,9 @@ Neden: %1$s</string>
     <string name="welcome_message">Ayarlarınızı ve anahtarlarınızı bir yedekten geri yükleyin ya da sıfırdan başlayın.</string>
     <string name="welcome_restore">Yedekten geri yükle</string>
     <string name="welcome_start_fresh">Sıfırdan başla</string>
+
+    <string name="accessibility_enabled_not_running">Açık ama çalışmıyor. Kapatıp yeniden açmak için dokunun.</string>
+    <string name="watchdog_channel_name">Dikte hizmeti durumu</string>
+    <string name="watchdog_title">OpenWispr dikte durdu</string>
+    <string name="watchdog_text">Erişilebilirlik açık, ancak hizmet çalışmıyor. Yeniden açmak için dokunun.</string>
 </resources>

@@ -256,4 +256,9 @@
     <string name="welcome_message">从备份恢复设置和密钥，或从头开始。</string>
     <string name="welcome_restore">从备份恢复</string>
     <string name="welcome_start_fresh">从头开始</string>
+
+    <string name="accessibility_enabled_not_running">已开启但未运行。点击以关闭后再重新开启。</string>
+    <string name="watchdog_channel_name">听写服务状态</string>
+    <string name="watchdog_title">OpenWispr 听写已停止</string>
+    <string name="watchdog_text">无障碍已开启，但服务未运行。点击以重新开启。</string>
 </resources>

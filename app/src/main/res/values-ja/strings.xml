@@ -256,4 +256,9 @@
     <string name="welcome_message">バックアップから設定とキーを復元するか、最初から始めます。</string>
     <string name="welcome_restore">バックアップから復元</string>
     <string name="welcome_start_fresh">最初から始める</string>
+
+    <string name="accessibility_enabled_not_running">オンですが動作していません。タップしてオフにしてから再度オンにしてください。</string>
+    <string name="watchdog_channel_name">ディクテーションサービスの状態</string>
+    <string name="watchdog_title">OpenWispr のディクテーションが停止しました</string>
+    <string name="watchdog_text">ユーザー補助はオンですが、サービスが動作していません。タップしてオンに戻してください。</string>
 </resources>
