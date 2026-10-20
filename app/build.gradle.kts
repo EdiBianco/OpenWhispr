@@ -24,8 +24,8 @@ android {
         applicationId = "com.edib.openwhispr"
         minSdk = 30
         targetSdk = 35
-        versionCode = 37
-        versionName = "3.22.0"
+        versionCode = 38
+        versionName = "3.22.1"
 
         ndk { abiFilters += "arm64-v8a" }
     }

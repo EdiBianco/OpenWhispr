@@ -1,0 +1,21 @@
+# Secret-scan rules for this repo. Extends gitleaks defaults; the same rules run locally and in CI.
+title = "personal gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "groq-api-key"
+description = "Groq API key"
+regex = '''gsk_[A-Za-z0-9]{20,}'''
+keywords = ["gsk_"]
+
+[[rules]]
+id = "signing-password"
+description = "Android signing password assigned in source"
+regex = '''(storePassword|keyPassword)\s*=\s*[^\s"<k][^\s]{3,}'''
+keywords = ["storepassword", "keypassword"]
+
+[allowlist]
+description = "Placeholders and docs"
+regexes = ['''gsk_(…|\.\.\.)''', '''gsk_X+''']
