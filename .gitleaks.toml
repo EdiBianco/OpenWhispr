@@ -18,10 +18,7 @@ keywords = ["storepassword", "keypassword"]
 
 [allowlist]
 description = "Placeholders and docs"
-regexes = ['''gsk_(…|\.\.\.)''', '''gsk_X+''']
+regexes = ['''gsk_(…|\.\.\.)''', '''gsk_X+''', '''(storePassword|keyPassword)\s*=\s*"android"''']
+# Commit that added the old debug signing config (public Android default password "android"); not a secret.
+commits = ["49642fae809b05f05ae211cd4b21e8d7492e62da"]
 
-# The old debug keystore password is Android's public default ("android"), not a secret.
-# It appears in history from before the debug keystore was removed.
-[[allowlists]]
-description = "Public Android debug keystore password"
-regexes = ['''(storePassword|keyPassword)\s*=\s*"android"''']
