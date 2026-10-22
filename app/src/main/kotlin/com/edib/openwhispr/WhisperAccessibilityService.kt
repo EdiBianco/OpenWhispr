@@ -3,8 +3,6 @@ package com.edib.openwhispr
 import android.accessibilityservice.AccessibilityService
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.content.res.ColorStateList
@@ -17,10 +15,8 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.ToneGenerator
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PersistableBundle
 import android.text.InputType
 import android.util.Log
 import android.view.Gravity
@@ -114,6 +110,9 @@ class WhisperAccessibilityService : AccessibilityService() {
     private var stopTone: ToneGenerator? = null
     private var pcmStream: ByteArrayOutputStream? = null
     private val handler = Handler(Looper.getMainLooper())
+
+    /** All accessibility-node text access lives in TextInjector. */
+    private val injector by lazy { TextInjector(this) { text, durationMs -> showFeedback(text, durationMs) } }
     private val hideFeedback = Runnable {
         feedbackView?.animate()?.alpha(0f)?.setDuration(180)?.withEndAction {
             feedbackView?.visibility = View.GONE
@@ -954,7 +953,8 @@ class WhisperAccessibilityService : AccessibilityService() {
         if (apiKey.isBlank()) { reset(getString(R.string.set_groq_key)); return }
 
         playRecordingStoppedTone()
-        TranscriberClient.transcribe(wav, apiKey, Dictionary.load(prefs()), TranscriptionLanguages.saved(prefs())) { result ->
+        val model = TranscriberClient.modelId(prefs().getString(TranscriberClient.MODEL_PREF_KEY, null))
+        TranscriberClient.transcribe(wav, apiKey, Dictionary.load(prefs()), TranscriptionLanguages.saved(prefs()), model) { result ->
             if (result.text != null && result.text.isNotBlank()) {
                 handleTranscriptionResult(result.text)
             } else {
@@ -1004,7 +1004,7 @@ class WhisperAccessibilityService : AccessibilityService() {
             if (apiKey.isBlank()) {
                 handler.post {
                     toast(getString(R.string.cleanup_needs_key))
-                    injectText(text)
+                    injector.inject(text)
                     goIdle()
                 }
                 return
@@ -1026,14 +1026,14 @@ class WhisperAccessibilityService : AccessibilityService() {
                         // cleaning (e.g. drafted the email you described). Never
                         // insert that; insert your own words instead.
                         Log.i(TAG, "Cleanup output rejected (not a cleanup of the transcript); using raw text")
-                        if (injectText(text)) showFeedback(getString(R.string.cleanup_skipped_kept_words), 3000)
+                        if (injector.inject(text)) showFeedback(getString(R.string.cleanup_skipped_kept_words), 3000)
                     } else if (!cleaned.isNullOrBlank()) {
-                        injectText(cleaned)
+                        injector.inject(cleaned)
                     } else {
                         // [privacy] injectText only shows its feedback when it falls back
                         // to the clipboard; if the raw text was inserted, still say
                         // that cleanup failed.
-                        if (injectText(text, feedback = getString(R.string.cleanup_failed_clipboard), feedbackDurationMs = 3000)) {
+                        if (injector.inject(text, feedbackText = getString(R.string.cleanup_failed_clipboard), feedbackDurationMs = 3000)) {
                             showFeedback(getString(R.string.cleanup_failed_inserted_raw), 3000)
                         }
                     }
@@ -1042,7 +1042,7 @@ class WhisperAccessibilityService : AccessibilityService() {
             }
         } else {
             handler.post {
-                injectText(text)
+                injector.inject(text)
                 goIdle()
             }
         }
@@ -1071,7 +1071,7 @@ class WhisperAccessibilityService : AccessibilityService() {
             return
         }
 
-        val fieldText = dictated ?: currentFieldText()
+        val fieldText = dictated ?: injector.currentFieldText()
 
         CommandProcessor.process(fieldText, instruction, apiKey) { result ->
             handler.post {
@@ -1082,8 +1082,8 @@ class WhisperAccessibilityService : AccessibilityService() {
                     out == CommandProcessor.UNSUPPORTED ->
                         toast(getString(R.string.command_not_recognized))
                     dictated != null ->
-                        if (injectText(out)) showFeedback(getString(R.string.command_applied), 2000)
-                    else -> replaceFieldText(out)
+                        if (injector.inject(out)) showFeedback(getString(R.string.command_applied), 2000)
+                    else -> injector.replaceField(out)
                 }
                 goIdle()
             }
@@ -1093,57 +1093,6 @@ class WhisperAccessibilityService : AccessibilityService() {
     /** Best-effort read of whatever text is already in the focused field,
      * for voice commands that operate on existing content ("summarize
      * this") rather than freshly dictated content. */
-    private fun currentFieldText(): String {
-        val candidates = findInjectionCandidates()
-        return try {
-            candidates.firstOrNull()?.text?.toString().orEmpty()
-        } finally {
-            candidates.forEach { it.recycle() }
-        }
-    }
-
-    /** Like injectText, but replaces the focused field's entire content
-     * instead of inserting at the cursor/selection -- used by voice
-     * commands, which transform the whole field rather than append to it. */
-    private fun replaceFieldText(text: String) {
-        val candidates = findInjectionCandidates()
-        var replaced = false
-        try {
-            for (candidate in candidates) {
-                if (tryReplaceEntireNode(candidate, text)) {
-                    replaced = true
-                    break
-                }
-            }
-        } finally {
-            candidates.forEach { it.recycle() }
-        }
-
-        // [privacy] Replacement uses ACTION_SET_TEXT (no clipboard), so the
-        // clipboard is only used as the fallback when it fails.
-        if (!replaced) copyToClipboard(text)
-        Log.i(TAG, if (replaced) "Command replace succeeded" else "Command replace failed; clipboard fallback only")
-        showFeedback(
-            getString(if (replaced) R.string.command_applied else R.string.replace_failed_clipboard),
-            if (replaced) 2000 else 3000
-        )
-    }
-
-    private fun tryReplaceEntireNode(node: AccessibilityNodeInfo, text: String): Boolean {
-        logNode("Trying full replace on node", node)
-        node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
-
-        if (node.isEditable || node.className?.toString()?.contains("EditText") == true) {
-            val args = Bundle().apply {
-                putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
-            }
-            val setTextOk = node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
-            Log.i(TAG, "Full-replace ACTION_SET_TEXT => $setTextOk")
-            if (setTextOk) return true
-        }
-        return false
-    }
-
     private fun reset(msg: String) {
         toast(msg)
         goIdle()
@@ -1156,182 +1105,6 @@ class WhisperAccessibilityService : AccessibilityService() {
         setIcon(R.drawable.ic_app_logo)
         setOpacity(active = false)
         updateOverlayVisibility()
-    }
-
-    // --- Text injection ---
-
-    /** Inserts [text] into the focused field. Returns true if it landed.
-     *
-     * [privacy] Insertion pastes, so the text goes on the clipboard first
-     * (marked sensitive, see copyToClipboard); if nothing accepts it, it
-     * stays there for the user to paste. [feedback] is shown only in that
-     * case -- previously it was shown before insertion, even on success. */
-    private fun injectText(
-        text: String,
-        feedback: String? = getString(R.string.copied_to_clipboard),
-        feedbackDurationMs: Long = 2000
-    ): Boolean {
-        copyToClipboard(text)
-
-        val candidates = findInjectionCandidates()
-        Log.i(TAG, "Injecting text into ${candidates.size} candidate node(s)")
-
-        var injected = false
-        try {
-            for (candidate in candidates) {
-                if (tryInjectIntoNode(candidate, text)) {
-                    injected = true
-                    break
-                }
-            }
-        } finally {
-            candidates.forEach { it.recycle() }
-        }
-
-        Log.i(TAG, if (injected) "Text injection action reported success" else "No injection action succeeded; clipboard fallback only")
-        if (!injected) feedback?.let { showFeedback(it, feedbackDurationMs) }
-        return injected
-    }
-
-    /** [privacy] Puts dictated text on the clipboard (needed: paste-based
-     * injection and the manual fallback read it from there), marked as
-     * sensitive. Android 13+ then hides it in the clipboard preview, and
-     * keyboards that honour the flag keep it out of clipboard suggestions.
-     * Pasting is unaffected. The extra's key is the literal value of
-     * ClipDescription.EXTRA_IS_SENSITIVE (API 33), so this compiles and runs
-     * on minSdk 30, where it is simply ignored. */
-    private fun copyToClipboard(text: String) {
-        val clip = ClipData.newPlainText("openwhispr", text)
-        clip.description.extras = PersistableBundle().apply {
-            putBoolean("android.content.extra.IS_SENSITIVE", true)
-        }
-        (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-    }
-
-    private fun findInjectionCandidates(): List<AccessibilityNodeInfo> {
-        val candidates = mutableListOf<AccessibilityNodeInfo>()
-
-        rootInActiveWindow?.let { root ->
-            Log.i(TAG, "Active root: package=${root.packageName} class=${root.className}")
-            collectInjectionCandidates(root, candidates)
-            root.recycle()
-        }
-
-        windows
-            ?.filter { it.isActive || it.isFocused }
-            ?.forEach { window ->
-                val root = window.root ?: return@forEach
-                Log.i(
-                    TAG,
-                    "Window root: type=${window.type} active=${window.isActive} focused=${window.isFocused} package=${root.packageName} class=${root.className}"
-                )
-                collectInjectionCandidates(root, candidates)
-                root.recycle()
-            }
-
-        return candidates.sortedByDescending(::candidateScore)
-    }
-
-    private fun collectInjectionCandidates(
-        root: AccessibilityNodeInfo,
-        out: MutableList<AccessibilityNodeInfo>
-    ) {
-        root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.let { out += it }
-        root.findFocus(AccessibilityNodeInfo.FOCUS_ACCESSIBILITY)?.let { out += it }
-        collectPotentialTargets(root, out)
-    }
-
-    private fun collectPotentialTargets(
-        node: AccessibilityNodeInfo,
-        out: MutableList<AccessibilityNodeInfo>
-    ) {
-        if (isPotentialInjectionTarget(node)) {
-            out += AccessibilityNodeInfo.obtain(node)
-        }
-
-        for (i in 0 until node.childCount) {
-            val child = node.getChild(i) ?: continue
-            try {
-                collectPotentialTargets(child, out)
-            } finally {
-                child.recycle()
-            }
-        }
-    }
-
-    private fun isPotentialInjectionTarget(node: AccessibilityNodeInfo): Boolean {
-        val className = node.className?.toString().orEmpty()
-        return node.isFocused ||
-            node.isEditable ||
-            className.contains("EditText") ||
-            className.contains("TerminalView") ||
-            findCustomPasteAction(node) != null
-    }
-
-    private fun candidateScore(node: AccessibilityNodeInfo): Int {
-        val className = node.className?.toString().orEmpty()
-        var score = 0
-        if (findCustomPasteAction(node) != null) score += 100
-        if (className.contains("TerminalView")) score += 80
-        if (node.isEditable) score += 60
-        if (node.isFocused) score += 40
-        if (className.contains("EditText")) score += 20
-        return score
-    }
-
-    private fun tryInjectIntoNode(node: AccessibilityNodeInfo, text: String): Boolean {
-        logNode("Trying node", node)
-
-        node.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
-
-        findCustomPasteAction(node)?.let { action ->
-            val ok = node.performAction(action.id)
-            Log.i(TAG, "Custom action '${action.label}' (${action.id}) => $ok")
-            if (ok) return true
-        }
-
-        val pasteOk = node.performAction(AccessibilityNodeInfo.ACTION_PASTE)
-        Log.i(TAG, "ACTION_PASTE => $pasteOk")
-        if (pasteOk) return true
-
-        if (node.isEditable || node.className?.toString()?.contains("EditText") == true) {
-            val current = node.text?.toString().orEmpty()
-            val start = if (node.textSelectionStart >= 0) node.textSelectionStart else current.length
-            val end = if (node.textSelectionEnd >= 0) node.textSelectionEnd else start
-            val replacementStart = minOf(start, end)
-            val replacementEnd = maxOf(start, end)
-            val updated = current.replaceRange(replacementStart, replacementEnd, text)
-            val args = Bundle().apply {
-                putCharSequence(
-                    AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
-                    updated
-                )
-            }
-            val setTextOk = node.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
-            Log.i(TAG, "ACTION_SET_TEXT => $setTextOk")
-            if (setTextOk) return true
-        }
-
-        return false
-    }
-
-    private fun findCustomPasteAction(node: AccessibilityNodeInfo): AccessibilityNodeInfo.AccessibilityAction? =
-        node.actionList.firstOrNull { action ->
-            action.label?.toString()?.contains("paste", ignoreCase = true) == true
-        }
-
-    private fun logNode(prefix: String, node: AccessibilityNodeInfo) {
-        val actions = node.actionList.joinToString { action ->
-            action.label?.toString() ?: action.id.toString()
-        }
-        // [privacy] Never log a field's contents or accessibility label (it can
-        // be the user's message, email, etc.) -- only its length/presence.
-        // Logcat is readable over adb and is bundled into bug reports, and the
-        // app can't control how long it's kept.
-        Log.i(
-            TAG,
-            "$prefix package=${node.packageName} class=${node.className} focused=${node.isFocused} editable=${node.isEditable} textLen=${node.text?.length ?: 0} hasDesc=${node.contentDescription != null} actions=[$actions]"
-        )
     }
 
     private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)

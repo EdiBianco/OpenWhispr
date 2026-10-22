@@ -13,11 +13,13 @@ push work to `origin`.
 ## Build Commands
 
 JDK 17 and the Android SDK are required. `ANDROID_HOME` defaults to
-`~/Library/Android/sdk`; set `JAVA_HOME` to a JDK 17 install or let the Makefile
-find one (it checks `JAVA_HOME`, Homebrew's `openjdk@17` on both prefixes, then
-`/usr/libexec/java_home -v 17`).
+`~/Library/Android/sdk`. On a machine with no JDK, `make jdk` downloads a
+local Temurin 17 into `.jdk/` (gitignored); otherwise the Makefile uses
+`JAVA_HOME`, a JDK installed by `make jdk`, Homebrew's `openjdk@17` on either
+prefix, or `/usr/libexec/java_home -v 17`.
 
 ```sh
+make jdk         # download a local JDK 17 into .jdk/ (no system JDK needed)
 make build       # debug APK at app/build/outputs/apk/debug/app-debug.apk
 make test        # unit tests (testDebugUnitTest)
 make lint        # locale/translation consistency check
@@ -70,8 +72,13 @@ One responsibility per file under `app/src/main/kotlin/com/edib/openwhispr/`:
   This is the largest file; prefer extracting a cohesive piece into a new file
   over adding to it.
 - `WhisperAccessibilityService.kt` — the accessibility service: overlay rendering
-  and animation, focus/keyboard detection, recording, and text injection.
-- `TranscriberClient.kt` — cloud transcription request/response (`whisper-large-v3`).
+  and animation, focus/keyboard detection, and recording. Text injection lives
+  in `TextInjector`.
+- `TextInjector.kt` — the only place that touches accessibility node text:
+  finding the focused field, injecting or replacing its content, and the
+  clipboard fallback in both directions. Node contents are never logged.
+- `TranscriberClient.kt` — cloud transcription request/response; the model list
+  the user picks from (`whisper-large-v3` by default).
 - `PostProcessor.kt` — the built-in cleanup prompt and chat request.
 - `CommandProcessor.kt` — the whitelisted voice-command transformations.
 - `CleanupProviderConfig.kt` — where cleanup goes (Groq or an OpenAI-compatible
@@ -103,6 +110,11 @@ One responsibility per file under `app/src/main/kotlin/com/edib/openwhispr/`:
 - **The overlay must never block input.** Anything that makes the bubble
   touchable, visible, or animated has to keep failing safe: the field comes
   first, and insertion falls back to the clipboard when injection is refused.
+  Injection policy (which node wins, what is logged) belongs in `TextInjector`,
+  not in the service.
+- **The user picks the model, the app never assumes.** Cloud transcription reads
+  `TranscriberClient.MODEL_PREF_KEY` and falls back to the default for unknown
+  values; a new hardcoded model id in a request is a bug, not a default.
 - **No backend.** Requests go from the phone to the service the user configured,
   with the user's key. Do not add a proxy.
 

@@ -23,6 +23,7 @@
     <string name="background_service_summary">Pausa o microfone flutuante sem desativar a acessibilidade</string>
     <string name="local_models">Modelos locais</string>
     <string name="cloud_transcription">Usar transcrição na nuvem</string>
+    <string name="cloud_model">Modelo na nuvem</string>
     <string name="requires_groq_key">Requer uma chave de API da Groq</string>
     <string name="post_processing">Pós-processamento</string>
     <string name="cleanup_transcript">Limpeza da transcrição</string>

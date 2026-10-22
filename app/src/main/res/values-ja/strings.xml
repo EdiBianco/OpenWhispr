@@ -23,6 +23,7 @@
     <string name="background_service_summary">ユーザー補助をオフにせず、マイクのオーバーレイを一時停止します</string>
     <string name="local_models">ローカルモデル</string>
     <string name="cloud_transcription">クラウドで文字起こしを使用</string>
+    <string name="cloud_model">クラウドモデル</string>
     <string name="requires_groq_key">Groq API キーが必要です</string>
     <string name="post_processing">後処理</string>
     <string name="cleanup_transcript">文字起こしの整形</string>

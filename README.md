@@ -15,7 +15,7 @@ It's completely free to run. Cloud transcription and cleanup use your own [Groq]
 It supports:
 
 - **Local on-device transcription** with sherpa-onnx — no API key, no internet required
-- **Cloud transcription** with Groq Whisper — free API key, fast, no local model download
+- **Cloud transcription** with Groq Whisper — free API key, fast, no local model download. Choose the model in the app: Whisper Large v3 (most accurate, the default), Whisper Large v3 Turbo (faster, cheaper), or Distil Whisper Large v3 (English only, fastest)
 - **Optional AI cleanup** with Groq — removes filler words, fixes punctuation and grammar, formats emails
 
 ## Features
@@ -86,7 +86,7 @@ make adb-install
 Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content). You can also dictate first and command last: speak your text, then say the trigger phrase and the action. The trigger phrase is the break, with or without a pause ("Hello team, the meeting moved to five. Whisper Command, translate to Italian"). The text before the trigger is what the command works on, and the result is inserted like normal dictation:
 
 - `"Whisper Command, summarize this in two sentences"` -- summarize, with an optional length or limit
-- `"Whisper Command, enhance the flow"` -- rewrite for smoother, more natural flow without changing meaning
+- `"Whisper Command, improve the flow"` -- rewrite for smoother, more natural flow without changing meaning
 - `"Whisper Command, translate to Italian"` -- translate to the named language
 - `"Whisper Command, make this more formal"` -- change tone (formal, casual, professional, friendly, ...)
 - `"Whisper Command, turn this into a list"` -- reformat as a bulleted or numbered list
