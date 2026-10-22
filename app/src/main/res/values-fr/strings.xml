@@ -23,6 +23,7 @@
     <string name="background_service_summary">Mettre en pause le micro flottant sans désactiver l’accessibilité</string>
     <string name="local_models">Modèles locaux</string>
     <string name="cloud_transcription">Utiliser la transcription dans le cloud</string>
+    <string name="cloud_model">Modèle cloud</string>
     <string name="requires_groq_key">Nécessite une clé API Groq</string>
     <string name="post_processing">Post-traitement</string>
     <string name="cleanup_transcript">Améliorer la transcription</string>

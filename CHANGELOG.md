@@ -9,6 +9,9 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.1.0
+- Cloud transcription: choose the Groq Whisper model under Dictation > Cloud model. Whisper Large v3 (most accurate, the default), Whisper Large v3 Turbo (faster, cheaper), or Distil Whisper Large v3 (English only, fastest)
+
 ## 4.0.0
 - Release builds are now signed with a private key. Before updating, make a backup in Settings > Backup. Then uninstall the 3.x app and install this version: Android won't update an app signed with a different key, and this is the one-time switch. Restore your backup on first launch
 

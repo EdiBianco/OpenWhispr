@@ -38,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusDotView: View
     private var statusAction: (() -> Unit)? = null
     private lateinit var cloudRowSub: TextView
+    private lateinit var cloudModelRow: LinearLayout
+    private lateinit var cloudModelRowSub: TextView
     private lateinit var audioRow: LinearLayout
     private lateinit var audioRowSub: TextView
     private lateinit var audioDot: View
@@ -274,7 +276,13 @@ class MainActivity : AppCompatActivity() {
             refresh()
         }
         cloudRowSub = cloudRow.findViewWithTag("subtitle")
-        dictationContainer.addView(group().apply { addView(cloudRow) })
+        // [ui] Only meaningful in cloud mode; refresh() shows or hides it.
+        cloudModelRow = settingsRow(getString(R.string.cloud_model), "") { promptCloudModel() }
+        cloudModelRowSub = cloudModelRow.findViewWithTag("subtitle")
+        dictationContainer.addView(group().apply {
+            addView(cloudRow)
+            addView(cloudModelRow)
+        })
 
         modelContainer = vertical(0)
         modelContainer.addView(sectionHeader(getString(R.string.local_models)))
@@ -806,6 +814,8 @@ class MainActivity : AppCompatActivity() {
         batteryDot.background = dotDrawable(if (unrestricted) DOT_GREEN else DOT_RED)
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
+        cloudModelRow.visibility = if (useLocal) View.GONE else View.VISIBLE
+        cloudModelRowSub.text = cloudModelSummary()
         languageRowSub.text = languageSummary()
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
         cleanupProviderRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
@@ -1537,6 +1547,28 @@ class MainActivity : AppCompatActivity() {
         prefs().getString("cleanup_base_url", null),
         prefs().getString("cleanup_model", null),
     )
+
+    /** The cloud transcription model to use, stored or default. */
+    private fun cloudModelId() =
+        TranscriberClient.modelId(prefs().getString(TranscriberClient.MODEL_PREF_KEY, null))
+
+    private fun cloudModelSummary(): String =
+        TranscriberClient.modelById(cloudModelId()).let { "${it.label} · ${it.hint}" }
+
+    /** Groq Whisper model used for cloud transcription. */
+    private fun promptCloudModel() {
+        val models = TranscriberClient.MODELS
+        val labels = models.map { "${it.label} · ${it.hint}" }.toTypedArray()
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.cloud_model)
+            .setSingleChoiceItems(labels, models.indexOfFirst { it.id == cloudModelId() }) { dialog, which ->
+                prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, models[which].id).apply()
+                refresh()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
 
     private fun cleanupProviderSummary(): String {
         val config = cleanupProviderConfig()
