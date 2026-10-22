@@ -195,8 +195,10 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
 
         private fun detectModelConfig(dir: File): DetectedConfig? {
             val path = dir.absolutePath
-            val tokens = "$path/tokens.txt"
-            if (!File(tokens).exists()) return null
+            // Whisper archives name it "<size>-tokens.txt" (e.g. base-tokens.txt), others plain "tokens.txt".
+            val tokens = File(path, "tokens.txt").takeIf { it.exists() }?.absolutePath
+                ?: File(path).listFiles()?.firstOrNull { it.name.endsWith("-tokens.txt") }?.absolutePath
+                ?: return null
 
             if (File("$path/preprocess.onnx").exists()) {
                 return DetectedConfig(
@@ -260,12 +262,14 @@ class LocalTranscriber private constructor(private val recognizer: OfflineRecogn
             )
         }
 
+        /** Whisper archives prefix the size ("base-encoder.int8.onnx"), others don't ("encoder.int8.onnx"). */
         private fun findFile(dir: String, prefix: String): String? {
             val directory = File(dir)
-            directory.listFiles()?.firstOrNull { it.name.startsWith(prefix) && it.name.contains("int8") }
+            fun matches(name: String) = name.startsWith(prefix) || name.contains("-$prefix")
+            directory.listFiles()?.firstOrNull { matches(it.name) && it.name.contains("int8") }
                 ?.let { return it.absolutePath }
             return directory.listFiles()?.firstOrNull {
-                it.name.startsWith(prefix) && (it.name.endsWith(".onnx") || it.name.endsWith(".ort"))
+                matches(it.name) && (it.name.endsWith(".onnx") || it.name.endsWith(".ort"))
             }?.absolutePath
         }
     }
