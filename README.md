@@ -4,7 +4,7 @@
 
 # OpenWispr
 
-[![Download APK - Latest Version](https://img.shields.io/github/v/release/EdiBianco/OpenWhispr?label=Download%20APK&logo=android)](https://github.com/EdiBianco/OpenWhispr/releases/latest)
+[![Download APK - Latest Version](https://img.shields.io/github/v/release/hxmbl/OpenWhispr?label=Download%20APK&logo=android)](https://github.com/hxmbl/OpenWhispr/releases/latest)
 
 Free, open-source, on-device push-to-talk dictation for Android — a free alternative to [Wispr Flow](https://wisprflow.ai).
 
@@ -35,17 +35,19 @@ It supports:
 - **Backup and restore**: export settings and API keys to a passphrase-protected file on your phone, and restore it on a fresh install. Downloaded models are not included, so download them again after restoring
 - **Restricted settings help**: on Android 13+, sideloaded apps have the Accessibility toggle blocked by default with no explanation — the app walks you through unlocking it before sending you to the system screen
 
-## Why I built this
+## Lineage
 
-After trying [Freeflow](https://github.com/zachlatta/freeflow) on macOS, I went looking for something with the same effectiveness and usability on Android — and couldn't find it. So I decided to build it myself, exactly the way I wanted it, starting from a codebase simple enough to actually customize.
+OpenWispr is a fork of [EdiBianco/OpenWhispr](https://github.com/EdiBianco/OpenWhispr), which in turn forked [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper) (originally built around OpenAI).
 
-That codebase was [kafkasl/phone-whisper](https://github.com/kafkasl/phone-whisper), originally built around OpenAI. This fork switches cloud transcription and cleanup to Groq, adds improved processing, multilingual support, and command mode, and layers on a round of reliability and UX work on top.
+The upstream fork switched cloud transcription and cleanup to Groq, added improved processing, multilingual support, and voice commands, and layered a round of reliability and UX work on top. This fork continues from that point; day-to-day changes are listed in [CHANGELOG.md](CHANGELOG.md).
+
+Issues and releases for this fork live at [hxmbl/OpenWhispr](https://github.com/hxmbl/OpenWhispr).
 
 ## Install
 
 ### Easiest: download the APK
 
-Grab the latest debug APK from the [latest release](https://github.com/EdiBianco/OpenWhispr/releases/latest) on this fork. A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`.
+Grab the latest signed APK from the [latest release](https://github.com/hxmbl/OpenWhispr/releases/latest). A [GitHub Actions workflow](.github/workflows/build-apk.yml) builds and publishes a new version-tagged release automatically on every push to `main`, after the test and locale checks in [CI](.github/workflows/ci.yml) pass.
 
 Open it on your phone, install it, then launch the app once to finish setup.
 
@@ -54,7 +56,7 @@ Open it on your phone, install it, then launch the app once to finish setup.
 Requires JDK 17 and Android SDK.
 
 ```bash
-git clone https://github.com/EdiBianco/OpenWhispr.git && cd OpenWhispr
+git clone https://github.com/hxmbl/OpenWhispr.git && cd OpenWhispr
 make build
 ```
 
@@ -99,7 +101,7 @@ Off by default -- enable it under **Voice Commands** in the app, where you can a
 
 ### First-time setup
 
-1. Open **OpenWispr*(*
+1. Open **OpenWispr**
 2. Grant the **audio recording** permission
 3. Enable the **Accessibility Service**
 4. Choose your transcription mode:
@@ -161,12 +163,22 @@ The app downloads and extracts models directly from the sherpa-onnx release arch
 
 ## Development
 
+Requires JDK 17 and the Android SDK. `make` finds a JDK 17 automatically
+(Homebrew `openjdk@17`, or `JAVA_HOME`), or you can set `JAVA_HOME` yourself.
+
 ```bash
 make build       # build debug APK
 make test        # run unit tests
+make lint        # check translations against values/strings.xml
+make check       # lint + tests — run this before committing
+make bump VERSION=4.1.0  # bump versionName/versionCode and open a CHANGELOG section
 make adb-install # build + install via ADB
 make clean       # clean build artifacts
 ```
+
+CI runs the same `make check` on every pull request, and the release workflow
+refuses to publish a release when it fails. See [AGENTS.md](AGENTS.md) for the
+project layout and invariants.
 
 ## App compatibility
 
@@ -197,11 +209,11 @@ Once text is inserted into the native input box, Termux sends it to the terminal
 
 ## Contributors
 
-Thanks to everyone who has contributed to OpenWispr:
+Thanks to everyone who has contributed to OpenWispr, upstream and here:
 
 - [@vgkeeper](https://github.com/vgkeeper) (Gaëtan): custom dictionary for transcription and cleanup ([#3](https://github.com/EdiBianco/OpenWhispr/pull/3)), French localization ([#4](https://github.com/EdiBianco/OpenWhispr/pull/4)), resizable dictation bubble ([#5](https://github.com/EdiBianco/OpenWhispr/pull/5)), and keyboard-friendly custom instructions dialog ([#7](https://github.com/EdiBianco/OpenWhispr/pull/7))
 - [@MrASrivastava](https://github.com/MrASrivastava): UI polish, launch splash, voice-reactive overlay, clipboard and privacy fixes, and opt-in checksum-verified update checks ([#1](https://github.com/EdiBianco/OpenWhispr/pull/1))
-- [@kafkasl](https://github.com/kafkasl) (Pol Alvarez): logo and README branding, adaptive launcher icon, LICENSE, and privacy contact
+- [@kafkasl](https://github.com/kafkasl) (Pol Alvarez): the original phone-whisper project, logo and README branding, adaptive launcher icon, LICENSE, and privacy contact
 
 ## License
 
