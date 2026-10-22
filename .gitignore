@@ -12,3 +12,6 @@ keystore.properties
 *.jks
 *.keystore
 *.p12
+
+# Local JDK installed by `make jdk`.
+.jdk/

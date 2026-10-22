@@ -5,20 +5,31 @@ PHONE_HOST ?= pixel-5
 SSH_PORT   ?= 8022
 APK        := app/build/outputs/apk/debug/app-debug.apk
 
-# JDK 17 is required. Prefer an explicit JAVA_HOME (from the environment or .env),
-# then Homebrew's openjdk@17 on either prefix, then whatever java_home resolves
-# for 17. Nothing here hardcodes a single machine's layout.
+# JDK 17 is required. Prefer an explicit JAVA_HOME (from the environment or
+# .env), then a JDK installed by `make jdk` into .jdk/, then Homebrew's
+# openjdk@17 on either prefix, then whatever java_home resolves for 17.
+# Nothing here hardcodes a single machine's layout.
+JDK_LOCAL := $(firstword $(wildcard $(CURDIR)/.jdk/*/Contents/Home $(CURDIR)/.jdk/*))
 JDK_HOME := $(shell \
 	if [ -n "$$JAVA_HOME" ] && [ -x "$$JAVA_HOME/bin/javac" ]; then echo "$$JAVA_HOME"; \
+	elif [ -n "$(JDK_LOCAL)" ] && [ -x "$(JDK_LOCAL)/bin/javac" ]; then echo "$(JDK_LOCAL)"; \
 	elif [ -x /opt/homebrew/opt/openjdk@17/bin/javac ]; then echo /opt/homebrew/opt/openjdk@17; \
 	elif [ -x /usr/local/opt/openjdk@17/bin/javac ]; then echo /usr/local/opt/openjdk@17; \
 	else /usr/libexec/java_home -v 17 2>/dev/null || true; fi)
 
 export JAVA_HOME := $(JDK_HOME)
-export ANDROID_HOME ?= $(HOME)/Library/Android/sdk
+# Android SDK: an explicit ANDROID_HOME/ANDROID_SDK_ROOT wins, then the usual
+# per-user location, then a Homebrew command-line-tools install.
+SDK_CANDIDATES := $(ANDROID_HOME) $(ANDROID_SDK_ROOT) $(HOME)/Library/Android/sdk /usr/local/share/android-commandlinetools
+ANDROID_HOME := $(firstword $(foreach d,$(SDK_CANDIDATES),$(if $(wildcard $(d)/platform-tools),$(d))))
+export ANDROID_HOME
 export PATH := $(JAVA_HOME)/bin:$(PATH)
 
-.PHONY: build test lint check install adb-install push-model bump clean
+.PHONY: build test lint check install adb-install push-model jdk bump clean
+
+jdk:
+	@bash scripts/install_jdk.sh
+	@echo "Now run: make check"
 
 build:
 	@test -n "$(JAVA_HOME)" || (echo "JDK 17 not found. Install it (brew install openjdk@17) or set JAVA_HOME." && exit 1)
