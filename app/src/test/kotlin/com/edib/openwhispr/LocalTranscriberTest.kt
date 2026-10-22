@@ -5,6 +5,7 @@ import com.k2fsa.sherpa.onnx.OfflineRecognizerConfig
 import com.k2fsa.sherpa.onnx.OfflineTransducerModelConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -94,6 +95,26 @@ class LocalTranscriberTest {
         }
         assertThrows(HotwordConfigurationException::class.java) {
             LocalTranscriber.writeHotwordsIfConfigured(config, File("expected"), listOf("NASA"))
+        }
+    }
+
+    @Test
+    fun `multilingual whisper archive with size-prefixed file names is recognised`() {
+        withTempDir { root ->
+            val dir = File(root, "sherpa-onnx-whisper-base").apply { mkdirs() }
+            listOf(
+                "base-encoder.int8.onnx", "base-encoder.onnx", "base-decoder.int8.onnx", "base-decoder.onnx",
+                "base-tokens.txt",
+            ).forEach { File(dir, it).writeText("x") }
+
+            val config = LocalTranscriber.buildRecognizerConfig(dir, emptyList(), File(root, "hotwords.txt"), "de")
+
+            assertNotNull(config)
+            val whisper = config!!.modelConfig.whisper
+            assertTrue(whisper.encoder.endsWith("base-encoder.int8.onnx"))
+            assertTrue(whisper.decoder.endsWith("base-decoder.int8.onnx"))
+            assertTrue(config.modelConfig.tokens.endsWith("base-tokens.txt"))
+            assertEquals("de", whisper.language)
         }
     }
 
