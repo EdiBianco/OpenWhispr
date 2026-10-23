@@ -152,7 +152,7 @@
     <string name="no_speech_detected">音声が検出されませんでした。</string>
     <string name="cleanup_needs_key">テキストの整形には API キーが必要です。元の文字起こしを使用します。</string>
     <string name="cleanup_failed_clipboard">整形に失敗しました。元のテキストをクリップボードにコピーしました。</string>
-    <string name="voice_commands_need_key">音声コマンドには Groq API キーが必要です。</string>
+    <string name="voice_commands_need_key">音声コマンドには整形サービスの API キーが必要です。</string>
     <string name="no_command_after_trigger">トリガーフレーズの後にコマンドが検出されませんでした。</string>
     <string name="command_failed">コマンドに失敗しました: %1$s</string>
     <string name="empty_response">サービスから空の応答が返されました。</string>

@@ -152,7 +152,7 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="no_speech_detected">No speech detected.</string>
     <string name="cleanup_needs_key">Text cleanup requires an API key. The original transcription will be used.</string>
     <string name="cleanup_failed_clipboard">Cleanup failed; the original text was copied to the clipboard.</string>
-    <string name="voice_commands_need_key">Voice commands require a Groq API key.</string>
+    <string name="voice_commands_need_key">Voice commands require an API key for your cleanup service.</string>
     <string name="no_command_after_trigger">No command was detected after the trigger phrase.</string>
     <string name="command_failed">Command failed: %1$s</string>
     <string name="empty_response">The service returned an empty response.</string>

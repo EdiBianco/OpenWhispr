@@ -1269,9 +1269,15 @@ class MainActivity : AppCompatActivity() {
             setText(config.baseUrl)
         }
         val modelLabel = fieldLabel(R.string.custom_service_model)
+        // One field, two providers: an OpenRouter model id sent to Groq (or the
+        // reverse) is a failing request, so each provider keeps its own value
+        // while you switch between them, and the hint shows that provider's
+        // default for a blank field.
+        var groqModelDraft = config.groqModel
+        var customModelDraft = config.model
         val model = EditText(this).apply {
             hint = CleanupProviderConfig.DEFAULT_MODEL
-            setText(config.model)
+            setText(if (config.provider == CleanupProviderConfig.Provider.GROQ) config.groqModel else config.model)
         }
         val apiKeyLabel = fieldLabel(R.string.custom_service_key)
         val apiKey = EditText(this).apply {
@@ -1287,10 +1293,19 @@ class MainActivity : AppCompatActivity() {
             setTextColor(attrColor(android.R.attr.textColorSecondary))
             setPadding(0, dp(8), 0, 0)
         }
-        val customFields = listOf<View>(baseUrlLabel, baseUrl, modelLabel, model, apiKeyLabel, apiKey, details)
+        val customFields = listOf<View>(baseUrlLabel, baseUrl, apiKeyLabel, apiKey, details)
         fun updateCustomFields() {
-            val show = providers[providerPicker.selectedItemPosition].requiresCustomConfiguration
-            customFields.forEach { it.visibility = if (show) View.VISIBLE else View.GONE }
+            val provider = providers[providerPicker.selectedItemPosition]
+            customFields.forEach { it.visibility = if (provider.requiresCustomConfiguration) View.VISIBLE else View.GONE }
+            if (provider == CleanupProviderConfig.Provider.GROQ) {
+                customModelDraft = model.text.toString()
+                model.setText(groqModelDraft)
+                model.hint = CleanupProviderConfig.GROQ_MODEL
+            } else {
+                groqModelDraft = model.text.toString()
+                model.setText(customModelDraft)
+                model.hint = CleanupProviderConfig.DEFAULT_MODEL
+            }
         }
         val container = vertical(dp(24), dp(8)).apply {
             addView(TextView(this@MainActivity).apply {
@@ -1332,10 +1347,13 @@ class MainActivity : AppCompatActivity() {
             }
             dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val selectedProvider = providers[providerPicker.selectedItemPosition]
+                val typedModel = model.text.toString().trim()
+                val isGroq = selectedProvider == CleanupProviderConfig.Provider.GROQ
                 val nextConfig = CleanupProviderConfig(
                     provider = selectedProvider,
                     baseUrl = baseUrl.text.toString().trim().ifBlank { CleanupProviderConfig.DEFAULT_BASE_URL },
-                    model = model.text.toString().trim().ifBlank { CleanupProviderConfig.DEFAULT_MODEL },
+                    model = if (isGroq) customModelDraft.trim() else typedModel,
+                    groqModel = if (isGroq) typedModel else groqModelDraft.trim(),
                 )
                 if (selectedProvider.requiresCustomConfiguration) {
                     try {
@@ -1349,6 +1367,7 @@ class MainActivity : AppCompatActivity() {
                     .putString("cleanup_provider", selectedProvider.preferenceValue)
                     .putString("cleanup_base_url", nextConfig.baseUrl)
                     .putString("cleanup_model", nextConfig.model)
+                    .putString("cleanup_groq_model", nextConfig.groqModel)
                     .apply()
                 if (selectedProvider.requiresCustomConfiguration) {
                     apiKey.text.toString().trim().takeIf { it.isNotBlank() }
@@ -1546,6 +1565,7 @@ class MainActivity : AppCompatActivity() {
         prefs().getString("cleanup_provider", null),
         prefs().getString("cleanup_base_url", null),
         prefs().getString("cleanup_model", null),
+        prefs().getString("cleanup_groq_model", null),
     )
 
     /** The cloud transcription model to use, stored or default. */

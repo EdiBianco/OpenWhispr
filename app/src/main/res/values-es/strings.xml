@@ -152,7 +152,7 @@ Puedes combinar comandos: %1$s, traduce al inglés y conviértelo en una lista. 
     <string name="no_speech_detected">No se detectó voz.</string>
     <string name="cleanup_needs_key">La limpieza de texto requiere una clave API. Se usará la transcripción original.</string>
     <string name="cleanup_failed_clipboard">La limpieza falló; el texto original se copió al portapapeles.</string>
-    <string name="voice_commands_need_key">Los comandos de voz requieren una clave API de Groq.</string>
+    <string name="voice_commands_need_key">Los comandos de voz requieren una clave API para tu servicio de limpieza.</string>
     <string name="no_command_after_trigger">No se detectó ningún comando después de la frase de activación.</string>
     <string name="command_failed">El comando falló: %1$s</string>
     <string name="empty_response">El servicio devolvió una respuesta vacía.</string>

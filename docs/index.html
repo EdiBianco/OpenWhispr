@@ -216,7 +216,7 @@
           <li><strong>Reformat</strong> — “Whisper Command, turn this into a list”</li>
         </ul>
         <p>
-          Chain them in one breath, and they apply in order: “Whisper Command, translate to Italian and turn it into a list” translates first, then lists the result. Anything outside these five is refused rather than guessed at. Off by default — enable it, and change the trigger phrase, under <strong>Voice Commands</strong> in the app.
+          Chain them in one breath, and they apply in order: “Whisper Command, translate to Italian and turn it into a list” translates first, then lists the result. Anything outside these five is refused rather than guessed at. Commands use the same service you configured for cleanup — Groq by default, or your own OpenAI-compatible endpoint — so they need a key for that service. Off by default: enable it, and change the trigger phrase, under <strong>Voice Commands</strong> in the app.
         </p>
       </div>
     </div>
@@ -276,7 +276,7 @@
             <li>Your own API key, stored on-device</li>
             <li>Pick the Whisper model: Large v3, Large v3 Turbo, or Distil Large v3</li>
             <li>No backend run by me</li>
-            <li>Optional: send transcript to Groq for cleanup</li>
+            <li>Optional: cleanup and voice commands via Groq, or an OpenAI-compatible service you configure — including its model</li>
           </ul>
           <div class="cloud-note">
             Requests go straight from your phone to Groq. No relay server is involved.
