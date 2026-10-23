@@ -199,14 +199,14 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="saved_securely">Saved securely</string>
 
     <!-- Dictionary strings (PR 3) -->
-    <string name="process_text_label">Add to OpenWhispr dictionary</string>
+    <string name="process_text_label">Add to OpenWispr dictionary</string>
     <string name="dictionary_no_text">No selected text to add</string>
     <string name="dictionary_added">Added to dictionary</string>
     <string name="dictionary_title">Custom dictionary</string>
     <string name="dictionary_summary">Help recognize and write names, acronyms, and specialized terms during dictation and cleanup</string>
     <string name="dictionary_word_count">%1$d words</string>
-    <string name="dictionary_input_hint">One entry per line. Example: OpenWhispr | open whisper, open wisper</string>
-    <string name="dictionary_saved_local_message">The dictionary helps recognize and write names, acronyms, and specialized terms during dictation and cleanup. The form before | is the final spelling; variants after | are pronunciation and recognition hints only. The dictionary stays active with custom instructions. Older one-term lines still work. Example: OpenWhispr | open whisper, open wisper.</string>
+    <string name="dictionary_input_hint">One entry per line. Example: OpenWispr | open whisper, open wisper</string>
+    <string name="dictionary_saved_local_message">The dictionary helps recognize and write names, acronyms, and specialized terms during dictation and cleanup. The form before | is the final spelling; variants after | are pronunciation and recognition hints only. The dictionary stays active with custom instructions. Older one-term lines still work. Example: OpenWispr | open whisper, open wisper.</string>
 
     <!-- Strings for the actionable status row, update dialog and cleanup feedback -->
     <string name="about_current_version">You\'re on v%1$s · tap to check</string>
