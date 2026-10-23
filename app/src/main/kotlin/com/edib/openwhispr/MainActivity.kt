@@ -86,6 +86,11 @@ class MainActivity : AppCompatActivity() {
         recreate()
     }
 
+    // The update feature lives in UpdateFlow.kt. Its 3.x -> 4.0 migration
+    // dialog offers "back up first", which is the backup flow's entry point,
+    // so the two flows are wired together here rather than inside either one.
+    private val updates = UpdateFlow(this) { backup.export() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ServiceWatchdog.schedule(this)
@@ -125,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         // default, including for existing installs), so the app makes no
         // request to GitHub unless the user enables it or taps "Check for
         // updates".
-        if (prefs().getBoolean("auto_update_check", false)) checkForUpdate()
+        if (prefs().getBoolean("auto_update_check", false)) updates.check()
 
         val outer = vertical(0, 0)
 
@@ -559,7 +564,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         aboutGroup.addView(settingsRow(getString(R.string.check_updates), getString(R.string.about_current_version, versionName)) {
-            checkForUpdate(force = true)
+            updates.check(force = true)
         })
 
         // [privacy] Opt-in switch for the automatic check on app open (see onCreate).
@@ -911,171 +916,6 @@ class MainActivity : AppCompatActivity() {
             } catch (e2: Exception) {
                 toast(getString(R.string.open_battery_settings_failed, e2.message ?: getString(R.string.unknown_error)))
             }
-        }
-    }
-
-    /** Checks this repo's GitHub Releases. No backend involved. Shows a
-     * dialog linking to the release page when a newer version is
-     * available. [privacy] Runs on app-open only if the user turned on
-     * "Check for updates automatically" (silently, when nothing's new);
-     * [force] bypasses the cache interval and always gives feedback, for
-     * the manual "Check for updates" row. */
-    private fun checkForUpdate(force: Boolean = false) {
-        val currentVersion = try {
-            packageManager.getPackageInfo(packageName, 0).versionName
-        } catch (e: Exception) {
-            null
-        } ?: return
-
-        UpdateChecker.checkForUpdate(prefs(), currentVersion, force) { info ->
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                if (info != null) {
-                    android.app.AlertDialog.Builder(this)
-                        .setTitle(R.string.update_available)
-                        .setMessage(
-                            buildString {
-                                append(getString(R.string.update_available_message, info.version, currentVersion))
-                                append("\n\n${getString(R.string.whats_new)}:\n")
-                                append(
-                                    info.notes?.takeIf { it.isNotBlank() }
-                                        ?: getString(R.string.no_release_notes)
-                                )
-                            }
-                        )
-                        .setPositiveButton(getString(R.string.update)) { _, _ -> downloadAndInstallUpdate(info) }
-                        // [security] Full release page (complete changelog) before deciding.
-                        .setNeutralButton(getString(R.string.view_on_github)) { _, _ -> openReleasePage(info.url) }
-                        .setNegativeButton(getString(R.string.later), null)
-                        .show()
-                } else if (force) {
-                    toast(getString(R.string.up_to_date, currentVersion))
-                }
-            }
-        }
-    }
-
-    /** Downloads the release's .apk directly in-app and hands it to the
-     * system installer -- no browser tab, no external navigation. The final
-     * "install this app?" confirmation is a mandatory Android system dialog
-     * for a sideloaded APK and can't be skipped, but everything up to that
-     * point (download, progress) happens invisibly inside OpenWispr. */
-    private fun downloadAndInstallUpdate(info: UpdateChecker.UpdateInfo) {
-        val apkUrl = info.apkUrl
-        if (apkUrl == null) {
-            // Release has no .apk asset (shouldn't normally happen) -- fall
-            // back to the release page rather than doing nothing.
-            openReleasePage(info.url)
-            return
-        }
-
-        if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
-            android.app.AlertDialog.Builder(this)
-                .setTitle(R.string.allow_install_updates)
-                .setMessage(R.string.allow_install_updates_message)
-                .setPositiveButton(R.string.continue_button) { _, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                                Uri.parse("package:$packageName")
-                            )
-                        )
-                    } catch (e: Exception) {
-                        toast(getString(R.string.open_settings_failed, e.message ?: getString(R.string.unknown_error)))
-                    }
-                }
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show()
-            return
-        }
-
-        toast(getString(R.string.downloading_update))
-        // [security] Pass GitHub's published checksum; downloadApk only
-        // returns a file if it matches.
-        UpdateChecker.downloadApk(this, apkUrl, info.apkSha256) { file, error ->
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                if (file == null) {
-                    // [security] A failed download or failed checksum both end
-                    // here; nothing is installed. Offer the release page instead.
-                    android.app.AlertDialog.Builder(this)
-                        .setTitle(R.string.update_not_installed_title)
-                        .setMessage(getString(R.string.update_not_installed_message, error ?: getString(R.string.unknown_error)))
-                        .setPositiveButton(getString(R.string.view_on_github)) { _, _ -> openReleasePage(info.url) }
-                        .setNegativeButton(getString(R.string.close_dialog), null)
-                        .show()
-                    return@runOnUiThread
-                }
-                if (isMajorVersion4(info.version)) showMigrationToV4(info, file) else installApk(file)
-            }
-        }
-    }
-
-    private fun openReleasePage(url: String) {
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-        } catch (e: Exception) {
-            toast(getString(R.string.browser_open_failed, e.message ?: ""))
-        }
-    }
-
-    private fun isMajorVersion4(version: String): Boolean =
-        version.removePrefix("v").substringBefore('.').toIntOrNull()?.let { it >= 4 } == true
-
-    /** 4.0.0 is signed with a new key, so Android won't install it over 3.x. The APK is
-     * saved to Downloads first, because uninstalling wipes the app's cache. Then the
-     * user backs up, uninstalls 3.x, installs the saved APK, and restores the backup. */
-    private fun showMigrationToV4(info: UpdateChecker.UpdateInfo, file: java.io.File) {
-        val name = "openwispr-v${info.version.removePrefix("v")}.apk"
-        val saved = saveApkToDownloads(file, name)
-        android.app.AlertDialog.Builder(this)
-            .setTitle(R.string.migration_title)
-            .setMessage(
-                getString(
-                    if (saved) R.string.migration_message_saved else R.string.migration_message_not_saved,
-                    name,
-                )
-            )
-            .setPositiveButton(R.string.migration_uninstall) { _, _ ->
-                startActivity(Intent(Intent.ACTION_DELETE, Uri.parse("package:$packageName")))
-            }
-            .setNeutralButton(R.string.migration_back_up_first) { _, _ -> backup.export() }
-            .setNegativeButton(R.string.later, null)
-            .show()
-    }
-
-    private fun saveApkToDownloads(file: java.io.File, name: String): Boolean {
-        return try {
-            val values = android.content.ContentValues().apply {
-                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, name)
-                put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
-                put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
-            }
-            val uri = contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-            val copied = uri != null && contentResolver.openOutputStream(uri)?.use { out ->
-                file.inputStream().use { it.copyTo(out) }
-            } != null
-            if (uri == null || !copied) return false
-            values.clear()
-            values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
-            contentResolver.update(uri, values, null, null)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun installApk(file: java.io.File) {
-        val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        try {
-            startActivity(intent)
-        } catch (e: Exception) {
-            toast(getString(R.string.installer_start_failed, e.message ?: getString(R.string.unknown_error)))
         }
     }
 
