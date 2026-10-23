@@ -2,17 +2,12 @@ package com.edib.openwhispr
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.graphics.Color
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.text.InputType
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -20,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -1451,117 +1445,8 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // --- UI Helpers ---
+    // Rows, panels, dots and dialog plumbing come from UiKit.kt.
 
-    private fun settingsRow(
-        title: String,
-        subtitle: String,
-        widget: View? = null,
-        leading: View? = null,
-        onClick: (() -> Unit)? = null
-    ): LinearLayout {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(24), dp(16), dp(24), dp(16))
-            isClickable = onClick != null
-            isFocusable = onClick != null
-            if (onClick != null) {
-                val outValue = TypedValue()
-                context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-                setBackgroundResource(outValue.resourceId)
-                setOnClickListener { onClick() }
-            }
-        }
-
-        if (leading != null) row.addView(leading)
-
-        val textContainer = vertical(0).apply {
-            layoutParams = LinearLayout.LayoutParams(0, LP_WRAP, 1f).apply {
-                // [ui] Keep wrapped text clear of the switch/button beside it.
-                if (widget != null) marginEnd = dp(16)
-            }
-        }
-
-        textContainer.addView(TextView(this).apply {
-            text = title
-            textSize = 18f
-            setTextColor(attrColor(android.R.attr.textColorPrimary))
-        })
-
-        textContainer.addView(TextView(this).apply {
-            tag = "subtitle"
-            text = subtitle
-            textSize = 14f
-            setTextColor(attrColor(android.R.attr.textColorSecondary))
-            setPadding(0, dp(2), 0, 0)
-        })
-
-        row.addView(textContainer)
-        if (widget != null) row.addView(widget)
-
-        return row
-    }
-
-    private fun sectionHeader(title: String) = TextView(this).apply {
-        text = title
-        textSize = 14f
-        setTypeface(typeface, Typeface.BOLD)
-        setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary)) // Neutral Android-like blue
-        // [ui] 40dp start = group() margin (16) + row padding (24), so the
-        // header lines up with the row text inside the panel below it.
-        setPadding(dp(40), dp(24), dp(24), dp(8))
-    }
-
-    /** [ui] A section panel: rounded, in the theme's surface-container
-     * colour (light/dark aware), clipping row ripples to its corners. */
-    private fun group() = vertical(0).apply {
-        background = GradientDrawable().apply {
-            cornerRadius = dp(20).toFloat()
-            setColor(attrColor(com.google.android.material.R.attr.colorSurfaceContainer))
-        }
-        clipToOutline = true
-        layoutParams = LinearLayout.LayoutParams(LP_MATCH, LP_WRAP).apply {
-            setMargins(dp(16), 0, dp(16), dp(8))
-        }
-    }
-
-    private fun scrollableDialogContent(content: View) = ScrollView(this).apply {
-        isFillViewport = true
-        setPadding(dp(24), dp(8), dp(24), dp(8))
-        addView(content, FrameLayout.LayoutParams(LP_MATCH, LP_WRAP))
-    }
-
-    private fun showResizingDialog(dialog: android.app.AlertDialog) {
-        dialog.show()
-        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-    }
-
-    private fun vertical(padH: Int, padV: Int = padH) = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(padH, padV, padH, padV)
-    }
-
-    private fun dotDrawable(color: Int) = GradientDrawable().apply {
-        shape = GradientDrawable.OVAL
-        setColor(color)
-    }
-
-    private fun statusDot(): View = View(this).apply {
-        layoutParams = LinearLayout.LayoutParams(dp(10), dp(10)).apply {
-            marginEnd = dp(12)
-        }
-        background = dotDrawable(DOT_RED)
-    }
-
-    private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
-    private fun hasPerm(p: String) = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED
-    private fun attrColor(attr: Int): Int {
-        val ta = obtainStyledAttributes(intArrayOf(attr))
-        val color = ta.getColor(0, 0)
-        ta.recycle()
-        return color
-    }
     private fun cleanupProviderConfig() = CleanupProviderConfig.fromPreferences(
         prefs().getString("cleanup_provider", null),
         prefs().getString("cleanup_base_url", null),
@@ -1627,9 +1512,6 @@ class MainActivity : AppCompatActivity() {
         larger = getString(R.string.bubble_larger_accessibility),
         percentUnit = getString(R.string.percent_unit),
     )
-    private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
-    private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-
     // --- Backup and restore ---
 
     private fun prefItemId(key: String) = "pref:$key"
@@ -1845,12 +1727,5 @@ class MainActivity : AppCompatActivity() {
             }
             .setCancelable(false)
             .show()
-    }
-
-    companion object {
-        private const val LP_MATCH = LinearLayout.LayoutParams.MATCH_PARENT
-        private const val LP_WRAP = LinearLayout.LayoutParams.WRAP_CONTENT
-        private const val DOT_GREEN = 0xFF34C759.toInt()
-        private const val DOT_RED = 0xFFEF4444.toInt()
     }
 }
