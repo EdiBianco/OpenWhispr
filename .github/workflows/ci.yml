@@ -27,11 +27,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Ensure Android SDK platform 35 is installed
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      # The runner image already ships an Android SDK, so `make sdk` installs
+      # just the platform and build-tools the app compiles against.
+      - name: Install Android SDK packages
+        run: make sdk
 
       - name: Locale check and unit tests
         run: make check

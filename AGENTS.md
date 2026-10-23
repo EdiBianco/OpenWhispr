@@ -20,6 +20,7 @@ prefix, or `/usr/libexec/java_home -v 17`.
 
 ```sh
 make jdk         # download a local JDK 17 into .jdk/ (no system JDK needed)
+make sdk         # install the Android platform and build-tools the app targets
 make build       # debug APK at app/build/outputs/apk/debug/app-debug.apk
 make test        # unit tests (testDebugUnitTest)
 make lint        # locale/translation consistency check

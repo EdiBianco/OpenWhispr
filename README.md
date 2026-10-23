@@ -171,6 +171,7 @@ make build       # build debug APK
 make test        # run unit tests
 make lint        # check translations against values/strings.xml
 make check       # lint + tests — run this before committing
+make sdk         # install the Android platform and build-tools the app targets (CI runs this too)
 make bump VERSION=4.1.0  # bump versionName/versionCode and open a CHANGELOG section
 make adb-install # build + install via ADB
 make clean       # clean build artifacts

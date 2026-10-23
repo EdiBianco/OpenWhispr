@@ -25,11 +25,21 @@ ANDROID_HOME := $(firstword $(foreach d,$(SDK_CANDIDATES),$(if $(wildcard $(d)/p
 export ANDROID_HOME
 export PATH := $(JAVA_HOME)/bin:$(PATH)
 
-.PHONY: build test lint check install adb-install push-model jdk bump clean
+.PHONY: build test lint check install adb-install push-model jdk sdk bump clean
 
 jdk:
 	@bash scripts/install_jdk.sh
 	@echo "Now run: make check"
+
+## Install the SDK platform and build-tools this app compiles against, the
+## same way on a workstation and on CI (no third-party setup action needed).
+sdk:
+	@test -n "$(ANDROID_HOME)" || (echo "Android SDK not found. Set ANDROID_HOME to an SDK with cmdline-tools." && exit 1)
+	@SDKMANAGER="$$(find "$(ANDROID_HOME)/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n1)"; \
+	test -n "$$SDKMANAGER" || SDKMANAGER="$$(command -v sdkmanager || true)"; \
+	test -n "$$SDKMANAGER" || (echo "sdkmanager not found under $(ANDROID_HOME)." && exit 1); \
+	yes | "$$SDKMANAGER" --licenses >/dev/null 2>&1 || true; \
+	"$$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
 build:
 	@test -n "$(JAVA_HOME)" || (echo "JDK 17 not found. Install it (brew install openjdk@17) or set JAVA_HOME." && exit 1)
