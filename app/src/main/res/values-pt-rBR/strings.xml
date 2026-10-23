@@ -23,6 +23,9 @@
     <string name="background_service_summary">Pausa o microfone flutuante sem desativar a acessibilidade</string>
     <string name="local_models">Modelos locais</string>
     <string name="cloud_transcription">Usar transcrição na nuvem</string>
+    <string name="cloud_switch_off">Desativado: transcrito neste telefone</string>
+    <string name="cloud_switch_on">Ativado: o áudio é enviado à Groq (requer chave de API)</string>
+    <string name="browser_open_failed">Não foi possível abrir o navegador: %1$s</string>
     <string name="cloud_model">Modelo na nuvem</string>
     <string name="requires_groq_key">Requer uma chave de API da Groq</string>
     <string name="post_processing">Pós-processamento</string>

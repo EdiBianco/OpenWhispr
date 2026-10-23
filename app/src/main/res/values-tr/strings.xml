@@ -23,6 +23,9 @@
     <string name="background_service_summary">Erişilebilirliği kapatmadan mikrofon katmanını duraklatır</string>
     <string name="local_models">Yerel modeller</string>
     <string name="cloud_transcription">Bulut metne çevirmeyi kullan</string>
+    <string name="cloud_switch_off">Kapalı: bu telefonda metne çevrilir</string>
+    <string name="cloud_switch_on">Açık: ses Groq’a gönderilir (API anahtarı gerekir)</string>
+    <string name="browser_open_failed">Tarayıcı açılamadı: %1$s</string>
     <string name="cloud_model">Bulut modeli</string>
     <string name="requires_groq_key">Groq API anahtarı gerektirir</string>
     <string name="post_processing">Son işlem</string>

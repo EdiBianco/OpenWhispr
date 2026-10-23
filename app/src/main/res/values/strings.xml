@@ -23,6 +23,9 @@
     <string name="background_service_summary">Pause the mic overlay without disabling accessibility</string>
     <string name="local_models">Local models</string>
     <string name="cloud_transcription">Use cloud transcription</string>
+    <string name="cloud_switch_off">Off: transcribed on this phone</string>
+    <string name="cloud_switch_on">On: audio is sent to Groq (needs API key)</string>
+    <string name="browser_open_failed">Couldn\'t open browser: %1$s</string>
     <string name="cloud_model">Cloud model</string>
     <string name="requires_groq_key">Requires Groq API key</string>
     <string name="post_processing">Post-Processing</string>
