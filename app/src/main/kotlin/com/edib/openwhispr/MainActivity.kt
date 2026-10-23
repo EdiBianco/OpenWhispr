@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.core.app.ActivityCompat
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -74,15 +73,18 @@ class MainActivity : AppCompatActivity() {
         val delBtn: MaterialButton,
     )
 
-    // Backup flows: the passphrase and the snapshot live only while a dialog runs.
-    private var backupPassphrase: String? = null
-    private var pendingExport: SettingsBackup.Snapshot? = null
-    private val createBackupLauncher = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("application/octet-stream")
-    ) { uri -> if (uri != null) writeBackup(uri) }
-    private val openBackupLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri -> if (uri != null) readBackup(uri) }
+    // Backup and restore is its own flow in BackupFlow.kt. It registers its
+    // own file pickers, so it has to be created as a field, before the
+    // activity is started -- and it calls back here once a restore wrote
+    // settings, since refreshing the service is this screen's business.
+    private val backup = BackupFlow(this) {
+        WhisperAccessibilityService.instance?.apply {
+            refreshBubbleSize()
+            refreshPosition()
+            reloadModel()
+        }
+        recreate()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -500,10 +502,10 @@ class MainActivity : AppCompatActivity() {
         settingsContainer.addView(sectionHeader(getString(R.string.backup_section)))
         val backupGroup = group()
         backupGroup.addView(settingsRow(getString(R.string.backup_export_title), getString(R.string.backup_export_summary)) {
-            exportBackup()
+            backup.export()
         })
         backupGroup.addView(settingsRow(getString(R.string.backup_restore_title), getString(R.string.backup_restore_summary)) {
-            openBackupLauncher.launch(arrayOf("*/*"))
+            backup.restore()
         })
         settingsContainer.addView(backupGroup)
 
@@ -1038,7 +1040,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.migration_uninstall) { _, _ ->
                 startActivity(Intent(Intent.ACTION_DELETE, Uri.parse("package:$packageName")))
             }
-            .setNeutralButton(R.string.migration_back_up_first) { _, _ -> exportBackup() }
+            .setNeutralButton(R.string.migration_back_up_first) { _, _ -> backup.export() }
             .setNegativeButton(R.string.later, null)
             .show()
     }
@@ -1512,207 +1514,6 @@ class MainActivity : AppCompatActivity() {
         larger = getString(R.string.bubble_larger_accessibility),
         percentUnit = getString(R.string.percent_unit),
     )
-    // --- Backup and restore ---
-
-    private fun prefItemId(key: String) = "pref:$key"
-    private fun secretItemId(name: String) = "secret:$name"
-    private fun secretLabel(name: String) = when (name) {
-        "groq_api_key" -> getString(R.string.backup_item_groq_key)
-        "cleanup_api_key" -> getString(R.string.backup_item_cleanup_key)
-        else -> name
-    }
-
-    private fun currentSnapshot(): SettingsBackup.Snapshot = SettingsBackup.Snapshot(
-        prefs = prefs().all.entries.mapNotNull { (key, value) -> value?.let { key to it } }.toMap(),
-        secrets = mapOf(
-            "groq_api_key" to SecureKeyStorage.groqApiKey(this),
-            "cleanup_api_key" to SecureKeyStorage.cleanupApiKey(this),
-        ),
-    )
-
-    /** Checklist with "select all"; [onConfirm] receives the chosen item ids. */
-    private fun chooseBackupItems(title: Int, items: List<Pair<String, String>>, onConfirm: (Set<String>) -> Unit) {
-        if (items.isEmpty()) {
-            toast(getString(R.string.backup_nothing_to_choose))
-            return
-        }
-        val selected = items.map { it.first }.toMutableSet()
-        val boxes = mutableListOf<CheckBox>()
-        var syncing = false
-        val selectAll = CheckBox(this).apply {
-            text = getString(R.string.backup_select_all)
-            isChecked = true
-            setOnCheckedChangeListener { _, checked ->
-                if (syncing) return@setOnCheckedChangeListener
-                syncing = true
-                boxes.forEach { it.isChecked = checked }
-                syncing = false
-            }
-        }
-        val list = vertical(0)
-        items.forEach { (id, label) ->
-            val box = CheckBox(this).apply {
-                text = label
-                isChecked = true
-                setOnCheckedChangeListener { _, checked ->
-                    if (checked) selected.add(id) else selected.remove(id)
-                    if (!syncing) {
-                        syncing = true
-                        selectAll.isChecked = boxes.all { it.isChecked }
-                        syncing = false
-                    }
-                }
-            }
-            boxes += box
-            list.addView(box)
-        }
-        val container = vertical(dp(24), dp(8)).apply {
-            addView(selectAll)
-            addView(ScrollView(this@MainActivity).apply {
-                addView(list)
-                layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(360))
-            })
-        }
-        android.app.AlertDialog.Builder(this)
-            .setTitle(title)
-            .setView(container)
-            .setPositiveButton(R.string.continue_button) { _, _ ->
-                if (selected.isEmpty()) toast(getString(R.string.backup_nothing_selected))
-                else onConfirm(selected.toSet())
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    /** Passphrase prompt. Exports ask twice and enforce a minimum length. */
-    private fun askPassphrase(exporting: Boolean, onOk: (String) -> Unit) {
-        fun field(hintRes: Int) = EditText(this).apply {
-            hint = getString(hintRes)
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            isSaveEnabled = false
-            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
-        }
-        val first = field(R.string.backup_passphrase_hint)
-        val second = field(R.string.backup_passphrase_confirm_hint)
-        val container = vertical(dp(24), dp(8)).apply {
-            addView(first)
-            if (exporting) addView(second)
-        }
-        android.app.AlertDialog.Builder(this)
-            .setTitle(if (exporting) R.string.backup_passphrase_title_export else R.string.backup_passphrase_title_restore)
-            .setView(container)
-            .setPositiveButton(if (exporting) R.string.save else R.string.continue_button) { _, _ ->
-                val passphrase = first.text.toString()
-                when {
-                    exporting && passphrase.length < SettingsBackup.MIN_PASSPHRASE_LENGTH ->
-                        toast(getString(R.string.backup_passphrase_short))
-                    exporting && passphrase != second.text.toString() ->
-                        toast(getString(R.string.backup_passphrase_mismatch))
-                    !exporting && passphrase.isEmpty() ->
-                        toast(getString(R.string.backup_passphrase_short))
-                    else -> onOk(passphrase)
-                }
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun exportBackup() {
-        val snapshot = currentSnapshot()
-        val items = snapshot.prefs.keys.filterNot { SettingsBackup.isExcludedPreference(it) }.sorted()
-            .map { prefItemId(it) to it } +
-            snapshot.secrets.filterValues { it.isNotBlank() }.keys.sorted()
-                .map { secretItemId(it) to secretLabel(it) }
-        chooseBackupItems(R.string.backup_choose_export, items) { chosen ->
-            askPassphrase(exporting = true) { passphrase ->
-                backupPassphrase = passphrase
-                pendingExport = SettingsBackup.Snapshot(
-                    prefs = snapshot.prefs.filterKeys { prefItemId(it) in chosen },
-                    secrets = snapshot.secrets.filterKeys { secretItemId(it) in chosen },
-                )
-                val date = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
-                createBackupLauncher.launch("openwispr-backup-$date.owb")
-            }
-        }
-    }
-
-    private fun writeBackup(uri: Uri) {
-        val passphrase = backupPassphrase ?: return
-        val snapshot = pendingExport ?: return
-        backupPassphrase = null
-        pendingExport = null
-        kotlin.concurrent.thread {
-            try {
-                val file = SettingsBackup.encrypt(snapshot, passphrase)
-                contentResolver.openOutputStream(uri)?.use { it.write(file.toByteArray(Charsets.UTF_8)) }
-                    ?: throw java.io.IOException("cannot open the file")
-                runOnUiThread { toast(getString(R.string.backup_export_done)) }
-            } catch (e: Exception) {
-                runOnUiThread { toast(getString(R.string.backup_export_failed, e.message ?: "")) }
-            }
-        }
-    }
-
-    private fun readBackup(uri: Uri) {
-        val text = try {
-            contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-        } catch (e: Exception) {
-            null
-        }
-        if (text == null) {
-            toast(getString(R.string.backup_restore_failed))
-            return
-        }
-        askPassphrase(exporting = false) { passphrase ->
-            kotlin.concurrent.thread {
-                try {
-                    val snapshot = SettingsBackup.decrypt(text, passphrase)
-                    runOnUiThread { chooseRestoreItems(snapshot) }
-                } catch (e: SettingsBackup.BackupException) {
-                    runOnUiThread { toast(getString(R.string.backup_restore_failed)) }
-                }
-            }
-        }
-    }
-
-    private fun chooseRestoreItems(snapshot: SettingsBackup.Snapshot) {
-        val items = snapshot.prefs.keys.sorted().map { prefItemId(it) to it } +
-            snapshot.secrets.keys.sorted().map { secretItemId(it) to secretLabel(it) }
-        chooseBackupItems(R.string.backup_choose_restore, items) { chosen ->
-            applySelected(snapshot, chosen)
-        }
-    }
-
-    /** Writes only the chosen settings and keys; everything else on the device is left as it is. */
-    private fun applySelected(snapshot: SettingsBackup.Snapshot, chosen: Set<String>) {
-        val editor = prefs().edit()
-        for ((key, value) in snapshot.prefs) {
-            if (prefItemId(key) !in chosen) continue
-            when (value) {
-                is String -> editor.putString(key, value)
-                is Int -> editor.putInt(key, value)
-                is Long -> editor.putLong(key, value)
-                is Float -> editor.putFloat(key, value)
-                is Boolean -> editor.putBoolean(key, value)
-                is Set<*> -> editor.putStringSet(key, value.map { it.toString() }.toSet())
-            }
-        }
-        editor.putBoolean("welcome_done", true)
-        check(editor.commit())
-        if (secretItemId("groq_api_key") in chosen) {
-            SecureKeyStorage.saveGroqApiKey(this, snapshot.secrets["groq_api_key"].orEmpty())
-        }
-        if (secretItemId("cleanup_api_key") in chosen) {
-            SecureKeyStorage.saveCleanupApiKey(this, snapshot.secrets["cleanup_api_key"].orEmpty())
-        }
-        WhisperAccessibilityService.instance?.apply {
-            refreshBubbleSize()
-            refreshPosition()
-            reloadModel()
-        }
-        toast(getString(R.string.backup_restore_done))
-        recreate()
-    }
 
     private fun showWelcome() {
         android.app.AlertDialog.Builder(this)
@@ -1720,7 +1521,7 @@ class MainActivity : AppCompatActivity() {
             .setMessage(R.string.welcome_message)
             .setPositiveButton(R.string.welcome_restore) { _, _ ->
                 prefs().edit().putBoolean("welcome_done", true).apply()
-                openBackupLauncher.launch(arrayOf("*/*"))
+                backup.restore()
             }
             .setNegativeButton(R.string.welcome_start_fresh) { _, _ ->
                 prefs().edit().putBoolean("welcome_done", true).apply()
