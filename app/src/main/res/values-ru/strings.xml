@@ -23,6 +23,7 @@
     <string name="background_service_summary">Приостанавливает плавающий микрофон, не отключая специальные возможности</string>
     <string name="local_models">Локальные модели</string>
     <string name="cloud_transcription">Использовать облачную расшифровку</string>
+    <string name="cloud_model">Облачная модель</string>
     <string name="requires_groq_key">Требуется ключ API Groq</string>
     <string name="post_processing">Постобработка</string>
     <string name="cleanup_transcript">Очистка расшифровки</string>
@@ -151,7 +152,7 @@
     <string name="no_speech_detected">Речь не обнаружена.</string>
     <string name="cleanup_needs_key">Очистка текста требует ключ API. Будет использована исходная расшифровка.</string>
     <string name="cleanup_failed_clipboard">Очистка не удалась; исходный текст скопирован в буфер обмена.</string>
-    <string name="voice_commands_need_key">Для голосовых команд нужен ключ API Groq.</string>
+    <string name="voice_commands_need_key">Для голосовых команд нужен ключ API вашей службы очистки.</string>
     <string name="no_command_after_trigger">После фразы-триггера команда не обнаружена.</string>
     <string name="command_failed">Команда не выполнена: %1$s</string>
     <string name="empty_response">Служба вернула пустой ответ.</string>

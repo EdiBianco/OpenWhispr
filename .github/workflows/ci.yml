@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # The runner image already ships an Android SDK, so `make sdk` installs
+      # just the platform and build-tools the app compiles against.
+      - name: Install Android SDK packages
+        run: make sdk
+
+      - name: Locale check and unit tests
+        run: make check
+
+      - name: Assemble debug APK
+        run: make build

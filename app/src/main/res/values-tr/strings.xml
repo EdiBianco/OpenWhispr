@@ -23,6 +23,7 @@
     <string name="background_service_summary">Erişilebilirliği kapatmadan mikrofon katmanını duraklatır</string>
     <string name="local_models">Yerel modeller</string>
     <string name="cloud_transcription">Bulut metne çevirmeyi kullan</string>
+    <string name="cloud_model">Bulut modeli</string>
     <string name="requires_groq_key">Groq API anahtarı gerektirir</string>
     <string name="post_processing">Son işlem</string>
     <string name="cleanup_transcript">Metni düzenle</string>
@@ -151,7 +152,7 @@ Komutları birleştirebilirsiniz: %1$s, İngilizceye çevir ve bir listeye dön�
     <string name="no_speech_detected">Konuşma algılanmadı.</string>
     <string name="cleanup_needs_key">Metin düzenleme bir API anahtarı gerektirir. Özgün metin kullanılacak.</string>
     <string name="cleanup_failed_clipboard">Düzenleme başarısız oldu; özgün metin panoya kopyalandı.</string>
-    <string name="voice_commands_need_key">Sesli komutlar bir Groq API anahtarı gerektirir.</string>
+    <string name="voice_commands_need_key">Sesli komutlar için düzenleme hizmetinizin API anahtarı gerekir.</string>
     <string name="no_command_after_trigger">Tetikleyici ifadeden sonra komut algılanmadı.</string>
     <string name="command_failed">Komut başarısız: %1$s</string>
     <string name="empty_response">Hizmet boş bir yanıt döndürdü.</string>
