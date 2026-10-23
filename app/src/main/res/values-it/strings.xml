@@ -23,6 +23,9 @@
     <string name="background_service_summary">Sospende il microfono mobile senza disattivare l\'accessibilità</string>
     <string name="local_models">Modelli locali</string>
     <string name="cloud_transcription">Usa la trascrizione nel cloud</string>
+    <string name="cloud_switch_off">Disattivato: trascrizione su questo telefono</string>
+    <string name="cloud_switch_on">Attivato: l’audio viene inviato a Groq (serve la chiave API)</string>
+    <string name="browser_open_failed">Impossibile aprire il browser: %1$s</string>
     <string name="cloud_model">Modello cloud</string>
     <string name="requires_groq_key">Richiede una chiave API di Groq</string>
     <string name="post_processing">Post-elaborazione</string>

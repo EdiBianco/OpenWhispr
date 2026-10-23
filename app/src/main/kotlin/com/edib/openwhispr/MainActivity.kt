@@ -866,8 +866,9 @@ class MainActivity : AppCompatActivity() {
         statusRow.isClickable = statusAction != null
 
         // [ui] The cloud switch's subtitle says where audio goes.
-        cloudRowSub.text = if (useLocal) "Off: transcribed on this phone"
-                           else "On: audio is sent to Groq (needs API key)"
+        cloudRowSub.text = getString(
+            if (useLocal) R.string.cloud_switch_off else R.string.cloud_switch_on,
+        )
 
         refreshAllCards()
         maybeShowBatteryWarning(acc, unrestricted)
@@ -1019,7 +1020,7 @@ class MainActivity : AppCompatActivity() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         } catch (e: Exception) {
-            toast("Couldn't open browser: ${e.message}")
+            toast(getString(R.string.browser_open_failed, e.message ?: ""))
         }
     }
 

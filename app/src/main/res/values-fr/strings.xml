@@ -23,6 +23,9 @@
     <string name="background_service_summary">Mettre en pause le micro flottant sans désactiver l’accessibilité</string>
     <string name="local_models">Modèles locaux</string>
     <string name="cloud_transcription">Utiliser la transcription dans le cloud</string>
+    <string name="cloud_switch_off">Désactivé : transcription sur ce téléphone</string>
+    <string name="cloud_switch_on">Activé : l’audio est envoyé à Groq (clé API requise)</string>
+    <string name="browser_open_failed">Impossible d’ouvrir le navigateur : %1$s</string>
     <string name="cloud_model">Modèle cloud</string>
     <string name="requires_groq_key">Nécessite une clé API Groq</string>
     <string name="post_processing">Post-traitement</string>
