@@ -9,10 +9,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
-import android.media.AudioFormat
 import android.media.AudioManager
-import android.media.AudioRecord
-import android.media.MediaRecorder
 import android.media.ToneGenerator
 import android.os.Build
 import android.os.Handler
@@ -34,7 +31,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import java.io.ByteArrayOutputStream
 import kotlin.concurrent.thread
 import kotlin.math.abs
 
@@ -43,7 +39,6 @@ class WhisperAccessibilityService : AccessibilityService() {
     companion object {
         var instance: WhisperAccessibilityService? = null
         private const val TAG = "OpenWhispr"
-        private const val SAMPLE_RATE = 16000
         private const val MARGIN_DP = 8
 
         private const val ALPHA_IDLE = 0.7f
@@ -106,10 +101,12 @@ class WhisperAccessibilityService : AccessibilityService() {
     private var feedbackView: TextView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
     private var feedbackLayoutParams: WindowManager.LayoutParams? = null
-    private var audioRecord: AudioRecord? = null
     private var stopTone: ToneGenerator? = null
-    private var pcmStream: ByteArrayOutputStream? = null
+
     private val handler = Handler(Looper.getMainLooper())
+
+    /** Microphone capture; levels come back on its recording thread. */
+    private val recorder = VoiceRecorder { level -> handler.post { onAudioLevel(level) } }
 
     /** All accessibility-node text access lives in TextInjector. */
     private val injector by lazy { TextInjector(this) { text, durationMs -> showFeedback(text, durationMs) } }
@@ -824,45 +821,16 @@ class WhisperAccessibilityService : AccessibilityService() {
             toast(localUnavailableMessage()); return
         }
 
-        val bufSize = AudioRecord.getMinBufferSize(
-            SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT
-        )
-        audioRecord = try {
-            AudioRecord(
-                MediaRecorder.AudioSource.MIC, SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufSize
-            )
-        } catch (_: SecurityException) { toast(getString(R.string.audio_permission_denied)); return }
+        if (!recorder.start()) {
+            toast(getString(R.string.audio_permission_denied)); return
+        }
 
-        pcmStream = ByteArrayOutputStream()
-        audioRecord!!.startRecording()
         state = State.RECORDING
         setBusy(false)
         setRecordingLook(true) // [ui]
         setIcon(R.drawable.ic_mic)
         setOpacity(active = true)
         updateOverlayVisibility()
-
-        thread {
-            val buf = ByteArray(bufSize)
-            while (state == State.RECORDING) {
-                val n = audioRecord?.read(buf, 0, buf.size) ?: break
-                if (n > 0) {
-                    pcmStream?.write(buf, 0, n)
-                    // [ui] Peak of this buffer (16-bit little-endian PCM),
-                    // only read for the overlay's voice-reactive size.
-                    var peak = 0
-                    var i = 0
-                    while (i + 1 < n) {
-                        val sample = ((buf[i + 1].toInt() shl 8) or (buf[i].toInt() and 0xFF)).toShort().toInt()
-                        peak = maxOf(peak, abs(sample))
-                        i += 2
-                    }
-                    val level = (peak / 12000f).coerceIn(0f, 1f)
-                    handler.post { onAudioLevel(level) }
-                }
-            }
-        }
     }
 
     private fun stopAndTranscribe() {
@@ -872,14 +840,11 @@ class WhisperAccessibilityService : AccessibilityService() {
         setBusy(true)
         updateOverlayVisibility()
 
-        audioRecord?.stop()
-        audioRecord?.release()
-        audioRecord = null
+        val pcm = recorder.stop()
 
-        val pcm = pcmStream?.toByteArray() ?: ByteArray(0)
-        pcmStream = null
-
-        if (pcm.isEmpty() || peakAmplitude(pcm) < SILENCE_PEAK) { reset(getString(R.string.no_audio_captured)); return }
+        if (pcm.isEmpty() || VoiceRecorder.peakAmplitude(pcm) < SILENCE_PEAK) {
+            reset(getString(R.string.no_audio_captured)); return
+        }
 
         val useLocal = prefs().getBoolean("use_local", true)
         val local = localTranscriber
@@ -897,16 +862,7 @@ class WhisperAccessibilityService : AccessibilityService() {
     }
 
     /** Peak absolute 16-bit little-endian sample in [pcm]. */
-    private fun peakAmplitude(pcm: ByteArray): Int {
-        var peak = 0
-        var i = 0
-        while (i + 1 < pcm.size) {
-            val sample = ((pcm[i + 1].toInt() shl 8) or (pcm[i].toInt() and 0xFF)).toShort().toInt()
-            peak = maxOf(peak, abs(sample))
-            i += 2
-        }
-        return peak
-    }
+    private fun peakAmplitude(pcm: ByteArray): Int = VoiceRecorder.peakAmplitude(pcm)
 
     private fun transcribeLocal(pcm: ByteArray, transcriber: LocalTranscriber) {
         playRecordingStoppedTone()
@@ -921,9 +877,9 @@ class WhisperAccessibilityService : AccessibilityService() {
                 }
 
                 val t0 = System.currentTimeMillis()
-                val text = transcriber.transcribe(samples, SAMPLE_RATE)
+                val text = transcriber.transcribe(samples, VoiceRecorder.SAMPLE_RATE)
                 val ms = System.currentTimeMillis() - t0
-                Log.i(TAG, "Local transcription: ${ms}ms, ${samples.size / SAMPLE_RATE}s audio")
+                Log.i(TAG, "Local transcription: ${ms}ms, ${samples.size / VoiceRecorder.SAMPLE_RATE}s audio")
 
                 handleTranscriptionResult(text)
             } catch (e: Exception) {
