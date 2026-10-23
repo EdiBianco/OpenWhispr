@@ -13,6 +13,11 @@ object BubbleSize {
     const val RING_DP = 56
     const val PADDING_DP = 10
     const val MIN_TOUCH_TARGET_DP = 48
+
+    /** Gap kept between the bubble and the screen edges, and between the
+     * bubble and its feedback note. Every position helper takes it as a
+     * parameter; this is the value the app uses. */
+    const val MARGIN_DP = 8
     private const val TAP_THRESHOLD_DP = 10
     private const val FEEDBACK_OFFSET_DP = 64
 
