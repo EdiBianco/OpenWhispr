@@ -13,6 +13,13 @@ data class CleanupProviderConfig(
     val provider: Provider = Provider.GROQ,
     val baseUrl: String = DEFAULT_BASE_URL,
     val model: String = DEFAULT_MODEL,
+    /**
+     * Groq's own cleanup model, blank meaning [GROQ_MODEL]. Stored separately
+     * from [model] because the two providers use different id namespaces: an
+     * OpenRouter id carried into a Groq request (or the reverse) is a request
+     * that fails, so a provider switch must never move a model between them.
+     */
+    val groqModel: String = "",
 ) {
     enum class Provider(val preferenceValue: String, val title: String) {
         GROQ("groq", "Groq"),
@@ -42,7 +49,7 @@ data class CleanupProviderConfig(
     }
 
     fun requestModel(): String = if (provider == Provider.GROQ) {
-        GROQ_MODEL
+        groqModel.trim().ifBlank { GROQ_MODEL }
     } else {
         model.trim().ifBlank { DEFAULT_MODEL }
     }
@@ -53,22 +60,32 @@ data class CleanupProviderConfig(
         const val DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
         const val DEFAULT_MODEL = "openai/gpt-4o-mini"
 
-        fun fromPreferences(provider: String?, baseUrl: String?, model: String?) = CleanupProviderConfig(
+        fun fromPreferences(
+            provider: String?,
+            baseUrl: String?,
+            model: String?,
+            groqModel: String? = null,
+        ) = CleanupProviderConfig(
             provider = Provider.fromPreference(provider),
             baseUrl = baseUrl?.takeIf { it.isNotBlank() } ?: DEFAULT_BASE_URL,
             model = model?.takeIf { it.isNotBlank() } ?: DEFAULT_MODEL,
+            groqModel = groqModel.orEmpty().trim(),
         )
     }
 }
 
-internal fun cleanupRequest(
-    text: String,
-    prompt: String,
+/**
+ * Chat-completions request for an already-built [messages] array, shared by
+ * transcript cleanup and voice commands so both follow one provider
+ * configuration (endpoint, model, and Groq-only request options) instead of
+ * each hardcoding Groq.
+ */
+internal fun chatRequest(
+    messages: JSONArray,
     apiKey: String,
     config: CleanupProviderConfig,
 ): Request {
     require(apiKey.isNotBlank()) { "Cleanup API key is required" }
-    val messages = PostProcessor.cleanupMessages(text, prompt)
     val bodyJson = JSONObject().apply {
         put("model", config.requestModel())
         put("messages", messages)
@@ -85,3 +102,10 @@ internal fun cleanupRequest(
         .post(bodyJson.toString().toRequestBody("application/json".toMediaType()))
         .build()
 }
+
+internal fun cleanupRequest(
+    text: String,
+    prompt: String,
+    apiKey: String,
+    config: CleanupProviderConfig,
+): Request = chatRequest(PostProcessor.cleanupMessages(text, prompt), apiKey, config)

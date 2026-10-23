@@ -152,7 +152,7 @@ Vous pouvez combiner des commandes : %1$s, traduis en italien puis transforme le
     <string name="no_speech_detected">Aucune parole détectée.</string>
     <string name="cleanup_needs_key">La correction du texte nécessite une clé API. La transcription d’origine sera utilisée.</string>
     <string name="cleanup_failed_clipboard">Échec de la correction ; le texte d’origine a été copié dans le presse-papiers.</string>
-    <string name="voice_commands_need_key">Les commandes vocales nécessitent une clé API Groq.</string>
+    <string name="voice_commands_need_key">Les commandes vocales nécessitent une clé API pour votre service de correction.</string>
     <string name="no_command_after_trigger">Aucune commande n’a été détectée après la phrase déclencheuse.</string>
     <string name="command_failed">Échec de la commande : %1$s</string>
     <string name="empty_response">Le service a renvoyé une réponse vide.</string>

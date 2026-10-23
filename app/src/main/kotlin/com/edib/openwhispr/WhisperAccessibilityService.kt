@@ -992,13 +992,8 @@ class WhisperAccessibilityService : AccessibilityService() {
         }
 
         val usePostProcessing = prefs().getBoolean("use_post_processing", false)
-        val cleanupConfig = CleanupProviderConfig.fromPreferences(
-            prefs().getString("cleanup_provider", null),
-            prefs().getString("cleanup_base_url", null),
-            prefs().getString("cleanup_model", null),
-        )
-        val apiKey = if (cleanupConfig.provider == CleanupProviderConfig.Provider.GROQ)
-            SecureKeyStorage.groqApiKey(this) else SecureKeyStorage.cleanupApiKey(this)
+        val cleanupConfig = cleanupConfig()
+        val apiKey = cleanupApiKey(cleanupConfig)
 
         if (usePostProcessing) {
             if (apiKey.isBlank()) {
@@ -1055,7 +1050,10 @@ class WhisperAccessibilityService : AccessibilityService() {
      * before the trigger phrase) the command runs on that text instead, and
      * the result is inserted like normal dictation. */
     private fun handleVoiceCommand(instruction: String, dictated: String? = null) {
-        val apiKey = SecureKeyStorage.groqApiKey(this)
+        // Commands run on the same service as cleanup, so a custom
+        // OpenAI-compatible service runs them too, with its own key.
+        val config = cleanupConfig()
+        val apiKey = cleanupApiKey(config)
         if (apiKey.isBlank()) {
             handler.post {
                 toast(getString(R.string.voice_commands_need_key))
@@ -1073,7 +1071,7 @@ class WhisperAccessibilityService : AccessibilityService() {
 
         val fieldText = dictated ?: injector.currentFieldText()
 
-        CommandProcessor.process(fieldText, instruction, apiKey) { result ->
+        CommandProcessor.process(fieldText, instruction, apiKey, config) { result ->
             handler.post {
                 val out = result.text?.trim()
                 when {
@@ -1109,4 +1107,20 @@ class WhisperAccessibilityService : AccessibilityService() {
 
     private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
     private fun toast(msg: String) { handler.post { Toast.makeText(this, msg, Toast.LENGTH_SHORT).show() } }
+
+    /** Where transcript cleanup and voice commands go. */
+    private fun cleanupConfig() = CleanupProviderConfig.fromPreferences(
+        prefs().getString("cleanup_provider", null),
+        prefs().getString("cleanup_base_url", null),
+        prefs().getString("cleanup_model", null),
+        prefs().getString("cleanup_groq_model", null),
+    )
+
+    /** The key for whichever service [config] selects. */
+    private fun cleanupApiKey(config: CleanupProviderConfig) =
+        if (config.provider == CleanupProviderConfig.Provider.GROQ) {
+            SecureKeyStorage.groqApiKey(this)
+        } else {
+            SecureKeyStorage.cleanupApiKey(this)
+        }
 }
