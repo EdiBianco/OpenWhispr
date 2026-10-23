@@ -11,7 +11,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # Scoped by workflow name: when build-apk.yml calls this workflow, the call
+  # must not cancel (or be cancelled by) the standalone run on the same ref.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
