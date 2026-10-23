@@ -53,6 +53,12 @@ object UpdateChecker {
         return false
     }
 
+    /** The major (first) component of a version string, ignoring a leading
+     * "v" -- both "v4.1.0" and "4.1.0" give 4. Null when it isn't a number,
+     * so the caller decides what an unparsable version means. */
+    fun majorVersion(version: String): Int? =
+        version.removePrefix("v").substringBefore('.').toIntOrNull()
+
     // [security] GitHub's release API reports each asset's checksum as
     // "digest": "sha256:<64 hex chars>". Returns the lowercase hex, or null
     // if the field is missing or isn't a well-formed SHA-256.
