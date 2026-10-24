@@ -85,6 +85,43 @@ class CleanupProviderConfigTest {
     }
 
     @Test
+    fun `Groq model is configurable but never takes the custom service's id`() {
+        val chosen = CleanupProviderConfig(
+            provider = CleanupProviderConfig.Provider.GROQ,
+            groqModel = "openai/gpt-oss-20b",
+        )
+        val blank = CleanupProviderConfig(provider = CleanupProviderConfig.Provider.GROQ)
+        // An install with an OpenRouter model stored (every Groq install before
+        // Groq's model became a choice) must keep using Groq's model.
+        val existingInstall = CleanupProviderConfig.fromPreferences("groq", null, "openai/gpt-4o-mini")
+
+        assertEquals("openai/gpt-oss-20b", chosen.requestModel())
+        assertEquals(CleanupProviderConfig.GROQ_MODEL, blank.requestModel())
+        assertEquals(CleanupProviderConfig.GROQ_MODEL, existingInstall.requestModel())
+
+        val request = cleanupRequest("t", "p", "k", chosen)
+        val body = JSONObject(Buffer().also { request.body!!.writeTo(it) }.readUtf8())
+        assertEquals("openai/gpt-oss-20b", body.getString("model"))
+        assertEquals("low", body.getString("reasoning_effort"))
+    }
+
+    @Test
+    fun `switching providers keeps each one's model`() {
+        val config = CleanupProviderConfig.fromPreferences(
+            provider = "openai_compatible",
+            baseUrl = "https://api.deepseek.com/v1",
+            model = "deepseek-chat",
+            groqModel = "openai/gpt-oss-20b",
+        )
+
+        assertEquals("deepseek-chat", config.requestModel())
+
+        val groq = config.copy(provider = CleanupProviderConfig.Provider.GROQ)
+        assertEquals("openai/gpt-oss-20b", groq.requestModel())
+        assertEquals(CleanupProviderConfig.GROQ_CHAT_COMPLETIONS_URL, groq.chatCompletionsUrl().toString())
+    }
+
+    @Test
     fun `transcription stays on Groq Whisper Large V3`() {
         assertEquals("https://api.groq.com/openai/v1/audio/transcriptions", TranscriberClient.TRANSCRIPTION_URL)
         assertEquals("whisper-large-v3", TranscriberClient.TRANSCRIPTION_MODEL)
