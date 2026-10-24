@@ -2,17 +2,12 @@ package com.edib.openwhispr
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.graphics.Color
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.text.InputType
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.widget.*
@@ -20,8 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -38,6 +31,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusDotView: View
     private var statusAction: (() -> Unit)? = null
     private lateinit var cloudRowSub: TextView
+    private lateinit var cloudModelRow: LinearLayout
+    private lateinit var cloudModelRowSub: TextView
     private lateinit var audioRow: LinearLayout
     private lateinit var audioRowSub: TextView
     private lateinit var audioDot: View
@@ -78,15 +73,23 @@ class MainActivity : AppCompatActivity() {
         val delBtn: MaterialButton,
     )
 
-    // Backup flows: the passphrase and the snapshot live only while a dialog runs.
-    private var backupPassphrase: String? = null
-    private var pendingExport: SettingsBackup.Snapshot? = null
-    private val createBackupLauncher = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("application/octet-stream")
-    ) { uri -> if (uri != null) writeBackup(uri) }
-    private val openBackupLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri -> if (uri != null) readBackup(uri) }
+    // Backup and restore is its own flow in BackupFlow.kt. It registers its
+    // own file pickers, so it has to be created as a field, before the
+    // activity is started -- and it calls back here once a restore wrote
+    // settings, since refreshing the service is this screen's business.
+    private val backup = BackupFlow(this) {
+        WhisperAccessibilityService.instance?.apply {
+            refreshBubbleSize()
+            refreshPosition()
+            reloadModel()
+        }
+        recreate()
+    }
+
+    // The update feature lives in UpdateFlow.kt. Its 3.x -> 4.0 migration
+    // dialog offers "back up first", which is the backup flow's entry point,
+    // so the two flows are wired together here rather than inside either one.
+    private val updates = UpdateFlow(this) { backup.export() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         // default, including for existing installs), so the app makes no
         // request to GitHub unless the user enables it or taps "Check for
         // updates".
-        if (prefs().getBoolean("auto_update_check", false)) checkForUpdate()
+        if (prefs().getBoolean("auto_update_check", false)) updates.check()
 
         val outer = vertical(0, 0)
 
@@ -274,7 +277,13 @@ class MainActivity : AppCompatActivity() {
             refresh()
         }
         cloudRowSub = cloudRow.findViewWithTag("subtitle")
-        dictationContainer.addView(group().apply { addView(cloudRow) })
+        // [ui] Only meaningful in cloud mode; refresh() shows or hides it.
+        cloudModelRow = settingsRow(getString(R.string.cloud_model), "") { promptCloudModel() }
+        cloudModelRowSub = cloudModelRow.findViewWithTag("subtitle")
+        dictationContainer.addView(group().apply {
+            addView(cloudRow)
+            addView(cloudModelRow)
+        })
 
         modelContainer = vertical(0)
         modelContainer.addView(sectionHeader(getString(R.string.local_models)))
@@ -498,10 +507,10 @@ class MainActivity : AppCompatActivity() {
         settingsContainer.addView(sectionHeader(getString(R.string.backup_section)))
         val backupGroup = group()
         backupGroup.addView(settingsRow(getString(R.string.backup_export_title), getString(R.string.backup_export_summary)) {
-            exportBackup()
+            backup.export()
         })
         backupGroup.addView(settingsRow(getString(R.string.backup_restore_title), getString(R.string.backup_restore_summary)) {
-            openBackupLauncher.launch(arrayOf("*/*"))
+            backup.restore()
         })
         settingsContainer.addView(backupGroup)
 
@@ -555,7 +564,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         aboutGroup.addView(settingsRow(getString(R.string.check_updates), getString(R.string.about_current_version, versionName)) {
-            checkForUpdate(force = true)
+            updates.check(force = true)
         })
 
         // [privacy] Opt-in switch for the automatic check on app open (see onCreate).
@@ -806,6 +815,8 @@ class MainActivity : AppCompatActivity() {
         batteryDot.background = dotDrawable(if (unrestricted) DOT_GREEN else DOT_RED)
 
         modelContainer.visibility = if (useLocal) View.VISIBLE else View.GONE
+        cloudModelRow.visibility = if (useLocal) View.GONE else View.VISIBLE
+        cloudModelRowSub.text = cloudModelSummary()
         languageRowSub.text = languageSummary()
         customInstructionsRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
         cleanupProviderRow.visibility = if (usePostProcessing) View.VISIBLE else View.GONE
@@ -856,8 +867,9 @@ class MainActivity : AppCompatActivity() {
         statusRow.isClickable = statusAction != null
 
         // [ui] The cloud switch's subtitle says where audio goes.
-        cloudRowSub.text = if (useLocal) "Off: transcribed on this phone"
-                           else "On: audio is sent to Groq (needs API key)"
+        cloudRowSub.text = getString(
+            if (useLocal) R.string.cloud_switch_off else R.string.cloud_switch_on,
+        )
 
         refreshAllCards()
         maybeShowBatteryWarning(acc, unrestricted)
@@ -904,171 +916,6 @@ class MainActivity : AppCompatActivity() {
             } catch (e2: Exception) {
                 toast(getString(R.string.open_battery_settings_failed, e2.message ?: getString(R.string.unknown_error)))
             }
-        }
-    }
-
-    /** Checks this repo's GitHub Releases. No backend involved. Shows a
-     * dialog linking to the release page when a newer version is
-     * available. [privacy] Runs on app-open only if the user turned on
-     * "Check for updates automatically" (silently, when nothing's new);
-     * [force] bypasses the cache interval and always gives feedback, for
-     * the manual "Check for updates" row. */
-    private fun checkForUpdate(force: Boolean = false) {
-        val currentVersion = try {
-            packageManager.getPackageInfo(packageName, 0).versionName
-        } catch (e: Exception) {
-            null
-        } ?: return
-
-        UpdateChecker.checkForUpdate(prefs(), currentVersion, force) { info ->
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                if (info != null) {
-                    android.app.AlertDialog.Builder(this)
-                        .setTitle(R.string.update_available)
-                        .setMessage(
-                            buildString {
-                                append(getString(R.string.update_available_message, info.version, currentVersion))
-                                append("\n\n${getString(R.string.whats_new)}:\n")
-                                append(
-                                    info.notes?.takeIf { it.isNotBlank() }
-                                        ?: getString(R.string.no_release_notes)
-                                )
-                            }
-                        )
-                        .setPositiveButton(getString(R.string.update)) { _, _ -> downloadAndInstallUpdate(info) }
-                        // [security] Full release page (complete changelog) before deciding.
-                        .setNeutralButton(getString(R.string.view_on_github)) { _, _ -> openReleasePage(info.url) }
-                        .setNegativeButton(getString(R.string.later), null)
-                        .show()
-                } else if (force) {
-                    toast(getString(R.string.up_to_date, currentVersion))
-                }
-            }
-        }
-    }
-
-    /** Downloads the release's .apk directly in-app and hands it to the
-     * system installer -- no browser tab, no external navigation. The final
-     * "install this app?" confirmation is a mandatory Android system dialog
-     * for a sideloaded APK and can't be skipped, but everything up to that
-     * point (download, progress) happens invisibly inside OpenWispr. */
-    private fun downloadAndInstallUpdate(info: UpdateChecker.UpdateInfo) {
-        val apkUrl = info.apkUrl
-        if (apkUrl == null) {
-            // Release has no .apk asset (shouldn't normally happen) -- fall
-            // back to the release page rather than doing nothing.
-            openReleasePage(info.url)
-            return
-        }
-
-        if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
-            android.app.AlertDialog.Builder(this)
-                .setTitle(R.string.allow_install_updates)
-                .setMessage(R.string.allow_install_updates_message)
-                .setPositiveButton(R.string.continue_button) { _, _ ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                                Uri.parse("package:$packageName")
-                            )
-                        )
-                    } catch (e: Exception) {
-                        toast(getString(R.string.open_settings_failed, e.message ?: getString(R.string.unknown_error)))
-                    }
-                }
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show()
-            return
-        }
-
-        toast(getString(R.string.downloading_update))
-        // [security] Pass GitHub's published checksum; downloadApk only
-        // returns a file if it matches.
-        UpdateChecker.downloadApk(this, apkUrl, info.apkSha256) { file, error ->
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                if (file == null) {
-                    // [security] A failed download or failed checksum both end
-                    // here; nothing is installed. Offer the release page instead.
-                    android.app.AlertDialog.Builder(this)
-                        .setTitle(R.string.update_not_installed_title)
-                        .setMessage(getString(R.string.update_not_installed_message, error ?: getString(R.string.unknown_error)))
-                        .setPositiveButton(getString(R.string.view_on_github)) { _, _ -> openReleasePage(info.url) }
-                        .setNegativeButton(getString(R.string.close_dialog), null)
-                        .show()
-                    return@runOnUiThread
-                }
-                if (isMajorVersion4(info.version)) showMigrationToV4(info, file) else installApk(file)
-            }
-        }
-    }
-
-    private fun openReleasePage(url: String) {
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-        } catch (e: Exception) {
-            toast("Couldn't open browser: ${e.message}")
-        }
-    }
-
-    private fun isMajorVersion4(version: String): Boolean =
-        version.removePrefix("v").substringBefore('.').toIntOrNull()?.let { it >= 4 } == true
-
-    /** 4.0.0 is signed with a new key, so Android won't install it over 3.x. The APK is
-     * saved to Downloads first, because uninstalling wipes the app's cache. Then the
-     * user backs up, uninstalls 3.x, installs the saved APK, and restores the backup. */
-    private fun showMigrationToV4(info: UpdateChecker.UpdateInfo, file: java.io.File) {
-        val name = "openwispr-v${info.version.removePrefix("v")}.apk"
-        val saved = saveApkToDownloads(file, name)
-        android.app.AlertDialog.Builder(this)
-            .setTitle(R.string.migration_title)
-            .setMessage(
-                getString(
-                    if (saved) R.string.migration_message_saved else R.string.migration_message_not_saved,
-                    name,
-                )
-            )
-            .setPositiveButton(R.string.migration_uninstall) { _, _ ->
-                startActivity(Intent(Intent.ACTION_DELETE, Uri.parse("package:$packageName")))
-            }
-            .setNeutralButton(R.string.migration_back_up_first) { _, _ -> exportBackup() }
-            .setNegativeButton(R.string.later, null)
-            .show()
-    }
-
-    private fun saveApkToDownloads(file: java.io.File, name: String): Boolean {
-        return try {
-            val values = android.content.ContentValues().apply {
-                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, name)
-                put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
-                put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
-            }
-            val uri = contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-            val copied = uri != null && contentResolver.openOutputStream(uri)?.use { out ->
-                file.inputStream().use { it.copyTo(out) }
-            } != null
-            if (uri == null || !copied) return false
-            values.clear()
-            values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
-            contentResolver.update(uri, values, null, null)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun installApk(file: java.io.File) {
-        val uri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        try {
-            startActivity(intent)
-        } catch (e: Exception) {
-            toast(getString(R.string.installer_start_failed, e.message ?: getString(R.string.unknown_error)))
         }
     }
 
@@ -1259,9 +1106,15 @@ class MainActivity : AppCompatActivity() {
             setText(config.baseUrl)
         }
         val modelLabel = fieldLabel(R.string.custom_service_model)
+        // One field, two providers: an OpenRouter model id sent to Groq (or the
+        // reverse) is a failing request, so each provider keeps its own value
+        // while you switch between them, and the hint shows that provider's
+        // default for a blank field.
+        var groqModelDraft = config.groqModel
+        var customModelDraft = config.model
         val model = EditText(this).apply {
             hint = CleanupProviderConfig.DEFAULT_MODEL
-            setText(config.model)
+            setText(if (config.provider == CleanupProviderConfig.Provider.GROQ) config.groqModel else config.model)
         }
         val apiKeyLabel = fieldLabel(R.string.custom_service_key)
         val apiKey = EditText(this).apply {
@@ -1277,10 +1130,19 @@ class MainActivity : AppCompatActivity() {
             setTextColor(attrColor(android.R.attr.textColorSecondary))
             setPadding(0, dp(8), 0, 0)
         }
-        val customFields = listOf<View>(baseUrlLabel, baseUrl, modelLabel, model, apiKeyLabel, apiKey, details)
+        val customFields = listOf<View>(baseUrlLabel, baseUrl, apiKeyLabel, apiKey, details)
         fun updateCustomFields() {
-            val show = providers[providerPicker.selectedItemPosition].requiresCustomConfiguration
-            customFields.forEach { it.visibility = if (show) View.VISIBLE else View.GONE }
+            val provider = providers[providerPicker.selectedItemPosition]
+            customFields.forEach { it.visibility = if (provider.requiresCustomConfiguration) View.VISIBLE else View.GONE }
+            if (provider == CleanupProviderConfig.Provider.GROQ) {
+                customModelDraft = model.text.toString()
+                model.setText(groqModelDraft)
+                model.hint = CleanupProviderConfig.GROQ_MODEL
+            } else {
+                groqModelDraft = model.text.toString()
+                model.setText(customModelDraft)
+                model.hint = CleanupProviderConfig.DEFAULT_MODEL
+            }
         }
         val container = vertical(dp(24), dp(8)).apply {
             addView(TextView(this@MainActivity).apply {
@@ -1322,10 +1184,13 @@ class MainActivity : AppCompatActivity() {
             }
             dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val selectedProvider = providers[providerPicker.selectedItemPosition]
+                val typedModel = model.text.toString().trim()
+                val isGroq = selectedProvider == CleanupProviderConfig.Provider.GROQ
                 val nextConfig = CleanupProviderConfig(
                     provider = selectedProvider,
                     baseUrl = baseUrl.text.toString().trim().ifBlank { CleanupProviderConfig.DEFAULT_BASE_URL },
-                    model = model.text.toString().trim().ifBlank { CleanupProviderConfig.DEFAULT_MODEL },
+                    model = if (isGroq) customModelDraft.trim() else typedModel,
+                    groqModel = if (isGroq) typedModel else groqModelDraft.trim(),
                 )
                 if (selectedProvider.requiresCustomConfiguration) {
                     try {
@@ -1339,6 +1204,7 @@ class MainActivity : AppCompatActivity() {
                     .putString("cleanup_provider", selectedProvider.preferenceValue)
                     .putString("cleanup_base_url", nextConfig.baseUrl)
                     .putString("cleanup_model", nextConfig.model)
+                    .putString("cleanup_groq_model", nextConfig.groqModel)
                     .apply()
                 if (selectedProvider.requiresCustomConfiguration) {
                     apiKey.text.toString().trim().takeIf { it.isNotBlank() }
@@ -1421,122 +1287,36 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // --- UI Helpers ---
+    // Rows, panels, dots and dialog plumbing come from UiKit.kt.
 
-    private fun settingsRow(
-        title: String,
-        subtitle: String,
-        widget: View? = null,
-        leading: View? = null,
-        onClick: (() -> Unit)? = null
-    ): LinearLayout {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(24), dp(16), dp(24), dp(16))
-            isClickable = onClick != null
-            isFocusable = onClick != null
-            if (onClick != null) {
-                val outValue = TypedValue()
-                context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-                setBackgroundResource(outValue.resourceId)
-                setOnClickListener { onClick() }
-            }
-        }
-
-        if (leading != null) row.addView(leading)
-
-        val textContainer = vertical(0).apply {
-            layoutParams = LinearLayout.LayoutParams(0, LP_WRAP, 1f).apply {
-                // [ui] Keep wrapped text clear of the switch/button beside it.
-                if (widget != null) marginEnd = dp(16)
-            }
-        }
-
-        textContainer.addView(TextView(this).apply {
-            text = title
-            textSize = 18f
-            setTextColor(attrColor(android.R.attr.textColorPrimary))
-        })
-
-        textContainer.addView(TextView(this).apply {
-            tag = "subtitle"
-            text = subtitle
-            textSize = 14f
-            setTextColor(attrColor(android.R.attr.textColorSecondary))
-            setPadding(0, dp(2), 0, 0)
-        })
-
-        row.addView(textContainer)
-        if (widget != null) row.addView(widget)
-
-        return row
-    }
-
-    private fun sectionHeader(title: String) = TextView(this).apply {
-        text = title
-        textSize = 14f
-        setTypeface(typeface, Typeface.BOLD)
-        setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary)) // Neutral Android-like blue
-        // [ui] 40dp start = group() margin (16) + row padding (24), so the
-        // header lines up with the row text inside the panel below it.
-        setPadding(dp(40), dp(24), dp(24), dp(8))
-    }
-
-    /** [ui] A section panel: rounded, in the theme's surface-container
-     * colour (light/dark aware), clipping row ripples to its corners. */
-    private fun group() = vertical(0).apply {
-        background = GradientDrawable().apply {
-            cornerRadius = dp(20).toFloat()
-            setColor(attrColor(com.google.android.material.R.attr.colorSurfaceContainer))
-        }
-        clipToOutline = true
-        layoutParams = LinearLayout.LayoutParams(LP_MATCH, LP_WRAP).apply {
-            setMargins(dp(16), 0, dp(16), dp(8))
-        }
-    }
-
-    private fun scrollableDialogContent(content: View) = ScrollView(this).apply {
-        isFillViewport = true
-        setPadding(dp(24), dp(8), dp(24), dp(8))
-        addView(content, FrameLayout.LayoutParams(LP_MATCH, LP_WRAP))
-    }
-
-    private fun showResizingDialog(dialog: android.app.AlertDialog) {
-        dialog.show()
-        dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-    }
-
-    private fun vertical(padH: Int, padV: Int = padH) = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        setPadding(padH, padV, padH, padV)
-    }
-
-    private fun dotDrawable(color: Int) = GradientDrawable().apply {
-        shape = GradientDrawable.OVAL
-        setColor(color)
-    }
-
-    private fun statusDot(): View = View(this).apply {
-        layoutParams = LinearLayout.LayoutParams(dp(10), dp(10)).apply {
-            marginEnd = dp(12)
-        }
-        background = dotDrawable(DOT_RED)
-    }
-
-    private fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
-    private fun hasPerm(p: String) = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED
-    private fun attrColor(attr: Int): Int {
-        val ta = obtainStyledAttributes(intArrayOf(attr))
-        val color = ta.getColor(0, 0)
-        ta.recycle()
-        return color
-    }
     private fun cleanupProviderConfig() = CleanupProviderConfig.fromPreferences(
         prefs().getString("cleanup_provider", null),
         prefs().getString("cleanup_base_url", null),
         prefs().getString("cleanup_model", null),
+        prefs().getString("cleanup_groq_model", null),
     )
+
+    /** The cloud transcription model to use, stored or default. */
+    private fun cloudModelId() =
+        TranscriberClient.modelId(prefs().getString(TranscriberClient.MODEL_PREF_KEY, null))
+
+    private fun cloudModelSummary(): String =
+        TranscriberClient.modelById(cloudModelId()).let { "${it.label} · ${it.hint}" }
+
+    /** Groq Whisper model used for cloud transcription. */
+    private fun promptCloudModel() {
+        val models = TranscriberClient.MODELS
+        val labels = models.map { "${it.label} · ${it.hint}" }.toTypedArray()
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.cloud_model)
+            .setSingleChoiceItems(labels, models.indexOfFirst { it.id == cloudModelId() }) { dialog, which ->
+                prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, models[which].id).apply()
+                refresh()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
 
     private fun cleanupProviderSummary(): String {
         val config = cleanupProviderConfig()
@@ -1574,210 +1354,6 @@ class MainActivity : AppCompatActivity() {
         larger = getString(R.string.bubble_larger_accessibility),
         percentUnit = getString(R.string.percent_unit),
     )
-    private fun prefs() = getSharedPreferences("openwhispr", MODE_PRIVATE)
-    private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-
-    // --- Backup and restore ---
-
-    private fun prefItemId(key: String) = "pref:$key"
-    private fun secretItemId(name: String) = "secret:$name"
-    private fun secretLabel(name: String) = when (name) {
-        "groq_api_key" -> getString(R.string.backup_item_groq_key)
-        "cleanup_api_key" -> getString(R.string.backup_item_cleanup_key)
-        else -> name
-    }
-
-    private fun currentSnapshot(): SettingsBackup.Snapshot = SettingsBackup.Snapshot(
-        prefs = prefs().all.entries.mapNotNull { (key, value) -> value?.let { key to it } }.toMap(),
-        secrets = mapOf(
-            "groq_api_key" to SecureKeyStorage.groqApiKey(this),
-            "cleanup_api_key" to SecureKeyStorage.cleanupApiKey(this),
-        ),
-    )
-
-    /** Checklist with "select all"; [onConfirm] receives the chosen item ids. */
-    private fun chooseBackupItems(title: Int, items: List<Pair<String, String>>, onConfirm: (Set<String>) -> Unit) {
-        if (items.isEmpty()) {
-            toast(getString(R.string.backup_nothing_to_choose))
-            return
-        }
-        val selected = items.map { it.first }.toMutableSet()
-        val boxes = mutableListOf<CheckBox>()
-        var syncing = false
-        val selectAll = CheckBox(this).apply {
-            text = getString(R.string.backup_select_all)
-            isChecked = true
-            setOnCheckedChangeListener { _, checked ->
-                if (syncing) return@setOnCheckedChangeListener
-                syncing = true
-                boxes.forEach { it.isChecked = checked }
-                syncing = false
-            }
-        }
-        val list = vertical(0)
-        items.forEach { (id, label) ->
-            val box = CheckBox(this).apply {
-                text = label
-                isChecked = true
-                setOnCheckedChangeListener { _, checked ->
-                    if (checked) selected.add(id) else selected.remove(id)
-                    if (!syncing) {
-                        syncing = true
-                        selectAll.isChecked = boxes.all { it.isChecked }
-                        syncing = false
-                    }
-                }
-            }
-            boxes += box
-            list.addView(box)
-        }
-        val container = vertical(dp(24), dp(8)).apply {
-            addView(selectAll)
-            addView(ScrollView(this@MainActivity).apply {
-                addView(list)
-                layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(360))
-            })
-        }
-        android.app.AlertDialog.Builder(this)
-            .setTitle(title)
-            .setView(container)
-            .setPositiveButton(R.string.continue_button) { _, _ ->
-                if (selected.isEmpty()) toast(getString(R.string.backup_nothing_selected))
-                else onConfirm(selected.toSet())
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    /** Passphrase prompt. Exports ask twice and enforce a minimum length. */
-    private fun askPassphrase(exporting: Boolean, onOk: (String) -> Unit) {
-        fun field(hintRes: Int) = EditText(this).apply {
-            hint = getString(hintRes)
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            isSaveEnabled = false
-            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
-        }
-        val first = field(R.string.backup_passphrase_hint)
-        val second = field(R.string.backup_passphrase_confirm_hint)
-        val container = vertical(dp(24), dp(8)).apply {
-            addView(first)
-            if (exporting) addView(second)
-        }
-        android.app.AlertDialog.Builder(this)
-            .setTitle(if (exporting) R.string.backup_passphrase_title_export else R.string.backup_passphrase_title_restore)
-            .setView(container)
-            .setPositiveButton(if (exporting) R.string.save else R.string.continue_button) { _, _ ->
-                val passphrase = first.text.toString()
-                when {
-                    exporting && passphrase.length < SettingsBackup.MIN_PASSPHRASE_LENGTH ->
-                        toast(getString(R.string.backup_passphrase_short))
-                    exporting && passphrase != second.text.toString() ->
-                        toast(getString(R.string.backup_passphrase_mismatch))
-                    !exporting && passphrase.isEmpty() ->
-                        toast(getString(R.string.backup_passphrase_short))
-                    else -> onOk(passphrase)
-                }
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun exportBackup() {
-        val snapshot = currentSnapshot()
-        val items = snapshot.prefs.keys.filterNot { SettingsBackup.isExcludedPreference(it) }.sorted()
-            .map { prefItemId(it) to it } +
-            snapshot.secrets.filterValues { it.isNotBlank() }.keys.sorted()
-                .map { secretItemId(it) to secretLabel(it) }
-        chooseBackupItems(R.string.backup_choose_export, items) { chosen ->
-            askPassphrase(exporting = true) { passphrase ->
-                backupPassphrase = passphrase
-                pendingExport = SettingsBackup.Snapshot(
-                    prefs = snapshot.prefs.filterKeys { prefItemId(it) in chosen },
-                    secrets = snapshot.secrets.filterKeys { secretItemId(it) in chosen },
-                )
-                val date = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
-                createBackupLauncher.launch("openwispr-backup-$date.owb")
-            }
-        }
-    }
-
-    private fun writeBackup(uri: Uri) {
-        val passphrase = backupPassphrase ?: return
-        val snapshot = pendingExport ?: return
-        backupPassphrase = null
-        pendingExport = null
-        kotlin.concurrent.thread {
-            try {
-                val file = SettingsBackup.encrypt(snapshot, passphrase)
-                contentResolver.openOutputStream(uri)?.use { it.write(file.toByteArray(Charsets.UTF_8)) }
-                    ?: throw java.io.IOException("cannot open the file")
-                runOnUiThread { toast(getString(R.string.backup_export_done)) }
-            } catch (e: Exception) {
-                runOnUiThread { toast(getString(R.string.backup_export_failed, e.message ?: "")) }
-            }
-        }
-    }
-
-    private fun readBackup(uri: Uri) {
-        val text = try {
-            contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-        } catch (e: Exception) {
-            null
-        }
-        if (text == null) {
-            toast(getString(R.string.backup_restore_failed))
-            return
-        }
-        askPassphrase(exporting = false) { passphrase ->
-            kotlin.concurrent.thread {
-                try {
-                    val snapshot = SettingsBackup.decrypt(text, passphrase)
-                    runOnUiThread { chooseRestoreItems(snapshot) }
-                } catch (e: SettingsBackup.BackupException) {
-                    runOnUiThread { toast(getString(R.string.backup_restore_failed)) }
-                }
-            }
-        }
-    }
-
-    private fun chooseRestoreItems(snapshot: SettingsBackup.Snapshot) {
-        val items = snapshot.prefs.keys.sorted().map { prefItemId(it) to it } +
-            snapshot.secrets.keys.sorted().map { secretItemId(it) to secretLabel(it) }
-        chooseBackupItems(R.string.backup_choose_restore, items) { chosen ->
-            applySelected(snapshot, chosen)
-        }
-    }
-
-    /** Writes only the chosen settings and keys; everything else on the device is left as it is. */
-    private fun applySelected(snapshot: SettingsBackup.Snapshot, chosen: Set<String>) {
-        val editor = prefs().edit()
-        for ((key, value) in snapshot.prefs) {
-            if (prefItemId(key) !in chosen) continue
-            when (value) {
-                is String -> editor.putString(key, value)
-                is Int -> editor.putInt(key, value)
-                is Long -> editor.putLong(key, value)
-                is Float -> editor.putFloat(key, value)
-                is Boolean -> editor.putBoolean(key, value)
-                is Set<*> -> editor.putStringSet(key, value.map { it.toString() }.toSet())
-            }
-        }
-        editor.putBoolean("welcome_done", true)
-        check(editor.commit())
-        if (secretItemId("groq_api_key") in chosen) {
-            SecureKeyStorage.saveGroqApiKey(this, snapshot.secrets["groq_api_key"].orEmpty())
-        }
-        if (secretItemId("cleanup_api_key") in chosen) {
-            SecureKeyStorage.saveCleanupApiKey(this, snapshot.secrets["cleanup_api_key"].orEmpty())
-        }
-        WhisperAccessibilityService.instance?.apply {
-            refreshBubbleSize()
-            refreshPosition()
-            reloadModel()
-        }
-        toast(getString(R.string.backup_restore_done))
-        recreate()
-    }
 
     private fun showWelcome() {
         android.app.AlertDialog.Builder(this)
@@ -1785,19 +1361,12 @@ class MainActivity : AppCompatActivity() {
             .setMessage(R.string.welcome_message)
             .setPositiveButton(R.string.welcome_restore) { _, _ ->
                 prefs().edit().putBoolean("welcome_done", true).apply()
-                openBackupLauncher.launch(arrayOf("*/*"))
+                backup.restore()
             }
             .setNegativeButton(R.string.welcome_start_fresh) { _, _ ->
                 prefs().edit().putBoolean("welcome_done", true).apply()
             }
             .setCancelable(false)
             .show()
-    }
-
-    companion object {
-        private const val LP_MATCH = LinearLayout.LayoutParams.MATCH_PARENT
-        private const val LP_WRAP = LinearLayout.LayoutParams.WRAP_CONTENT
-        private const val DOT_GREEN = 0xFF34C759.toInt()
-        private const val DOT_RED = 0xFFEF4444.toInt()
     }
 }
