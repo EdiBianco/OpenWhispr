@@ -41,8 +41,8 @@ class ModelDownloaderTest {
     }
 
     @Test fun `catalog has expected structure and only the Parakeet transducer supports hotwords`() {
-        assertEquals(4, MODEL_CATALOG.size)
-        assertTrue(MODEL_CATALOG.any { it.recommended })
+        assertEquals(6, MODEL_CATALOG.size)
+        assertEquals(1, MODEL_CATALOG.count { it.recommended })
         assertTrue(MODEL_CATALOG.all { it.archive.startsWith("sherpa-onnx-") })
         assertTrue(MODEL_CATALOG.all { it.sizeMb > 0 })
         assertEquals(
