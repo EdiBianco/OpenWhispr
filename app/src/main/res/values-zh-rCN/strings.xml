@@ -23,6 +23,10 @@
     <string name="background_service_summary">暂停麦克风悬浮窗，但不关闭无障碍功能</string>
     <string name="local_models">本地模型</string>
     <string name="cloud_transcription">使用云端转写</string>
+    <string name="cloud_switch_off">关闭：在此手机上转写</string>
+    <string name="cloud_switch_on">开启：音频会发送到 Groq（需要 API 密钥）</string>
+    <string name="browser_open_failed">无法打开浏览器：%1$s</string>
+    <string name="cloud_model">云端模型</string>
     <string name="requires_groq_key">需要 Groq API 密钥</string>
     <string name="post_processing">后处理</string>
     <string name="cleanup_transcript">转写文本优化</string>
@@ -151,7 +155,7 @@
     <string name="no_speech_detected">未检测到语音。</string>
     <string name="cleanup_needs_key">文本优化需要 API 密钥。将使用原始转写结果。</string>
     <string name="cleanup_failed_clipboard">优化失败；原始文字已复制到剪贴板。</string>
-    <string name="voice_commands_need_key">语音命令需要 Groq API 密钥。</string>
+    <string name="voice_commands_need_key">语音命令需要您的优化服务 API 密钥。</string>
     <string name="no_command_after_trigger">触发短语之后未检测到命令。</string>
     <string name="command_failed">命令失败：%1$s</string>
     <string name="empty_response">服务返回了空响应。</string>

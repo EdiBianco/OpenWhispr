@@ -23,6 +23,10 @@
     <string name="background_service_summary">Sospende il microfono mobile senza disattivare l\'accessibilità</string>
     <string name="local_models">Modelli locali</string>
     <string name="cloud_transcription">Usa la trascrizione nel cloud</string>
+    <string name="cloud_switch_off">Disattivato: trascrizione su questo telefono</string>
+    <string name="cloud_switch_on">Attivato: l’audio viene inviato a Groq (serve la chiave API)</string>
+    <string name="browser_open_failed">Impossibile aprire il browser: %1$s</string>
+    <string name="cloud_model">Modello cloud</string>
     <string name="requires_groq_key">Richiede una chiave API di Groq</string>
     <string name="post_processing">Post-elaborazione</string>
     <string name="cleanup_transcript">Pulizia della trascrizione</string>
@@ -151,7 +155,7 @@ Puoi combinare i comandi: %1$s, traduci in inglese e trasformalo in un elenco. V
     <string name="no_speech_detected">Nessun parlato rilevato.</string>
     <string name="cleanup_needs_key">La pulizia del testo richiede una chiave API. Verrà usata la trascrizione originale.</string>
     <string name="cleanup_failed_clipboard">Pulizia non riuscita; il testo originale è stato copiato negli appunti.</string>
-    <string name="voice_commands_need_key">I comandi vocali richiedono una chiave API di Groq.</string>
+    <string name="voice_commands_need_key">I comandi vocali richiedono una chiave API per il tuo servizio di pulizia.</string>
     <string name="no_command_after_trigger">Nessun comando rilevato dopo la frase di attivazione.</string>
     <string name="command_failed">Comando non riuscito: %1$s</string>
     <string name="empty_response">Il servizio ha restituito una risposta vuota.</string>
