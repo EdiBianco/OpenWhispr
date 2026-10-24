@@ -2,7 +2,9 @@
 """Check translated Android string resources against values/strings.xml.
 
 Reports missing or extra keys, placeholder mismatches (%1$s, %2$d, %%), and
-unescaped apostrophes. Exits non-zero when any problem is found.
+unescaped apostrophes -- in the default strings as well, because aapt rejects
+those only later, while this check is meant to be the fast gate. Exits non-zero
+when any problem is found.
 """
 import re
 import sys
@@ -22,6 +24,9 @@ def load_strings(path):
 def main():
     base = load_strings(RES / "values" / "strings.xml")
     problems = []
+    for key in sorted(base.keys()):
+        if UNESCAPED_APOSTROPHE.search(base[key]):
+            problems.append(f"values: unescaped apostrophe in {key}")
     for path in sorted(RES.glob("values-*/strings.xml")):
         locale = path.parent.name
         translated = load_strings(path)

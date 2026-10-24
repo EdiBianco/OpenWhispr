@@ -23,6 +23,10 @@
     <string name="background_service_summary">ユーザー補助をオフにせず、マイクのオーバーレイを一時停止します</string>
     <string name="local_models">ローカルモデル</string>
     <string name="cloud_transcription">クラウドで文字起こしを使用</string>
+    <string name="cloud_switch_off">オフ: この端末で文字起こしします</string>
+    <string name="cloud_switch_on">オン: 音声は Groq に送信されます（API キーが必要）</string>
+    <string name="browser_open_failed">ブラウザを開けませんでした: %1$s</string>
+    <string name="cloud_model">クラウドモデル</string>
     <string name="requires_groq_key">Groq API キーが必要です</string>
     <string name="post_processing">後処理</string>
     <string name="cleanup_transcript">文字起こしの整形</string>
@@ -151,7 +155,7 @@
     <string name="no_speech_detected">音声が検出されませんでした。</string>
     <string name="cleanup_needs_key">テキストの整形には API キーが必要です。元の文字起こしを使用します。</string>
     <string name="cleanup_failed_clipboard">整形に失敗しました。元のテキストをクリップボードにコピーしました。</string>
-    <string name="voice_commands_need_key">音声コマンドには Groq API キーが必要です。</string>
+    <string name="voice_commands_need_key">音声コマンドには整形サービスの API キーが必要です。</string>
     <string name="no_command_after_trigger">トリガーフレーズの後にコマンドが検出されませんでした。</string>
     <string name="command_failed">コマンドに失敗しました: %1$s</string>
     <string name="empty_response">サービスから空の応答が返されました。</string>
