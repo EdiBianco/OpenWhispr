@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phone Whisper — Push-to-talk dictation for Android</title>
-  <meta name="description" content="Phone Whisper lets you speak into most apps without switching keyboards. Tap the floating button, speak, and your text is inserted when the app exposes a standard Android input field. Local or cloud transcription." />
+  <title>OpenWispr — Push-to-talk dictation for Android</title>
+  <meta name="description" content="OpenWispr lets you speak into most apps without switching keyboards. Tap the floating button, speak, and your text is inserted when the app exposes a standard Android input field. Local or cloud transcription." />
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +14,7 @@
 
   <nav id="nav">
     <div class="nav-inner">
-      <a href="#" class="nav-logo" aria-label="Phone Whisper home">
+      <a href="#" class="nav-logo" aria-label="OpenWispr home">
         <svg class="nav-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="40" height="40" rx="10" fill="var(--accent)"/>
           <rect x="16" y="9" width="8" height="14" rx="4" fill="white"/>
@@ -22,14 +22,15 @@
           <line x1="20" y1="30" x2="20" y2="35" stroke="white" stroke-width="2" stroke-linecap="round"/>
           <line x1="16" y1="35" x2="24" y2="35" stroke="white" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>Phone Whisper</span>
+        <span>OpenWispr</span>
       </a>
       <div class="nav-links">
-        <a href="#termux">Termux</a>
         <a href="#how-it-works">How it works</a>
+        <a href="#commands">Voice commands</a>
         <a href="#modes">Local vs cloud</a>
+        <a href="#termux">Termux</a>
         <a href="#faq">FAQ</a>
-        <a href="https://github.com/kafkasl/phone-whisper" target="_blank" rel="noopener" id="nav-github">GitHub</a>
+        <a href="https://github.com/hxmbl/OpenWhispr" target="_blank" rel="noopener" id="nav-github">GitHub</a>
       </div>
     </div>
   </nav>
@@ -40,6 +41,7 @@
         <div class="badge-row">
           <span class="badge">Open source</span>
           <span class="badge">Local mode available</span>
+          <span class="badge">Voice commands</span>
         </div>
         <h1>Push-to-talk dictation for Android that works across apps.</h1>
         <p class="hero-sub">
@@ -48,17 +50,18 @@
         </p>
         <ul class="hero-points">
           <li>Better transcription than typical keyboard dictation</li>
+          <li>On-device models, or Groq Whisper with your own key</li>
+          <li>Voice commands: summarize, translate, reformat, or change tone</li>
           <li>Dictate first, then keep editing in the same field</li>
-          <li>Optional cleanup for prompts, commands, and general writing</li>
         </ul>
         <div class="hero-ctas">
-          <a href="https://github.com/kafkasl/phone-whisper/releases" id="cta-download" class="btn btn-primary" target="_blank" rel="noopener">Download APK</a>
-          <a href="https://github.com/kafkasl/phone-whisper" id="cta-github" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
+          <a href="https://github.com/hxmbl/OpenWhispr/releases" id="cta-download" class="btn btn-primary" target="_blank" rel="noopener">Download APK</a>
+          <a href="https://github.com/hxmbl/OpenWhispr" id="cta-github" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
         </div>
         <div class="hero-links">
-          <a href="mailto:pol.avms@gmail.com" id="link-contact">Contact me</a>
+          <a href="privacy.html" id="link-privacy">Privacy policy</a>
           <span class="sep">·</span>
-          <a href="https://github.com/sponsors/kafkasl" id="link-sponsor" target="_blank" rel="noopener">Sponsor the project</a>
+          <a href="https://github.com/hxmbl/OpenWhispr/issues" id="link-issues" target="_blank" rel="noopener">Report an issue</a>
         </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -86,7 +89,7 @@
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </div>
               </div>
-              <div class="overlay-button" id="overlay-btn" title="Tap to dictate" aria-label="Phone Whisper overlay button">
+              <div class="overlay-button" id="overlay-btn" title="Tap to dictate" aria-label="OpenWispr overlay button">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" stroke="none"/>
                   <path d="M5 10c0 3.87 3.13 7 7 7s7-3.13 7-7"/>
@@ -104,23 +107,23 @@
   <section id="termux">
     <div class="section-inner termux-inner">
       <div class="termux-copy">
-        <div class="section-kicker">Dev mode. Niche, but fun</div>
-        <h2>If you type into terminals on your phone, this is going to be great for you.</h2>
+        <div class="section-kicker">Termux and terminal apps</div>
+        <h2>Dictate into Termux without leaving the terminal.</h2>
         <p class="section-sub">
-          In Dev mode, say <strong>“command mode”</strong> and then either describe the command you want or literally spell it. The spoken text and the inserted text do not have to be the same.
+          Termux's main terminal area is not a standard Android text field, so swipe the extra keys row left or right to switch to its native text input box, then dictate there. OpenWispr transcribes your speech and inserts the text as you spoke it — including shell flags, paths, and punctuation.
         </p>
         <div class="dev-mode-examples">
           <div class="dev-example">
             <span class="dev-example-label">You say</span>
-            <code>command mode show files in current dir</code>
+            <code>git commit -a -m fix overlay timing</code>
             <span class="dev-example-arrow">→</span>
-            <code>ls -l .</code>
+            <code>git commit -a -m fix overlay timing</code>
           </div>
           <div class="dev-example">
             <span class="dev-example-label">You say</span>
-            <code>command mode git commit minus m description</code>
+            <code>ls dash l in the current directory</code>
             <span class="dev-example-arrow">→</span>
-            <code>git commit -m "Clean up overlay timing"</code>
+            <code>ls -l</code>
           </div>
         </div>
       </div>
@@ -131,13 +134,13 @@
             <span class="termux-dot"></span>
             <span class="termux-dot"></span>
             <span class="termux-title">Termux</span>
-            <span class="termux-mode-badge">Dev mode</span>
+            <span class="termux-mode-badge">Dictation</span>
           </div>
           <div class="speech-bubble" id="termux-speech-bubble"><span id="termux-speech-text"></span></div>
           <div class="termux-body">
-            <div class="termux-line muted">~/phone-whisper $</div>
+            <div class="termux-line muted">~/OpenWhispr $</div>
             <div class="termux-line"><span class="prompt">$</span> <span id="termux-typed-text"></span><span class="cursor" id="termux-cursor">|</span></div>
-            <div class="termux-note">The spoken text and inserted command can be different.</div>
+            <div class="termux-note">Swipe the extra keys row to reach Termux's native input box.</div>
           </div>
           <div class="overlay-button overlay-button-small" id="termux-overlay-btn" title="Tap to dictate">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -195,10 +198,34 @@
     </div>
   </section>
 
+  <section id="commands">
+    <div class="section-inner">
+      <div class="info-box">
+        <h2>Voice commands</h2>
+        <p>
+          Say <strong>“Whisper Command”</strong> with one of five actions, and OpenWispr applies it to whatever is already in the focused field — or to text you dictate right after the command.
+        </p>
+        <p>
+          You can also dictate first and command last: speak your text, then say the trigger phrase and the action. The text before the trigger is what the command works on.
+        </p>
+        <ul>
+          <li><strong>Summarize</strong> — “Whisper Command, summarize this in two sentences”</li>
+          <li><strong>Improve the flow</strong> — rewrite for smoother, more natural flow without changing meaning</li>
+          <li><strong>Translate</strong> — “Whisper Command, translate to Italian”</li>
+          <li><strong>Change the tone</strong> — formal, casual, professional, friendly</li>
+          <li><strong>Reformat</strong> — “Whisper Command, turn this into a list”</li>
+        </ul>
+        <p>
+          Chain them in one breath, and they apply in order: “Whisper Command, translate to Italian and turn it into a list” translates first, then lists the result. Anything outside these five is refused rather than guessed at. Commands use the same service you configured for cleanup — Groq by default, or your own OpenAI-compatible endpoint — so they need a key for that service. Off by default: enable it, and change the trigger phrase, under <strong>Voice Commands</strong> in the app.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <section id="modes">
     <div class="section-inner">
       <h2>Local or cloud — your choice</h2>
-      <p class="section-sub">Both modes use your own hardware or your own API key. I run no backend.</p>
+      <p class="section-sub">No backend is involved. Local mode uses your own hardware; cloud mode goes straight from your phone to the service you choose, with your own API key.</p>
       <div class="modes-grid">
         <div class="mode-card">
           <h3>Local mode</h3>
@@ -213,12 +240,7 @@
             <div class="model-row">
               <span class="model-name">Parakeet 110M</span>
               <span class="model-size">100 MB</span>
-              <span class="model-note default-badge">Recommended</span>
-            </div>
-            <div class="model-row">
-              <span class="model-name">Moonshine Tiny</span>
-              <span class="model-size">103 MB</span>
-              <span class="model-note">Fastest</span>
+              <span class="model-note default-badge">Best default</span>
             </div>
             <div class="model-row">
               <span class="model-name">Whisper Base</span>
@@ -230,6 +252,21 @@
               <span class="model-size">465 MB</span>
               <span class="model-note">Best quality</span>
             </div>
+            <div class="model-row">
+              <span class="model-name">Moonshine Tiny</span>
+              <span class="model-size">103 MB</span>
+              <span class="model-note">Fastest</span>
+            </div>
+            <div class="model-row">
+              <span class="model-name">Whisper Base (multilingual)</span>
+              <span class="model-size">199 MB</span>
+              <span class="model-note">Multilingual</span>
+            </div>
+            <div class="model-row">
+              <span class="model-name">Whisper Small (multilingual)</span>
+              <span class="model-size">~500 MB</span>
+              <span class="model-note">Multilingual, better quality</span>
+            </div>
           </div>
         </div>
         <div class="mode-card">
@@ -237,11 +274,12 @@
           <ul>
             <li>Uses Groq Whisper API</li>
             <li>Your own API key, stored on-device</li>
+            <li>Pick the Whisper model: Large v3, Large v3 Turbo, or Distil Large v3</li>
             <li>No backend run by me</li>
-            <li>Optional: send transcript to Groq for cleanup</li>
+            <li>Optional: cleanup and voice commands via Groq, or an OpenAI-compatible service you configure — including its model</li>
           </ul>
           <div class="cloud-note">
-            Requests go straight from your phone to Groq. I'm not in the loop.
+            Requests go straight from your phone to Groq. No relay server is involved.
           </div>
         </div>
       </div>
@@ -253,7 +291,7 @@
       <div class="info-box">
         <h2>Why Accessibility permission is needed</h2>
         <p>
-          Phone Whisper uses Android Accessibility Service for one narrow reason: <strong>inserting dictated text into the currently focused text field across apps.</strong>
+          OpenWispr uses Android Accessibility Service for one narrow reason: <strong>inserting dictated text into the currently focused text field across apps.</strong>
         </p>
         <p>
           It does not replace your keyboard. It does not run background automation. It only acts after you explicitly tap the overlay button.
@@ -261,7 +299,7 @@
         <p>
           The app is open source. You can read exactly what it does before granting the permission.
         </p>
-        <a href="https://github.com/kafkasl/phone-whisper" class="info-link" target="_blank" rel="noopener">Read the source code on GitHub</a>
+        <a href="https://github.com/hxmbl/OpenWhispr" class="info-link" target="_blank" rel="noopener">Read the source code on GitHub</a>
       </div>
     </div>
   </section>
@@ -299,7 +337,7 @@
         </div>
       </div>
       <div class="privacy-links">
-        <a href="https://github.com/kafkasl/phone-whisper" target="_blank" rel="noopener">GitHub repo</a>
+        <a href="https://github.com/hxmbl/OpenWhispr" target="_blank" rel="noopener">GitHub repo</a>
         <span class="sep">·</span>
         <a href="privacy.html">Privacy policy</a>
       </div>
@@ -312,11 +350,11 @@
       <div class="faq-list">
         <details class="faq-item" id="faq-keyboard">
           <summary>Why not just make it a keyboard?</summary>
-          <p>A custom keyboard means replacing your existing keyboard entirely. That's a lot of friction. Phone Whisper leaves your keyboard alone and works on top of any app, any keyboard.</p>
+          <p>A custom keyboard means replacing your existing keyboard entirely. That's a lot of friction. OpenWispr leaves your keyboard alone and works on top of any app, any keyboard.</p>
         </details>
         <details class="faq-item" id="faq-accessibility">
           <summary>Why does it need Accessibility permission?</summary>
-          <p>Android doesn't have a standard API for inserting text into another app's focused field. The Accessibility Service is the sanctioned way to do that cross-app. Phone Whisper uses it for exactly one thing: inserting the transcribed text.</p>
+          <p>Android doesn't have a standard API for inserting text into another app's focused field. The Accessibility Service is the sanctioned way to do that cross-app. OpenWispr uses it for exactly one thing: inserting the transcribed text.</p>
         </details>
         <details class="faq-item" id="faq-audio">
           <summary>Does audio stay on-device?</summary>
@@ -332,11 +370,11 @@
         </details>
         <details class="faq-item" id="faq-playstore">
           <summary>Is it on the Play Store?</summary>
-          <p>Not yet. I'm shipping the APK directly first, tightening the experience, and deciding later whether a Play Store release makes sense.</p>
+          <p>No. OpenWispr ships as a signed APK from GitHub Releases, and the app updates itself in place from there. Play Store distribution may come later.</p>
         </details>
         <details class="faq-item" id="faq-mvp">
           <summary>Is this finished?</summary>
-          <p>Not really. It's an early but working MVP. The core loop already works well enough to use every day, and I'm improving it in public.</p>
+          <p>It is a working daily-driver: on-device or cloud transcription, optional cleanup, voice commands, a custom dictionary, backup and restore, and in-app updates. It is still improved in public, and issues are welcome.</p>
         </details>
       </div>
     </div>
@@ -344,13 +382,11 @@
 
   <footer id="footer">
     <div class="footer-inner">
-      <p class="footer-line">Built by Pol. A small open-source Android app, shipped early and improved in public.</p>
+      <p class="footer-line">OpenWispr is a free, open-source Android dictation app. Forked from <a href="https://github.com/EdiBianco/OpenWhispr" target="_blank" rel="noopener">EdiBianco/OpenWhispr</a>.</p>
       <div class="footer-links">
-        <a href="https://github.com/kafkasl/phone-whisper" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/hxmbl/OpenWhispr" target="_blank" rel="noopener">GitHub</a>
         <span class="sep">·</span>
-        <a href="mailto:pol.avms@gmail.com">pol.avms@gmail.com</a>
-        <span class="sep">·</span>
-        <a href="https://github.com/sponsors/kafkasl" target="_blank" rel="noopener">Sponsor</a>
+        <a href="https://github.com/hxmbl/OpenWhispr/issues" target="_blank" rel="noopener">Issues</a>
         <span class="sep">·</span>
         <a href="privacy.html">Privacy policy</a>
       </div>

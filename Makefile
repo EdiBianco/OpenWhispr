@@ -5,18 +5,57 @@ PHONE_HOST ?= pixel-5
 SSH_PORT   ?= 8022
 APK        := app/build/outputs/apk/debug/app-debug.apk
 
-export JAVA_HOME := /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
-export ANDROID_HOME := $(HOME)/Library/Android/sdk
+# JDK 17 is required. Prefer an explicit JAVA_HOME (from the environment or
+# .env), then a JDK installed by `make jdk` into .jdk/, then Homebrew's
+# openjdk@17 on either prefix, then whatever java_home resolves for 17.
+# Nothing here hardcodes a single machine's layout.
+JDK_LOCAL := $(firstword $(wildcard $(CURDIR)/.jdk/*/Contents/Home $(CURDIR)/.jdk/*))
+JDK_HOME := $(shell \
+	if [ -n "$$JAVA_HOME" ] && [ -x "$$JAVA_HOME/bin/javac" ]; then echo "$$JAVA_HOME"; \
+	elif [ -n "$(JDK_LOCAL)" ] && [ -x "$(JDK_LOCAL)/bin/javac" ]; then echo "$(JDK_LOCAL)"; \
+	elif [ -x /opt/homebrew/opt/openjdk@17/bin/javac ]; then echo /opt/homebrew/opt/openjdk@17; \
+	elif [ -x /usr/local/opt/openjdk@17/bin/javac ]; then echo /usr/local/opt/openjdk@17; \
+	else /usr/libexec/java_home -v 17 2>/dev/null || true; fi)
+
+export JAVA_HOME := $(JDK_HOME)
+# Android SDK: an explicit ANDROID_HOME/ANDROID_SDK_ROOT wins, then the usual
+# per-user location, then a Homebrew command-line-tools install.
+SDK_CANDIDATES := $(ANDROID_HOME) $(ANDROID_SDK_ROOT) $(HOME)/Library/Android/sdk /usr/local/share/android-commandlinetools
+ANDROID_HOME := $(firstword $(foreach d,$(SDK_CANDIDATES),$(if $(wildcard $(d)/platform-tools),$(d))))
+export ANDROID_HOME
 export PATH := $(JAVA_HOME)/bin:$(PATH)
 
-.PHONY: build test install adb-install push-model clean
+.PHONY: build test lint check install adb-install push-model jdk sdk bump clean
+
+jdk:
+	@bash scripts/install_jdk.sh
+	@echo "Now run: make check"
+
+## Install the SDK platform and build-tools this app compiles against, the
+## same way on a workstation and on CI (no third-party setup action needed).
+sdk:
+	@test -n "$(ANDROID_HOME)" || (echo "Android SDK not found. Set ANDROID_HOME to an SDK with cmdline-tools." && exit 1)
+	@SDKMANAGER="$$(find "$(ANDROID_HOME)/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n1)"; \
+	test -n "$$SDKMANAGER" || SDKMANAGER="$$(command -v sdkmanager || true)"; \
+	test -n "$$SDKMANAGER" || (echo "sdkmanager not found under $(ANDROID_HOME)." && exit 1); \
+	yes | "$$SDKMANAGER" --licenses >/dev/null 2>&1 || true; \
+	"$$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
 build:
+	@test -n "$(JAVA_HOME)" || (echo "JDK 17 not found. Install it (brew install openjdk@17) or set JAVA_HOME." && exit 1)
 	./gradlew assembleDebug
 	@echo "APK: $(APK)"
 
 test:
 	./gradlew testDebugUnitTest
+
+## Translation consistency: same keys and placeholders across every locale.
+lint:
+	python3 scripts/check_locales.py
+
+## The commit gate: what CI runs on every PR and before a release.
+check: lint test
+	@echo "All checks passed."
 
 install: build
 	scp -P $(SSH_PORT) $(APK) $(PHONE_HOST):~/storage/downloads/openwhispr.apk
@@ -36,6 +75,11 @@ push-model:
 		$(ANDROID_HOME)/platform-tools/adb shell "run-as com.edib.openwhispr cp /data/local/tmp/$(notdir $(MODEL))/$$(basename $$f) files/models/$(notdir $(MODEL))/$$(basename $$f)"; \
 	done
 	@echo "Model pushed: $(notdir $(MODEL))"
+
+## Bump the version and open a CHANGELOG section (usage: make bump VERSION=4.1.0)
+bump:
+	@test -n "$(VERSION)" || (echo "Usage: make bump VERSION=x.y.z" && exit 1)
+	python3 scripts/bump_version.py $(VERSION)
 
 clean:
 	./gradlew clean

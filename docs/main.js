@@ -82,8 +82,8 @@ function initTermuxDemo() {
 
   if (!overlayBtn || !typedText || !speechBubble || !speechText) return;
 
-  const spokenText = '“command mode show files in the current directory”';
-  const demoText = 'ls -l .';
+  const spokenText = '“git commit -a -m fix overlay timing”';
+  const demoText = 'git commit -a -m fix overlay timing';
   let typingTimer;
   let speechTimer;
   let runId = 0;

@@ -6,11 +6,19 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  # A release is published only if CI passes: locale check, unit tests, and a
+  # debug build. CI also runs standalone on every PR and push.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   build:
+    needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -23,15 +31,17 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Ensure Android SDK platform 35 is installed
+      - name: Install Android SDK packages
+        run: make sdk
+
+      - name: Require release signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
         run: |
-          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Android/sdk}}"
-          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n1)"
-          if [ -z "$SDKMANAGER" ]; then
-            SDKMANAGER="$(command -v sdkmanager || true)"
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Missing release signing secrets (RELEASE_KEYSTORE_BASE64, RELEASE_KEYSTORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD). This app never publishes an unsigned release, so add the secrets and re-run this workflow."
+            exit 1
           fi
-          yes | "$SDKMANAGER" --licenses > /dev/null || true
-          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Write release signing config from secrets
         env:
@@ -94,7 +104,7 @@ jobs:
           name: OpenWispr v${{ steps.version.outputs.version }}
           body: |
             Free, open-source push-to-talk dictation for Android. Build from commit `${{ github.sha }}`.
-            Transcription + cleanup via Groq (`whisper-large-v3` + `openai/gpt-oss-120b`) with your own API key, or fully on-device with no key or internet needed.
+            Transcription via Groq (`whisper-large-v3`, or the model you pick in the app) with your own API key, or fully on-device with no key or internet needed.
 
             **What's new:**
             <!--WHATS_NEW_START-->
