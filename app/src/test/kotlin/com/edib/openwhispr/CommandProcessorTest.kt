@@ -1,5 +1,7 @@
 package com.edib.openwhispr
 
+import okio.Buffer
+import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -39,5 +41,27 @@ class CommandProcessorTest {
         )
         assertEquals("Uno. Whisper command, riassumi. Due.", r?.content)
         assertEquals("traduci in inglese", r?.instruction)
+    }
+
+    @Test fun `commands follow the configured cleanup provider`() {
+        val config = CleanupProviderConfig.fromPreferences(
+            "openai_compatible",
+            "https://api.deepseek.com/v1",
+            "deepseek-chat",
+        )
+
+        val request = chatRequest(
+            CommandProcessor.commandMessages("Ciao", "traduci in inglese"),
+            "secret",
+            config,
+        )
+        val body = JSONObject(Buffer().also { request.body!!.writeTo(it) }.readUtf8())
+
+        assertEquals("https://api.deepseek.com/v1/chat/completions", request.url.toString())
+        assertEquals("Bearer secret", request.header("Authorization"))
+        assertEquals("deepseek-chat", body.getString("model"))
+        assertFalse(body.has("reasoning_effort"))
+        assertEquals("system", body.getJSONArray("messages").getJSONObject(0).getString("role"))
+        assertTrue(body.getJSONArray("messages").getJSONObject(1).getString("content").contains("Ciao"))
     }
 }

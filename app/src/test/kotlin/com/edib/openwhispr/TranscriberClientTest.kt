@@ -65,6 +65,28 @@ class TranscriberClientTest {
         assertTrue(prompt.contains("Élodie"))
     }
 
+    @Test fun `unknown or missing saved model keeps the default`() {
+        assertEquals("whisper-large-v3", TranscriberClient.modelId(null))
+        assertEquals("whisper-large-v3", TranscriberClient.modelId("gpt-oss-120b"))
+        assertEquals("whisper-large-v3-turbo", TranscriberClient.modelId("whisper-large-v3-turbo"))
+    }
+
+    @Test fun `uses the chosen cloud model in the request`() {
+        val request = TranscriberClient.transcriptionRequest(
+            byteArrayOf(1, 2, 3),
+            "test-key",
+            emptyList(),
+            emptySet(),
+            "distil-whisper-large-v3-en",
+        )
+        val multipart = request.body as okhttp3.MultipartBody
+
+        assertEquals(
+            "distil-whisper-large-v3-en",
+            partContent(multipart.parts.first { it.hasDispositionName("model") }),
+        )
+    }
+
     private fun partContent(part: okhttp3.MultipartBody.Part): String =
         okio.Buffer().also { part.body.writeTo(it) }.readUtf8()
 

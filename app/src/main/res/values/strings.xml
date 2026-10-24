@@ -23,6 +23,10 @@
     <string name="background_service_summary">Pause the mic overlay without disabling accessibility</string>
     <string name="local_models">Local models</string>
     <string name="cloud_transcription">Use cloud transcription</string>
+    <string name="cloud_switch_off">Off: transcribed on this phone</string>
+    <string name="cloud_switch_on">On: audio is sent to Groq (needs API key)</string>
+    <string name="browser_open_failed">Couldn\'t open browser: %1$s</string>
+    <string name="cloud_model">Cloud model</string>
     <string name="requires_groq_key">Requires Groq API key</string>
     <string name="post_processing">Post-Processing</string>
     <string name="cleanup_transcript">Cleanup transcript</string>
@@ -151,7 +155,7 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="no_speech_detected">No speech detected.</string>
     <string name="cleanup_needs_key">Text cleanup requires an API key. The original transcription will be used.</string>
     <string name="cleanup_failed_clipboard">Cleanup failed; the original text was copied to the clipboard.</string>
-    <string name="voice_commands_need_key">Voice commands require a Groq API key.</string>
+    <string name="voice_commands_need_key">Voice commands require an API key for your cleanup service.</string>
     <string name="no_command_after_trigger">No command was detected after the trigger phrase.</string>
     <string name="command_failed">Command failed: %1$s</string>
     <string name="empty_response">The service returned an empty response.</string>
@@ -195,14 +199,14 @@ You can combine commands: %1$s, translate to Italian and turn it into a list. Th
     <string name="saved_securely">Saved securely</string>
 
     <!-- Dictionary strings (PR 3) -->
-    <string name="process_text_label">Add to OpenWhispr dictionary</string>
+    <string name="process_text_label">Add to OpenWispr dictionary</string>
     <string name="dictionary_no_text">No selected text to add</string>
     <string name="dictionary_added">Added to dictionary</string>
     <string name="dictionary_title">Custom dictionary</string>
     <string name="dictionary_summary">Help recognize and write names, acronyms, and specialized terms during dictation and cleanup</string>
     <string name="dictionary_word_count">%1$d words</string>
-    <string name="dictionary_input_hint">One entry per line. Example: OpenWhispr | open whisper, open wisper</string>
-    <string name="dictionary_saved_local_message">The dictionary helps recognize and write names, acronyms, and specialized terms during dictation and cleanup. The form before | is the final spelling; variants after | are pronunciation and recognition hints only. The dictionary stays active with custom instructions. Older one-term lines still work. Example: OpenWhispr | open whisper, open wisper.</string>
+    <string name="dictionary_input_hint">One entry per line. Example: OpenWispr | open whisper, open wisper</string>
+    <string name="dictionary_saved_local_message">The dictionary helps recognize and write names, acronyms, and specialized terms during dictation and cleanup. The form before | is the final spelling; variants after | are pronunciation and recognition hints only. The dictionary stays active with custom instructions. Older one-term lines still work. Example: OpenWispr | open whisper, open wisper.</string>
 
     <!-- Strings for the actionable status row, update dialog and cleanup feedback -->
     <string name="about_current_version">You\'re on v%1$s · tap to check</string>
