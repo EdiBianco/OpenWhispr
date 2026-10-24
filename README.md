@@ -15,13 +15,13 @@ It's completely free to run. Cloud transcription and cleanup use your own [Groq]
 It supports:
 
 - **Local on-device transcription** with sherpa-onnx — no API key, no internet required
-- **Cloud transcription** with Groq Whisper — free API key, fast, no local model download. Choose the model in the app: Whisper Large v3 (most accurate, the default), Whisper Large v3 Turbo (faster, cheaper), or Distil Whisper Large v3 (English only, fastest)
+- **Cloud transcription** with Groq Whisper — free API key, fast, no local model download
 - **Optional AI cleanup** with Groq — removes filler words, fixes punctuation and grammar, formats emails
 
 ## Features
 
 - **Two transcription modes**: cloud transcription via Groq Whisper (`whisper-large-v3`), or fully local, on-device transcription via sherpa-onnx — no API key, no internet, no data leaving the phone
-- **Optional AI cleanup**: Groq (`openai/gpt-oss-120b` by default, or any Groq chat model you name) removes filler words, fixes punctuation and grammar, and formats emails, with a stricter prompt that handles self-corrections and preserves your intent instead of acting on it as a command — plus room to add your own custom instructions on top
+- **Optional AI cleanup**: Groq (`openai/gpt-oss-120b`) removes filler words, fixes punctuation and grammar, and formats emails, with a stricter prompt that handles self-corrections and preserves your intent instead of acting on it as a command — plus room to add your own custom instructions on top
 - **Free Groq API key**: the settings screen asks for a free [Groq API key](https://console.groq.com/keys) (`gsk_...`), with a direct link to get one
 - **Voice commands**: say "Whisper Command" at the start of a recording to switch into command mode instead of normal dictation, or at the end of a dictation to act on the text you just said — see [Voice commands](#voice-commands) below
 - **Multilingual**: works across languages for both transcription and cleanup
@@ -84,7 +84,7 @@ make adb-install
 Say **"Whisper Command"** at the start of a recording, followed by one of five whitelisted operations, and OpenWispr applies it to whatever's already in the focused field (or to text you dictate right after the command, if you give it fresh content). You can also dictate first and command last: speak your text, then say the trigger phrase and the action. The trigger phrase is the break, with or without a pause ("Hello team, the meeting moved to five. Whisper Command, translate to Italian"). The text before the trigger is what the command works on, and the result is inserted like normal dictation:
 
 - `"Whisper Command, summarize this in two sentences"` -- summarize, with an optional length or limit
-- `"Whisper Command, improve the flow"` -- rewrite for smoother, more natural flow without changing meaning
+- `"Whisper Command, enhance the flow"` -- rewrite for smoother, more natural flow without changing meaning
 - `"Whisper Command, translate to Italian"` -- translate to the named language
 - `"Whisper Command, make this more formal"` -- change tone (formal, casual, professional, friendly, ...)
 - `"Whisper Command, turn this into a list"` -- reformat as a bulleted or numbered list
@@ -131,9 +131,9 @@ It does **not** replace your keyboard. It does **not** run background automation
 
 OpenWispr supports two modes:
 
-- **Local mode**: audio stays on-device. If no local model is ready, the app tells you instead of falling back to the cloud. (If Cleanup or Voice commands are on, the transcript *text* is still sent to your configured cleanup service, Groq by default.)
+- **Local mode**: audio stays on-device. If no local model is ready, the app tells you instead of falling back to the cloud. (If Cleanup or Voice commands are on, the transcript *text* is still sent to Groq.)
 - **Cloud mode**: audio is sent directly from your device to Groq's transcription API
-- **Optional cleanup and voice commands**: transcript text is sent directly from your device to your configured cleanup service — Groq, or an OpenAI-compatible service you set up yourself
+- **Optional cleanup**: transcript text is sent directly from your device to Groq's chat API
 - **Clipboard**: dictated text is placed on the clipboard to paste it, marked as sensitive so Android 13+ hides its preview
 
 I don't run a backend for this app. In cloud mode, requests go straight from your phone to Groq using your own API key.
