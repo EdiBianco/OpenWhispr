@@ -57,9 +57,10 @@ class WhisperAccessibilityService : AccessibilityService() {
 
         // How often we re-check the focused node as a failsafe, in case an
         // app never fires a focus-related accessibility event at all.
-        private const val FOCUS_POLL_MS = 500L
+        private const val FOCUS_POLL_MS = 300L
 
-        // A focus/keyboard change must hold this long before the overlay shows or hides.
+        // A focus/keyboard change must hold this long before the overlay hides
+        // (showing is immediate; see updateOverlayVisibility).
         private const val OVERLAY_DEBOUNCE_MS = 300L
 
         // Placeholder circle shown by Settings while choosing the bubble position.
@@ -345,9 +346,15 @@ class WhisperAccessibilityService : AccessibilityService() {
             if (shouldShow && overlayView?.visibility != View.VISIBLE) animateOverlayIn()
             return
         }
-        // Only act once the new state has held for OVERLAY_DEBOUNCE_MS, so rapid
-        // focus flapping between apps doesn't restart the fades.
-        handler.postDelayed(overlayVisibilityDebounce, OVERLAY_DEBOUNCE_MS)
+        // Asymmetric: show the bubble at once (an eager show is harmless -- a
+        // false positive just hides OVERLAY_DEBOUNCE_MS later), but only hide
+        // after the new state has held for OVERLAY_DEBOUNCE_MS, so rapid focus
+        // flapping between apps doesn't flicker the bubble out and back in.
+        if (shouldShow) {
+            applyOverlayVisibility()
+        } else {
+            handler.postDelayed(overlayVisibilityDebounce, OVERLAY_DEBOUNCE_MS)
+        }
     }
 
     private val overlayVisibilityDebounce = Runnable { applyOverlayVisibility() }
