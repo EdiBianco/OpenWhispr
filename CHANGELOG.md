@@ -9,6 +9,9 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.0.1
+- The floating button appears as soon as you focus a text field, instead of a moment later
+
 ## 4.0.0
 - Release builds are now signed with a private key. Before updating, make a backup in Settings > Backup. Then uninstall the 3.x app and install this version: Android won't update an app signed with a different key, and this is the one-time switch. Restore your backup on first launch
 
