@@ -166,6 +166,7 @@ object UpdateChecker {
         context: Context,
         apkUrl: String,
         expectedSha256: String?,
+        onProgress: ((done: Long, total: Long) -> Unit)? = null,
         callback: (File?, String?) -> Unit
     ) {
         val request = Request.Builder().url(apkUrl).build()
@@ -189,8 +190,19 @@ object UpdateChecker {
                     val file = File(dir, "openwhispr-update.apk")
                     // [security] Hash while copying (no second pass over the file).
                     val digest = MessageDigest.getInstance("SHA-256")
+                    val total = body.contentLength()
                     DigestInputStream(body.byteStream(), digest).use { input ->
-                        file.outputStream().use { output -> input.copyTo(output) }
+                        file.outputStream().use { output ->
+                            val buffer = ByteArray(64 * 1024)
+                            var done = 0L
+                            var read = input.read(buffer)
+                            while (read >= 0) {
+                                output.write(buffer, 0, read)
+                                done += read
+                                onProgress?.invoke(done, total)
+                                read = input.read(buffer)
+                            }
+                        }
                     }
                     val actualSha256 = digest.digest().joinToString("") { "%02x".format(it) }
                     if (!checksumMatches(expectedSha256, actualSha256)) {

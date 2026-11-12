@@ -983,12 +983,18 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        toast(getString(R.string.downloading_update))
+        val screen = showUpdateDownload(info.version)
         // [security] Pass GitHub's published checksum; downloadApk only
         // returns a file if it matches.
-        UpdateChecker.downloadApk(this, apkUrl, info.apkSha256) { file, error ->
+        UpdateChecker.downloadApk(
+            this,
+            apkUrl,
+            info.apkSha256,
+            onProgress = { done, total -> runOnUiThread { updateDownloadProgress(screen, done, total) } },
+        ) { file, error ->
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
+                hideUpdateDownload(screen)
                 if (file == null) {
                     // [security] A failed download or failed checksum both end
                     // here; nothing is installed. Offer the release page instead.
@@ -1000,9 +1006,43 @@ class MainActivity : AppCompatActivity() {
                         .show()
                     return@runOnUiThread
                 }
-                if (isMajorVersion4(info.version)) showMigrationToV4(info, file) else installApk(file)
+                // Only 3.x -> 4.x needs the uninstall step; 4.x -> 4.x installs over the top.
+                val installed = try {
+                    packageManager.getPackageInfo(packageName, 0).versionName
+                } catch (e: Exception) {
+                    null
+                }
+                val needsMigration = isMajorVersion4(info.version) && installed?.let { !isMajorVersion4(it) } == true
+                if (needsMigration) showMigrationToV4(info, file) else installApk(file)
             }
         }
+    }
+
+    /** Full-screen download screen: wavy ring, percent and MB, Close. Closing it
+     * only hides the screen; the download keeps going and installs when done. */
+    private fun showUpdateDownload(version: String): View {
+        val content = findViewById<android.view.ViewGroup>(android.R.id.content)
+        val screen = layoutInflater.inflate(R.layout.update_download, content, false)
+        screen.findViewById<TextView>(R.id.update_subtitle).text = "OpenWispr · v$version"
+        screen.findViewById<MaterialButton>(R.id.update_close).setOnClickListener { hideUpdateDownload(screen) }
+        content.addView(screen)
+        return screen
+    }
+
+    private fun hideUpdateDownload(screen: View) {
+        (screen.parent as? android.view.ViewGroup)?.removeView(screen)
+    }
+
+    private fun updateDownloadProgress(screen: View, done: Long, total: Long) {
+        if (total <= 0) return
+        val percent = (done * 100 / total).toInt()
+        screen.findViewById<com.google.android.material.progressindicator.CircularProgressIndicator>(R.id.update_progress).apply {
+            isIndeterminate = false
+            setProgressCompat(percent, true)
+        }
+        screen.findViewById<TextView>(R.id.update_percent).text = "$percent%"
+        screen.findViewById<TextView>(R.id.update_size).text =
+            String.format(java.util.Locale.US, "%.1f / %.1f MB", done / 1e6, total / 1e6)
     }
 
     private fun openReleasePage(url: String) {

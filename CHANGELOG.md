@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.0.2
+- Updating within version 4 no longer asks you to uninstall the app
+- Update downloads show a progress screen with the percent and size downloaded
+
 ## 4.0.1
 - The floating button appears as soon as you focus a text field, instead of a moment later
 
