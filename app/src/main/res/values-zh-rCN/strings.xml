@@ -23,6 +23,7 @@
     <string name="background_service_summary">暂停麦克风悬浮窗，但不关闭无障碍功能</string>
     <string name="local_models">本地模型</string>
     <string name="cloud_transcription">使用云端转写</string>
+    <string name="cloud_model">云端模型</string>
     <string name="requires_groq_key">需要 Groq API 密钥</string>
     <string name="post_processing">后处理</string>
     <string name="cleanup_transcript">转写文本优化</string>

@@ -23,6 +23,7 @@
     <string name="background_service_summary">Pause the mic overlay without disabling accessibility</string>
     <string name="local_models">Local models</string>
     <string name="cloud_transcription">Use cloud transcription</string>
+    <string name="cloud_model">Cloud model</string>
     <string name="requires_groq_key">Requires Groq API key</string>
     <string name="post_processing">Post-Processing</string>
     <string name="cleanup_transcript">Cleanup transcript</string>

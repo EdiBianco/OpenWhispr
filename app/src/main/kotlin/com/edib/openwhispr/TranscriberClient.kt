@@ -9,10 +9,34 @@ import java.io.IOException
 object TranscriberClient {
     data class Result(val text: String?, val error: String?)
 
+    /** A Groq Whisper model the user can pick for cloud transcription. */
+    data class CloudModel(val id: String, val label: String, val hint: String)
+
     private val client = OkHttpClient()
 
     const val TRANSCRIPTION_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
-    const val TRANSCRIPTION_MODEL = "whisper-large-v3"
+
+    /** Preference holding the chosen cloud model id; unset means [DEFAULT_MODEL]. */
+    const val MODEL_PREF_KEY = "cloud_transcription_model"
+
+    const val DEFAULT_MODEL = "whisper-large-v3"
+
+    /** Kept as the default model constant for callers that don't want a choice. */
+    const val TRANSCRIPTION_MODEL = DEFAULT_MODEL
+
+    /** Ordered for the picker: the default first, then faster/cheaper options. */
+    val MODELS = listOf(
+        CloudModel("whisper-large-v3", "Whisper Large v3", "most accurate"),
+        CloudModel("whisper-large-v3-turbo", "Whisper Large v3 Turbo", "faster, cheaper"),
+        CloudModel("distil-whisper-large-v3-en", "Distil Whisper Large v3", "English only, fastest"),
+    )
+
+    /** The stored id when it names a known model, otherwise the default. */
+    fun modelId(saved: String?): String =
+        MODELS.firstOrNull { it.id == saved }?.id ?: DEFAULT_MODEL
+
+    fun modelById(id: String): CloudModel =
+        MODELS.firstOrNull { it.id == id } ?: MODELS.first { it.id == DEFAULT_MODEL }
 
     fun parseResponse(json: String): Result = try {
         val obj = JSONObject(json)
@@ -60,10 +84,11 @@ object TranscriberClient {
         apiKey: String,
         vocabulary: List<String>,
         languages: Set<String> = emptySet(),
+        model: String = DEFAULT_MODEL,
     ): Request {
         val multipart = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("model", TRANSCRIPTION_MODEL)
+            .addFormDataPart("model", model)
             .addFormDataPart("file", "audio.wav", wavData.toRequestBody("audio/wav".toMediaType()))
         languages.singleOrNull()?.let { multipart.addFormDataPart("language", it) }
         listOfNotNull(languageHint(languages), dictionaryPrompt(vocabulary).takeIf(String::isNotEmpty))
@@ -81,9 +106,10 @@ object TranscriberClient {
         apiKey: String,
         vocabulary: List<String> = emptyList(),
         languages: Set<String> = emptySet(),
+        model: String = DEFAULT_MODEL,
         callback: (Result) -> Unit,
     ) {
-        client.newCall(transcriptionRequest(wavData, apiKey, vocabulary, languages)).enqueue(object : Callback {
+        client.newCall(transcriptionRequest(wavData, apiKey, vocabulary, languages, model)).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) = callback(Result(null, e.message))
             override fun onResponse(call: Call, response: Response) =
                 callback(parseResponse(response.body?.string() ?: ""))

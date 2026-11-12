@@ -23,6 +23,7 @@
     <string name="background_service_summary">Приостанавливает плавающий микрофон, не отключая специальные возможности</string>
     <string name="local_models">Локальные модели</string>
     <string name="cloud_transcription">Использовать облачную расшифровку</string>
+    <string name="cloud_model">Облачная модель</string>
     <string name="requires_groq_key">Требуется ключ API Groq</string>
     <string name="post_processing">Постобработка</string>
     <string name="cleanup_transcript">Очистка расшифровки</string>
