@@ -1,18 +1,17 @@
 package com.edib.openwhispr
 
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
 /** Handles voice commands after the configured trigger phrase has been detected: a fixed whitelist of
- * transformations (summarize, enhance flow, translate, change tone, turn
+ * transformations (summarize, improve the flow, translate, change tone, turn
  * into a list) applied either to text dictated in the same breath as the
  * command, or to whatever's already in the focused field. Deliberately
  * separate from PostProcessor's literal-cleanup contract -- this mode
- * exists specifically to act on instructions, but only these five kinds. */
+ * exists specifically to act on instructions, but only these five kinds.
+ * Requests follow the user's configured cleanup service, like PostProcessor. */
 object CommandProcessor {
     data class Result(val text: String?, val error: String?)
 
@@ -77,9 +76,10 @@ Hard contract:
         return null
     }
 
-    fun process(fieldText: String, instruction: String, apiKey: String, callback: (Result) -> Unit) {
+    /** The system prompt plus CURRENT_TEXT/INSTRUCTION pair sent to the model. */
+    internal fun commandMessages(fieldText: String, instruction: String): JSONArray {
         val userContent = "CURRENT_TEXT:\n$fieldText\n\nINSTRUCTION:\n$instruction"
-        val messages = JSONArray().apply {
+        return JSONArray().apply {
             put(JSONObject().apply {
                 put("role", "system")
                 put("content", COMMAND_PROMPT)
@@ -89,22 +89,25 @@ Hard contract:
                 put("content", userContent)
             })
         }
+    }
 
-        val bodyJson = JSONObject().apply {
-            put("model", "openai/gpt-oss-120b")
-            put("messages", messages)
-            put("temperature", 0.0)
-            put("reasoning_effort", "low")
-            put("include_reasoning", false)
+    fun process(
+        fieldText: String,
+        instruction: String,
+        apiKey: String,
+        config: CleanupProviderConfig,
+        callback: (Result) -> Unit,
+    ) {
+        val messages = commandMessages(fieldText, instruction)
+
+        // Commands go to the same service the user configured for cleanup,
+        // so they work without a Groq key when that service is custom.
+        val request = try {
+            chatRequest(messages, apiKey, config)
+        } catch (e: IllegalArgumentException) {
+            callback(Result(null, e.message ?: "Invalid command configuration"))
+            return
         }
-
-        val body = bodyJson.toString().toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url("https://api.groq.com/openai/v1/chat/completions")
-            .header("Authorization", "Bearer $apiKey")
-            .post(body)
-            .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {

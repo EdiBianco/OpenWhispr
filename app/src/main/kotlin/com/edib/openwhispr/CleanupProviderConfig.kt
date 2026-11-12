@@ -61,14 +61,18 @@ data class CleanupProviderConfig(
     }
 }
 
-internal fun cleanupRequest(
-    text: String,
-    prompt: String,
+/**
+ * Chat-completions request for an already-built [messages] array, shared by
+ * transcript cleanup and voice commands so both follow one provider
+ * configuration (endpoint, model, and Groq-only request options) instead of
+ * each hardcoding Groq.
+ */
+internal fun chatRequest(
+    messages: JSONArray,
     apiKey: String,
     config: CleanupProviderConfig,
 ): Request {
     require(apiKey.isNotBlank()) { "Cleanup API key is required" }
-    val messages = PostProcessor.cleanupMessages(text, prompt)
     val bodyJson = JSONObject().apply {
         put("model", config.requestModel())
         put("messages", messages)
@@ -85,3 +89,10 @@ internal fun cleanupRequest(
         .post(bodyJson.toString().toRequestBody("application/json".toMediaType()))
         .build()
 }
+
+internal fun cleanupRequest(
+    text: String,
+    prompt: String,
+    apiKey: String,
+    config: CleanupProviderConfig,
+): Request = chatRequest(PostProcessor.cleanupMessages(text, prompt), apiKey, config)

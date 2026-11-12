@@ -85,6 +85,21 @@ class CleanupProviderConfigTest {
     }
 
     @Test
+    fun `switching providers keeps each one's model`() {
+        val config = CleanupProviderConfig.fromPreferences(
+            provider = "openai_compatible",
+            baseUrl = "https://api.deepseek.com/v1",
+            model = "deepseek-chat",
+        )
+
+        assertEquals("deepseek-chat", config.requestModel())
+
+        val groq = config.copy(provider = CleanupProviderConfig.Provider.GROQ)
+        assertEquals(CleanupProviderConfig.GROQ_MODEL, groq.requestModel())
+        assertEquals(CleanupProviderConfig.GROQ_CHAT_COMPLETIONS_URL, groq.chatCompletionsUrl().toString())
+    }
+
+    @Test
     fun `transcription stays on Groq Whisper Large V3`() {
         assertEquals("https://api.groq.com/openai/v1/audio/transcriptions", TranscriberClient.TRANSCRIPTION_URL)
         assertEquals("whisper-large-v3", TranscriberClient.TRANSCRIPTION_MODEL)
