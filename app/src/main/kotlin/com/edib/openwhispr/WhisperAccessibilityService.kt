@@ -1062,7 +1062,13 @@ class WhisperAccessibilityService : AccessibilityService() {
      * before the trigger phrase) the command runs on that text instead, and
      * the result is inserted like normal dictation. */
     private fun handleVoiceCommand(instruction: String, dictated: String? = null) {
-        val apiKey = SecureKeyStorage.groqApiKey(this)
+        val cleanupConfig = CleanupProviderConfig.fromPreferences(
+            prefs().getString("cleanup_provider", null),
+            prefs().getString("cleanup_base_url", null),
+            prefs().getString("cleanup_model", null),
+        )
+        val apiKey = if (cleanupConfig.provider == CleanupProviderConfig.Provider.GROQ)
+            SecureKeyStorage.groqApiKey(this) else SecureKeyStorage.cleanupApiKey(this)
         if (apiKey.isBlank()) {
             handler.post {
                 toast(getString(R.string.voice_commands_need_key))
@@ -1080,7 +1086,7 @@ class WhisperAccessibilityService : AccessibilityService() {
 
         val fieldText = dictated ?: currentFieldText()
 
-        CommandProcessor.process(fieldText, instruction, apiKey) { result ->
+        CommandProcessor.process(fieldText, instruction, apiKey, cleanupConfig) { result ->
             handler.post {
                 val out = result.text?.trim()
                 when {
