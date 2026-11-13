@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cloudRowSub: TextView
     private lateinit var cloudContainer: LinearLayout
     private lateinit var cloudModelContainer: LinearLayout
-    private lateinit var cloudCustomSwitch: MaterialSwitch
+    private var cloudExpanded = false
     private var cloudModelIds: List<String> = listOf(TranscriberClient.DEFAULT_MODEL)
     private var cloudModelsLoaded = false
     private var cloudModelStatus: Int? = null
@@ -282,18 +282,9 @@ class MainActivity : AppCompatActivity() {
         cloudRowSub = cloudRow.findViewWithTag("subtitle")
         dictationContainer.addView(group().apply { addView(cloudRow) })
 
-        cloudCustomSwitch = MaterialSwitch(this).apply {
-            isChecked = prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false)
-            isClickable = false
-        }
         cloudModelContainer = vertical(0)
         cloudContainer = vertical(0).apply {
             addView(sectionHeader(getString(R.string.cloud_model)))
-            addView(group().apply {
-                addView(settingsRow(getString(R.string.cloud_model_custom), "", cloudCustomSwitch) {
-                    setCustomModel(!cloudCustomSwitch.isChecked)
-                })
-            })
             addView(cloudModelContainer)
         }
         dictationContainer.addView(cloudContainer)
@@ -1596,11 +1587,13 @@ class MainActivity : AppCompatActivity() {
         ta.recycle()
         return color
     }
-    /** Turns the Custom model switch on or off. On loads the Whisper list from Groq. */
-    private fun setCustomModel(on: Boolean) {
-        prefs().edit().putBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, on).apply()
-        cloudCustomSwitch.isChecked = on
-        if (on) loadCloudModels()
+    private fun cloudModelId() =
+        TranscriberClient.modelId(prefs().getString(TranscriberClient.MODEL_PREF_KEY, null))
+
+    /** Expands or collapses the model list under the "Change" link. Opening it loads the list from Groq. */
+    private fun toggleCloudModelList() {
+        cloudExpanded = !cloudExpanded
+        if (cloudExpanded) loadCloudModels()
         renderCloudModels()
     }
 
@@ -1614,7 +1607,6 @@ class MainActivity : AppCompatActivity() {
         cloudModelStatus = R.string.cloud_model_loading
         TranscriberClient.listModels(key) { ids, error ->
             runOnUiThread {
-                if (!prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false)) return@runOnUiThread
                 cloudModelIds = (listOf(TranscriberClient.DEFAULT_MODEL) + ids).distinct()
                 cloudModelsLoaded = error == null
                 cloudModelStatus = if (error == null) null else R.string.cloud_model_load_failed
@@ -1623,33 +1615,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Model in use: the default unless Custom model is on, then the chosen id. */
-    private fun activeCloudModel(): String = TranscriberClient.activeModel(
-        prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false),
-        prefs().getString(TranscriberClient.MODEL_PREF_KEY, null),
-    )
-
-    /** Inline model list, same pattern as the local models. Only the default shows
-     * until Custom model is on. */
+    /** The current choice shows as a row; "Change" opens the Groq list, "Use default" resets. */
     private fun renderCloudModels() {
         cloudModelContainer.removeAllViews()
-        val custom = prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false)
-        val selected = activeCloudModel()
-        val shown = if (custom) (cloudModelIds + selected).distinct() else listOf(TranscriberClient.DEFAULT_MODEL)
-        val group = group()
-        cloudModelStatus?.let { group.addView(settingsRow(getString(it), "")) }
-        for (id in shown) {
+        val selected = cloudModelId()
+        val isDefault = selected == TranscriberClient.DEFAULT_MODEL
+
+        val change = TextView(this).apply {
+            text = getString(R.string.cloud_model_change)
+            setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary))
+            textSize = 14f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+            setOnClickListener { toggleCloudModelList() }
+        }
+        cloudModelContainer.addView(group().apply {
+            addView(settingsRow(selected, if (isDefault) getString(R.string.cloud_model_default) else "", change))
+        })
+
+        if (!cloudExpanded) return
+
+        val list = group()
+        cloudModelStatus?.let { list.addView(settingsRow(getString(it), "")) }
+        for (id in (cloudModelIds + selected).distinct()) {
             val radio = MaterialRadioButton(this).apply {
                 isChecked = id == selected
                 isClickable = false
             }
-            val subtitle = if (id == TranscriberClient.DEFAULT_MODEL) getString(R.string.cloud_model_default) else ""
-            group.addView(settingsRow(id, subtitle, radio) {
+            list.addView(settingsRow(id, if (id == TranscriberClient.DEFAULT_MODEL) getString(R.string.cloud_model_default) else "", radio) {
                 prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, id).apply()
+                cloudExpanded = false
                 refresh()
             })
         }
-        cloudModelContainer.addView(group)
+        cloudModelContainer.addView(list)
+
+        val useDefault = TextView(this).apply {
+            text = getString(R.string.cloud_model_use_default)
+            setTextColor(attrColor(androidx.appcompat.R.attr.colorPrimary))
+            textSize = 14f
+            setTypeface(typeface, Typeface.BOLD)
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+            setOnClickListener {
+                prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, TranscriberClient.DEFAULT_MODEL).apply()
+                cloudExpanded = false
+                refresh()
+            }
+        }
+        cloudModelContainer.addView(group().apply { addView(useDefault) })
     }
 
     private fun cleanupProviderConfig() = CleanupProviderConfig.fromPreferences(

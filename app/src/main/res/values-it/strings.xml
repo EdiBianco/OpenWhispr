@@ -24,7 +24,8 @@
     <string name="local_models">Modelli locali</string>
     <string name="cloud_transcription">Usa la trascrizione nel cloud</string>
     <string name="cloud_model">Modello cloud</string>
-    <string name="cloud_model_custom">Modello personalizzato</string>
+    <string name="cloud_model_change">Cambia</string>
+    <string name="cloud_model_use_default">Usa predefinito</string>
     <string name="cloud_model_default">Predefinito</string>
     <string name="cloud_model_needs_key">Aggiungi una chiave API di Groq per caricare l\'elenco dei modelli.</string>
     <string name="cloud_model_loading">Caricamento dei modelli…</string>

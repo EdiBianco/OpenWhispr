@@ -24,7 +24,8 @@
     <string name="local_models">Локальные модели</string>
     <string name="cloud_transcription">Использовать облачную расшифровку</string>
     <string name="cloud_model">Облачная модель</string>
-    <string name="cloud_model_custom">Пользовательская модель</string>
+    <string name="cloud_model_change">Изменить</string>
+    <string name="cloud_model_use_default">Использовать по умолчанию</string>
     <string name="cloud_model_default">По умолчанию</string>
     <string name="cloud_model_needs_key">Добавьте ключ API Groq, чтобы загрузить список моделей.</string>
     <string name="cloud_model_loading">Загрузка моделей…</string>
