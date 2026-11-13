@@ -9,6 +9,9 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.0.6
+- Bubble size: a preview circle shows the new size where the bubble sits while you slide
+
 ## 4.0.5
 - The update download screen shows a full-size progress ring with the percent and size centred in it
 - The update prompt matches the app's look
