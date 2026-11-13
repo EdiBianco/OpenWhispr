@@ -65,6 +65,51 @@ class TranscriberClientTest {
         assertTrue(prompt.contains("Élodie"))
     }
 
+    @Test fun `missing or blank saved model falls back to the default`() {
+        assertEquals("whisper-large-v3", TranscriberClient.modelId(null))
+        assertEquals("whisper-large-v3", TranscriberClient.modelId("   "))
+    }
+
+    @Test fun `any saved model id is used, trimmed`() {
+        assertEquals("whisper-large-v3-turbo", TranscriberClient.modelId("whisper-large-v3-turbo"))
+        assertEquals("my-custom-whisper", TranscriberClient.modelId("  my-custom-whisper "))
+    }
+
+    @Test fun `model list keeps only whisper models in server order`() {
+        val json = """{"object":"list","data":[
+            {"id":"llama-3.3-70b-versatile"},
+            {"id":"whisper-large-v3-turbo"},
+            {"id":"whisper-large-v3"},
+            {"id":"playai-tts"}
+        ]}"""
+
+        assertEquals(
+            listOf("whisper-large-v3-turbo", "whisper-large-v3"),
+            TranscriberClient.parseModelIds(json),
+        )
+    }
+
+    @Test fun `unreadable model list gives no ids`() {
+        assertTrue(TranscriberClient.parseModelIds("not json").isEmpty())
+        assertTrue(TranscriberClient.parseModelIds("""{"error":"bad key"}""").isEmpty())
+    }
+
+    @Test fun `uses the chosen cloud model in the request`() {
+        val request = TranscriberClient.transcriptionRequest(
+            byteArrayOf(1, 2, 3),
+            "test-key",
+            emptyList(),
+            emptySet(),
+            "distil-whisper-large-v3-en",
+        )
+        val multipart = request.body as okhttp3.MultipartBody
+
+        assertEquals(
+            "distil-whisper-large-v3-en",
+            partContent(multipart.parts.first { it.hasDispositionName("model") }),
+        )
+    }
+
     private fun partContent(part: okhttp3.MultipartBody.Part): String =
         okio.Buffer().also { part.body.writeTo(it) }.readUtf8()
 

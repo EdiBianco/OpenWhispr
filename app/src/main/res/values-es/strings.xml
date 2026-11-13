@@ -23,6 +23,12 @@
     <string name="background_service_summary">Pausa el micrófono flotante sin desactivar la accesibilidad</string>
     <string name="local_models">Modelos locales</string>
     <string name="cloud_transcription">Usar transcripción en la nube</string>
+    <string name="cloud_model">Modelo en la nube</string>
+    <string name="cloud_model_custom">Modelo personalizado</string>
+    <string name="cloud_model_default">Predeterminado</string>
+    <string name="cloud_model_needs_key">Añade una clave API de Groq para cargar la lista de modelos.</string>
+    <string name="cloud_model_loading">Cargando modelos…</string>
+    <string name="cloud_model_load_failed">No se pudo cargar la lista de modelos. Se muestra el predeterminado.</string>
     <string name="requires_groq_key">Requiere una clave API de Groq</string>
     <string name="post_processing">Posprocesado</string>
     <string name="cleanup_transcript">Limpieza de la transcripción</string>

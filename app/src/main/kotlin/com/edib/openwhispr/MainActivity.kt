@@ -38,6 +38,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var statusDotView: View
     private var statusAction: (() -> Unit)? = null
     private lateinit var cloudRowSub: TextView
+    private lateinit var cloudContainer: LinearLayout
+    private lateinit var cloudModelContainer: LinearLayout
+    private lateinit var cloudCustomSwitch: MaterialSwitch
+    private var cloudModelIds: List<String> = listOf(TranscriberClient.DEFAULT_MODEL)
+    private var cloudModelsLoaded = false
+    private var cloudModelStatus: Int? = null
     private lateinit var audioRow: LinearLayout
     private lateinit var audioRowSub: TextView
     private lateinit var audioDot: View
@@ -275,6 +281,22 @@ class MainActivity : AppCompatActivity() {
         }
         cloudRowSub = cloudRow.findViewWithTag("subtitle")
         dictationContainer.addView(group().apply { addView(cloudRow) })
+
+        cloudCustomSwitch = MaterialSwitch(this).apply {
+            isChecked = prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false)
+            isClickable = false
+        }
+        cloudModelContainer = vertical(0)
+        cloudContainer = vertical(0).apply {
+            addView(sectionHeader(getString(R.string.cloud_model)))
+            addView(group().apply {
+                addView(settingsRow(getString(R.string.cloud_model_custom), "", cloudCustomSwitch) {
+                    setCustomModel(!cloudCustomSwitch.isChecked)
+                })
+            })
+            addView(cloudModelContainer)
+        }
+        dictationContainer.addView(cloudContainer)
 
         modelContainer = vertical(0)
         modelContainer.addView(sectionHeader(getString(R.string.local_models)))
@@ -855,6 +877,8 @@ class MainActivity : AppCompatActivity() {
         statusAction = if (ready) null else action
         statusRow.isClickable = statusAction != null
 
+        cloudContainer.visibility = if (useLocal) View.GONE else View.VISIBLE
+        if (!useLocal) renderCloudModels()
         // [ui] The cloud switch's subtitle says where audio goes.
         cloudRowSub.text = if (useLocal) "Off: transcribed on this phone"
                            else "On: audio is sent to Groq (needs API key)"
@@ -1572,6 +1596,62 @@ class MainActivity : AppCompatActivity() {
         ta.recycle()
         return color
     }
+    /** Turns the Custom model switch on or off. On loads the Whisper list from Groq. */
+    private fun setCustomModel(on: Boolean) {
+        prefs().edit().putBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, on).apply()
+        cloudCustomSwitch.isChecked = on
+        if (on) loadCloudModels()
+        renderCloudModels()
+    }
+
+    private fun loadCloudModels() {
+        if (cloudModelsLoaded) return
+        val key = SecureKeyStorage.groqApiKey(this)
+        if (key.isBlank()) {
+            cloudModelStatus = R.string.cloud_model_needs_key
+            return
+        }
+        cloudModelStatus = R.string.cloud_model_loading
+        TranscriberClient.listModels(key) { ids, error ->
+            runOnUiThread {
+                if (!prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false)) return@runOnUiThread
+                cloudModelIds = (listOf(TranscriberClient.DEFAULT_MODEL) + ids).distinct()
+                cloudModelsLoaded = error == null
+                cloudModelStatus = if (error == null) null else R.string.cloud_model_load_failed
+                renderCloudModels()
+            }
+        }
+    }
+
+    /** Model in use: the default unless Custom model is on, then the chosen id. */
+    private fun activeCloudModel(): String = TranscriberClient.activeModel(
+        prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false),
+        prefs().getString(TranscriberClient.MODEL_PREF_KEY, null),
+    )
+
+    /** Inline model list, same pattern as the local models. Only the default shows
+     * until Custom model is on. */
+    private fun renderCloudModels() {
+        cloudModelContainer.removeAllViews()
+        val custom = prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false)
+        val selected = activeCloudModel()
+        val shown = if (custom) (cloudModelIds + selected).distinct() else listOf(TranscriberClient.DEFAULT_MODEL)
+        val group = group()
+        cloudModelStatus?.let { group.addView(settingsRow(getString(it), "")) }
+        for (id in shown) {
+            val radio = MaterialRadioButton(this).apply {
+                isChecked = id == selected
+                isClickable = false
+            }
+            val subtitle = if (id == TranscriberClient.DEFAULT_MODEL) getString(R.string.cloud_model_default) else ""
+            group.addView(settingsRow(id, subtitle, radio) {
+                prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, id).apply()
+                refresh()
+            })
+        }
+        cloudModelContainer.addView(group)
+    }
+
     private fun cleanupProviderConfig() = CleanupProviderConfig.fromPreferences(
         prefs().getString("cleanup_provider", null),
         prefs().getString("cleanup_base_url", null),

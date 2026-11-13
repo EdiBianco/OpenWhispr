@@ -23,6 +23,12 @@
     <string name="background_service_summary">Pausa o microfone flutuante sem desativar a acessibilidade</string>
     <string name="local_models">Modelos locais</string>
     <string name="cloud_transcription">Usar transcrição na nuvem</string>
+    <string name="cloud_model">Modelo na nuvem</string>
+    <string name="cloud_model_custom">Modelo personalizado</string>
+    <string name="cloud_model_default">Padrão</string>
+    <string name="cloud_model_needs_key">Adicione uma chave de API da Groq para carregar a lista de modelos.</string>
+    <string name="cloud_model_loading">Carregando modelos…</string>
+    <string name="cloud_model_load_failed">Não foi possível carregar a lista de modelos. Mostrando o padrão.</string>
     <string name="requires_groq_key">Requer uma chave de API da Groq</string>
     <string name="post_processing">Pós-processamento</string>
     <string name="cleanup_transcript">Limpeza da transcrição</string>
