@@ -87,6 +87,7 @@
                         android:id="@+id/update_percent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:textAppearance="?attr/textAppearanceDisplayMedium"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
@@ -95,6 +96,7 @@
                         android:id="@+id/update_size"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:textAppearance="?attr/textAppearanceBodyLarge"
                         android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>

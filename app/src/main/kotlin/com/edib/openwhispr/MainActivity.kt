@@ -1040,7 +1040,12 @@ class MainActivity : AppCompatActivity() {
     private fun showUpdateDownload(version: String): View {
         val content = findViewById<android.view.ViewGroup>(android.R.id.content)
         val screen = layoutInflater.inflate(R.layout.update_download, content, false)
-        screen.findViewById<TextView>(R.id.update_subtitle).text = "OpenWispr · v$version"
+        screen.findViewById<TextView>(R.id.update_subtitle).text = "OpenWispr · v${version.removePrefix("v")}"
+        // Set in code: the style's 48dp default was winning over the layout attribute.
+        screen.findViewById<com.google.android.material.progressindicator.CircularProgressIndicator>(R.id.update_progress).apply {
+            indicatorSize = dp(240)
+            trackThickness = dp(10)
+        }
         screen.findViewById<MaterialButton>(R.id.update_close).setOnClickListener { hideUpdateDownload(screen) }
         content.addView(screen)
         return screen
