@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.0.5
+- The update download screen shows a full-size progress ring with the percent and size centred in it
+- The update prompt matches the app's look
+
 ## 4.0.4
 - Cloud transcription shows the model you're using. Tap Change to pick another Whisper model from Groq's list, or Use default to go back
 - The update download screen has a full-size progress ring and the update prompt uses the Material 3 dialog style
