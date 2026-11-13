@@ -939,23 +939,25 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 if (info != null) {
-                    com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.update_available)
-                        .setMessage(
-                            buildString {
-                                append(getString(R.string.update_available_message, info.version, currentVersion))
-                                append("\n\n${getString(R.string.whats_new)}:\n")
-                                append(
-                                    info.notes?.takeIf { it.isNotBlank() }
-                                        ?: getString(R.string.no_release_notes)
-                                )
-                            }
-                        )
-                        .setPositiveButton(getString(R.string.update)) { _, _ -> downloadAndInstallUpdate(info) }
-                        // [security] Full release page (complete changelog) before deciding.
-                        .setNeutralButton(getString(R.string.view_on_github)) { _, _ -> openReleasePage(info.url) }
-                        .setNegativeButton(getString(R.string.later), null)
-                        .show()
+                    val view = layoutInflater.inflate(R.layout.dialog_update, null)
+                    view.findViewById<TextView>(R.id.update_dialog_message).text =
+                        getString(R.string.update_available_message, info.version, currentVersion)
+                    view.findViewById<TextView>(R.id.update_dialog_notes).text =
+                        info.notes?.takeIf { it.isNotBlank() } ?: getString(R.string.no_release_notes)
+                    val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setView(view)
+                        .create()
+                    view.findViewById<MaterialButton>(R.id.update_dialog_update).setOnClickListener {
+                        dialog.dismiss()
+                        downloadAndInstallUpdate(info)
+                    }
+                    // [security] Full release page (complete changelog) before deciding.
+                    view.findViewById<MaterialButton>(R.id.update_dialog_github).setOnClickListener {
+                        dialog.dismiss()
+                        openReleasePage(info.url)
+                    }
+                    view.findViewById<MaterialButton>(R.id.update_dialog_later).setOnClickListener { dialog.dismiss() }
+                    dialog.show()
                 } else if (force) {
                     toast(getString(R.string.up_to_date, currentVersion))
                 }
