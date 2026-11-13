@@ -507,39 +507,57 @@ class WhisperAccessibilityService : AccessibilityService() {
     fun previewPosition(percent: Int, onLeft: Boolean) {
         handler.post {
             try {
-                val wm = getSystemService(WINDOW_SERVICE) as WindowManager
                 val size = layoutParams?.width
                     ?: (BubbleSize.dimensions(currentBubbleSizePercent()).ringDp * dp).toInt()
                 val position = BubbleSize.positionFor(
                     percent, onLeft, screenW, screenH, size, (MARGIN_DP * dp).toInt()
                 )
-                val existing = previewView
-                val params = previewParams ?: WindowManager.LayoutParams(
-                    size, size,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                    PixelFormat.TRANSLUCENT
-                ).apply { gravity = Gravity.TOP or Gravity.START }
-                params.width = size
-                params.height = size
-                params.x = position.x
-                params.y = position.y
-                if (existing == null) {
-                    val circle = View(this).apply {
-                        background = circle(PREVIEW_FILL, PREVIEW_STROKE, (2 * dp).toInt())
-                    }
-                    wm.addView(circle, params)
-                    previewView = circle
-                    previewParams = params
-                } else {
-                    wm.updateViewLayout(existing, params)
-                }
-                handler.removeCallbacks(hidePositionPreview)
-                handler.postDelayed(hidePositionPreview, PREVIEW_HIDE_MS)
+                showPreviewCircle(position.x, position.y, size)
             } catch (e: Exception) {
                 Log.e(TAG, "previewPosition failed", e)
             }
         }
+    }
+
+    /** Shows a placeholder circle at the saved home position with the diameter for
+     * [percent], so Settings can preview the bubble size before it is applied. */
+    fun previewBubbleSize(percent: Int) {
+        handler.post {
+            try {
+                val size = (BubbleSize.dimensions(percent).ringDp * dp).toInt()
+                val position = savedHomePosition(size)
+                showPreviewCircle(position.x, position.y, size)
+            } catch (e: Exception) {
+                Log.e(TAG, "previewBubbleSize failed", e)
+            }
+        }
+    }
+
+    private fun showPreviewCircle(x: Int, y: Int, size: Int) {
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val existing = previewView
+        val params = previewParams ?: WindowManager.LayoutParams(
+            size, size,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            PixelFormat.TRANSLUCENT
+        ).apply { gravity = Gravity.TOP or Gravity.START }
+        params.width = size
+        params.height = size
+        params.x = x
+        params.y = y
+        if (existing == null) {
+            val circle = View(this).apply {
+                background = circle(PREVIEW_FILL, PREVIEW_STROKE, (2 * dp).toInt())
+            }
+            wm.addView(circle, params)
+            previewView = circle
+            previewParams = params
+        } else {
+            wm.updateViewLayout(existing, params)
+        }
+        handler.removeCallbacks(hidePositionPreview)
+        handler.postDelayed(hidePositionPreview, PREVIEW_HIDE_MS)
     }
 
     private fun removePositionPreview() {

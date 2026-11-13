@@ -409,13 +409,16 @@ class MainActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(LP_MATCH, dp(64))
         }
         bubbleSizeLabel.labelFor = bubbleSizeSlider.id
+        val applyBubbleSize = Runnable { WhisperAccessibilityService.instance?.refreshBubbleSize() }
         bubbleSizeSlider.addOnChangeListener { slider, value, fromUser ->
             if (fromUser) {
                 val percent = BubbleSize.sliderPercent(value.toInt())
                 prefs().edit().putInt(BubbleSize.PREFERENCE_KEY, percent).apply()
                 selectedBubbleSize.text = localizedBubbleLabel(percent)
                 slider.contentDescription = "${getString(R.string.bubble_size_accessibility)}, ${localizedBubbleDescription(percent)}"
-                WhisperAccessibilityService.instance?.refreshBubbleSize()
+                WhisperAccessibilityService.instance?.previewBubbleSize(percent)
+                slider.removeCallbacks(applyBubbleSize)
+                slider.postDelayed(applyBubbleSize, 500)
             }
         }
         val initialBubbleSize = currentBubbleSizePercent()
