@@ -9,6 +9,10 @@ No internal/process notes (CI changes, release cleanup, repo housekeeping,
 etc.) -- if it wouldn't mean anything to someone who just installed the app,
 it doesn't belong here.
 
+## 4.0.3
+- Multilingual Whisper models (Whisper Base and Small) load and transcribe
+- Voice commands follow the cleanup service you set in Settings (Groq or an OpenAI-compatible provider), so they work without a Groq key
+
 ## 4.0.2
 - Updating within version 4 no longer asks you to uninstall the app
 - Update downloads show a progress screen with the percent and size downloaded
