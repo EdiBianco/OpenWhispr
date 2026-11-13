@@ -12,6 +12,7 @@ it doesn't belong here.
 ## 4.0.3
 - Multilingual Whisper models (Whisper Base and Small) load and transcribe
 - Voice commands follow the cleanup service you set in Settings (Groq or an OpenAI-compatible provider), so they work without a Groq key
+- Cloud transcription: turn on Custom model to choose a Whisper model from Groq's list. The default stays the choice until you turn it on
 
 ## 4.0.2
 - Updating within version 4 no longer asks you to uninstall the app
