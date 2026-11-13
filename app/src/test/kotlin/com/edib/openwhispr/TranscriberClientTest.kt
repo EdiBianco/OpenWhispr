@@ -65,10 +65,33 @@ class TranscriberClientTest {
         assertTrue(prompt.contains("Élodie"))
     }
 
-    @Test fun `unknown or missing saved model keeps the default`() {
+    @Test fun `missing or blank saved model falls back to the default`() {
         assertEquals("whisper-large-v3", TranscriberClient.modelId(null))
-        assertEquals("whisper-large-v3", TranscriberClient.modelId("gpt-oss-120b"))
+        assertEquals("whisper-large-v3", TranscriberClient.modelId("   "))
+    }
+
+    @Test fun `any saved model id is used, trimmed`() {
         assertEquals("whisper-large-v3-turbo", TranscriberClient.modelId("whisper-large-v3-turbo"))
+        assertEquals("my-custom-whisper", TranscriberClient.modelId("  my-custom-whisper "))
+    }
+
+    @Test fun `model list keeps only whisper models in server order`() {
+        val json = """{"object":"list","data":[
+            {"id":"llama-3.3-70b-versatile"},
+            {"id":"whisper-large-v3-turbo"},
+            {"id":"whisper-large-v3"},
+            {"id":"playai-tts"}
+        ]}"""
+
+        assertEquals(
+            listOf("whisper-large-v3-turbo", "whisper-large-v3"),
+            TranscriberClient.parseModelIds(json),
+        )
+    }
+
+    @Test fun `unreadable model list gives no ids`() {
+        assertTrue(TranscriberClient.parseModelIds("not json").isEmpty())
+        assertTrue(TranscriberClient.parseModelIds("""{"error":"bad key"}""").isEmpty())
     }
 
     @Test fun `uses the chosen cloud model in the request`() {

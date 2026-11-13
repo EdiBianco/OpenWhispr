@@ -1585,19 +1585,74 @@ class MainActivity : AppCompatActivity() {
     private fun cloudModelId() =
         TranscriberClient.modelId(prefs().getString(TranscriberClient.MODEL_PREF_KEY, null))
 
-    private fun cloudModelSummary(): String =
-        TranscriberClient.modelById(cloudModelId()).let { "${it.label} · ${it.hint}" }
+    private fun cloudModelSummary(): String = cloudModelId()
 
-    /** Lets the user pick which Groq Whisper model handles cloud transcription. */
+    /** Lets the user pick the Groq Whisper model for cloud transcription. Only the default
+     * is offered until "Custom model" is switched on; then the account's Whisper models
+     * are loaded from Groq. A saved id the list doesn't include stays selectable. */
     private fun promptCloudModel() {
-        val models = TranscriberClient.MODELS
-        val labels = models.map { "${it.label} · ${it.hint}" }.toTypedArray()
+        val current = cloudModelId()
+        val default = TranscriberClient.DEFAULT_MODEL
+        val status = TextView(this).apply { setPadding(0, 0, 0, dp(8)) }
+        val radios = RadioGroup(this)
+        var loaded = false
+
+        fun fill(ids: List<String>) {
+            radios.removeAllViews()
+            ids.forEach { id ->
+                radios.addView(MaterialRadioButton(this).apply {
+                    text = id
+                    tag = id
+                    isChecked = id == current || (id == default && current !in ids)
+                })
+            }
+        }
+
+        val customSwitch = com.google.android.material.materialswitch.MaterialSwitch(this).apply {
+            text = getString(R.string.cloud_model_custom)
+        }
+
+        fun unlock(on: Boolean) {
+            if (!on) {
+                status.text = ""
+                fill(listOf(default))
+                return
+            }
+            val key = SecureKeyStorage.groqApiKey(this)
+            if (key.isBlank()) {
+                status.setText(R.string.cloud_model_needs_key)
+                fill(listOf(default))
+                return
+            }
+            if (loaded) return
+            status.setText(R.string.cloud_model_loading)
+            TranscriberClient.listModels(key) { ids, error ->
+                runOnUiThread {
+                    if (!customSwitch.isChecked) return@runOnUiThread
+                    loaded = error == null
+                    if (error == null) status.text = "" else status.setText(R.string.cloud_model_load_failed)
+                    fill((listOf(default) + ids).distinct())
+                }
+            }
+        }
+
+        customSwitch.isChecked = current != default
+        customSwitch.setOnCheckedChangeListener { _, on -> unlock(on) }
+        unlock(customSwitch.isChecked)
+
+        val content = vertical(24, 8).apply {
+            addView(customSwitch)
+            addView(status)
+            addView(radios)
+        }
+
         android.app.AlertDialog.Builder(this)
             .setTitle(R.string.cloud_model)
-            .setSingleChoiceItems(labels, models.indexOfFirst { it.id == cloudModelId() }.coerceAtLeast(0)) { dialog, which ->
-                prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, models[which].id).apply()
+            .setView(content)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val chosen = radios.findViewById<MaterialRadioButton>(radios.checkedRadioButtonId)?.tag as? String
+                prefs().edit().putString(TranscriberClient.MODEL_PREF_KEY, chosen ?: default).apply()
                 refresh()
-                dialog.dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

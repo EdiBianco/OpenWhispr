@@ -9,12 +9,10 @@ import java.io.IOException
 object TranscriberClient {
     data class Result(val text: String?, val error: String?)
 
-    /** A Groq Whisper model the user can pick for cloud transcription. */
-    data class CloudModel(val id: String, val label: String, val hint: String)
-
     private val client = OkHttpClient()
 
     const val TRANSCRIPTION_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
+    const val MODELS_URL = "https://api.groq.com/openai/v1/models"
 
     /** Preference holding the chosen cloud model id; unset means [DEFAULT_MODEL]. */
     const val MODEL_PREF_KEY = "cloud_transcription_model"
@@ -24,19 +22,37 @@ object TranscriberClient {
     /** Kept as the default model constant for callers that don't want a choice. */
     const val TRANSCRIPTION_MODEL = DEFAULT_MODEL
 
-    /** Ordered for the picker: the default first, then faster/cheaper options. */
-    val MODELS = listOf(
-        CloudModel("whisper-large-v3", "Whisper Large v3", "most accurate"),
-        CloudModel("whisper-large-v3-turbo", "Whisper Large v3 Turbo", "faster, cheaper"),
-        CloudModel("distil-whisper-large-v3-en", "Distil Whisper Large v3", "English only, fastest"),
-    )
-
-    /** The stored id when it names a known model, otherwise the default. */
+    /** The saved id, or [DEFAULT_MODEL] when nothing usable is saved. Any id is accepted:
+     * the picker offers the account's Whisper models, and a custom id can be typed. */
     fun modelId(saved: String?): String =
-        MODELS.firstOrNull { it.id == saved }?.id ?: DEFAULT_MODEL
+        saved?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_MODEL
 
-    fun modelById(id: String): CloudModel =
-        MODELS.firstOrNull { it.id == id } ?: MODELS.first { it.id == DEFAULT_MODEL }
+    /** Whisper model ids from a Groq `/models` response body, in server order. */
+    fun parseModelIds(json: String): List<String> = try {
+        val data = JSONObject(json).getJSONArray("data")
+        (0 until data.length())
+            .map { data.getJSONObject(it).getString("id") }
+            .filter { "whisper" in it }
+    } catch (e: Exception) {
+        emptyList()
+    }
+
+    /** Fetches the Whisper models this key can use. The callback gets the ids (empty on
+     * failure) and an error message, or null on success. */
+    fun listModels(apiKey: String, callback: (ids: List<String>, error: String?) -> Unit) {
+        val request = Request.Builder()
+            .url(MODELS_URL)
+            .header("Authorization", "Bearer $apiKey")
+            .build()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) = callback(emptyList(), e.message)
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string().orEmpty()
+                if (!response.isSuccessful) callback(emptyList(), "HTTP ${response.code}")
+                else callback(parseModelIds(body), null)
+            }
+        })
+    }
 
     fun parseResponse(json: String): Result = try {
         val obj = JSONObject(json)
