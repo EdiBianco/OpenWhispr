@@ -25,6 +25,7 @@
     <string name="cloud_transcription">Utiliser la transcription dans le cloud</string>
     <string name="cloud_model">Modèle cloud</string>
     <string name="cloud_model_custom">Modèle personnalisé</string>
+    <string name="cloud_model_default">Par défaut</string>
     <string name="cloud_model_needs_key">Ajoutez une clé API Groq pour charger la liste des modèles.</string>
     <string name="cloud_model_loading">Chargement des modèles…</string>
     <string name="cloud_model_load_failed">Impossible de charger la liste des modèles. Le modèle par défaut est affiché.</string>

@@ -25,6 +25,7 @@
     <string name="cloud_transcription">Bulut metne çevirmeyi kullan</string>
     <string name="cloud_model">Bulut modeli</string>
     <string name="cloud_model_custom">Özel model</string>
+    <string name="cloud_model_default">Varsayılan</string>
     <string name="cloud_model_needs_key">Model listesini yüklemek için bir Groq API anahtarı ekleyin.</string>
     <string name="cloud_model_loading">Modeller yükleniyor…</string>
     <string name="cloud_model_load_failed">Model listesi yüklenemedi. Varsayılan gösteriliyor.</string>

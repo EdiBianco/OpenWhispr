@@ -961,7 +961,10 @@ class WhisperAccessibilityService : AccessibilityService() {
         if (apiKey.isBlank()) { reset(getString(R.string.set_groq_key)); return }
 
         playRecordingStoppedTone()
-        val model = TranscriberClient.modelId(prefs().getString(TranscriberClient.MODEL_PREF_KEY, null))
+        val model = TranscriberClient.activeModel(
+            prefs().getBoolean(TranscriberClient.CUSTOM_MODEL_PREF_KEY, false),
+            prefs().getString(TranscriberClient.MODEL_PREF_KEY, null),
+        )
         TranscriberClient.transcribe(wav, apiKey, Dictionary.load(prefs()), TranscriptionLanguages.saved(prefs()), model) { result ->
             if (result.text != null && result.text.isNotBlank()) {
                 handleTranscriptionResult(result.text)

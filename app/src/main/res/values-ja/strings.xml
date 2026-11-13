@@ -25,6 +25,7 @@
     <string name="cloud_transcription">クラウドで文字起こしを使用</string>
     <string name="cloud_model">クラウドモデル</string>
     <string name="cloud_model_custom">カスタムモデル</string>
+    <string name="cloud_model_default">デフォルト</string>
     <string name="cloud_model_needs_key">モデル一覧を読み込むには Groq API キーを追加してください。</string>
     <string name="cloud_model_loading">モデルを読み込み中…</string>
     <string name="cloud_model_load_failed">モデル一覧を読み込めませんでした。既定のモデルを表示しています。</string>

@@ -19,6 +19,9 @@ object TranscriberClient {
 
     const val DEFAULT_MODEL = "whisper-large-v3"
 
+    /** Whether the user turned on Custom model (the list from Groq); off uses the default. */
+    const val CUSTOM_MODEL_PREF_KEY = "cloud_custom_model_enabled"
+
     /** Kept as the default model constant for callers that don't want a choice. */
     const val TRANSCRIPTION_MODEL = DEFAULT_MODEL
 
@@ -26,6 +29,10 @@ object TranscriberClient {
      * the picker offers the account's Whisper models, and a custom id can be typed. */
     fun modelId(saved: String?): String =
         saved?.trim()?.takeIf { it.isNotEmpty() } ?: DEFAULT_MODEL
+
+    /** The model to send: the default unless custom is on, then the saved id. */
+    fun activeModel(customEnabled: Boolean, saved: String?): String =
+        if (customEnabled) modelId(saved) else DEFAULT_MODEL
 
     /** Whisper model ids from a Groq `/models` response body, in server order. */
     fun parseModelIds(json: String): List<String> = try {

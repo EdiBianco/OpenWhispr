@@ -25,6 +25,7 @@
     <string name="cloud_transcription">使用云端转写</string>
     <string name="cloud_model">云端模型</string>
     <string name="cloud_model_custom">自定义模型</string>
+    <string name="cloud_model_default">默认</string>
     <string name="cloud_model_needs_key">添加 Groq API 密钥以加载模型列表。</string>
     <string name="cloud_model_loading">正在加载模型…</string>
     <string name="cloud_model_load_failed">无法加载模型列表，显示默认模型。</string>
